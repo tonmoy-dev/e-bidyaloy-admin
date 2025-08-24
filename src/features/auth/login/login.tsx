@@ -97,27 +97,27 @@ const Login = () => {
     }
   };
 
-  const validateForm = () => {
-    const errors = {
-      email: '',
-      password: '',
-    };
+  // const validateForm = () => {
+  //   // const errors = {
+  //   //   email: '',
+  //   //   password: '',
+  //   // };
 
-    if (!formData.email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      errors.email = 'Please enter a valid email address';
-    }
+  //   // if (!formData.email.trim()) {
+  //   //   errors.email = 'Email is required';
+  //   // } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+  //   //   errors.email = 'Please enter a valid email address';
+  //   // }
 
-    if (!formData.password.trim()) {
-      errors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      errors.password = 'Password must be at least 6 characters';
-    }
+  //   // if (!formData.password.trim()) {
+  //   //   errors.password = 'Password is required';
+  //   // } else if (formData.password.length < 1) {
+  //   //   errors.password = 'Password must be at least 6 characters';
+  //   // }
 
-    setFormErrors(errors);
-    return !errors.email && !errors.password;
-  };
+  //   // setFormErrors(errors);
+  //   // return !errors.email && !errors.password;
+  // };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,14 +126,14 @@ const Login = () => {
       return;
     }
 
-    if (!validateForm()) {
-      return;
-    }
+    // if (!validateForm()) {
+    //   return;
+    // }
 
     try {
       await dispatch(
         loginUser({
-          email: formData.email,
+          username: formData.email,
           password: formData.password,
           rememberMe: formData.rememberMe,
         }),
@@ -272,7 +272,7 @@ const Login = () => {
                               <i className="ti ti-mail" />
                             </span>
                             <input
-                              type="email"
+                              type="text"
                               name="email"
                               value={formData.email}
                               onChange={handleInputChange}

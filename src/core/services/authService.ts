@@ -1,14 +1,64 @@
+import { API_ENDPOINTS } from '../constants/api';
 import type { LoginCredentials, LoginResponse, User } from '../store/types';
 import { baseApi } from './baseApi';
 
+export interface RegistrationData {
+  username: string;
+  password: string;
+  password_confirm: string;
+  school_name?: string;
+  ieen_number?: string;
+  school_website?: string;
+  phone_number?: string;
+  address?: string;
+  principal_name?: string;
+  total_teachers?: number;
+  total_students?: number;
+  classes?: string;
+  total_sections?: number;
+  has_biometric_system?: boolean;
+  has_unique_ids?: boolean;
+  has_existing_website?: boolean;
+}
+
+export interface RegistrationResponse {
+  access: string;
+  refresh: string;
+  user: User;
+  message?: string;
+}
+
+export interface VerificationData {
+  token: string;
+  code?: string;
+}
+
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    register: builder.mutation<RegistrationResponse, RegistrationData>({
+      query: (registrationData) => ({
+        url: API_ENDPOINTS.AUTH.REGISTER,
+        method: 'POST',
+        body: registrationData,
+      }),
+      invalidatesTags: ['Auth', 'User'],
+      async onQueryStarted(registrationData, { queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          // Optionally store user data after successful registration
+          console.log('Registration successful:', data);
+        } catch (error) {
+          console.error('Registration failed:', error);
+        }
+      },
+    }),
+
     login: builder.mutation<LoginResponse, LoginCredentials>({
       query: (credentials) => ({
-        url: '/user/api/v1/user/login/',
+        url: API_ENDPOINTS.AUTH.LOGIN,
         method: 'POST',
         body: {
-          email: credentials.email,
+          email: credentials.username,
           password: credentials.password,
         },
       }),
@@ -28,7 +78,7 @@ export const authApi = baseApi.injectEndpoints({
 
     logout: builder.mutation<void, void>({
       query: () => ({
-        url: '/user/api/v1/logout/',
+        url: API_ENDPOINTS.AUTH.LOGOUT,
         method: 'POST',
       }),
       invalidatesTags: ['Auth', 'User'],
@@ -47,20 +97,20 @@ export const authApi = baseApi.injectEndpoints({
 
     refreshToken: builder.mutation<{ access: string }, void>({
       query: () => ({
-        url: '/user/api/v1/token/refresh/',
+        url: API_ENDPOINTS.AUTH.REFRESH,
         method: 'POST',
       }),
       invalidatesTags: ['Auth'],
     }),
 
     getCurrentUser: builder.query<User, void>({
-      query: () => '/user/api/v1/user/profile/',
+      query: () => API_ENDPOINTS.USER.PROFILE,
       providesTags: ['User'],
     }),
 
     updateProfile: builder.mutation<User, Partial<User>>({
       query: (userData) => ({
-        url: '/user/api/v1/user/profile/',
+        url: API_ENDPOINTS.USER.PROFILE,
         method: 'PUT',
         body: userData,
       }),
@@ -69,7 +119,7 @@ export const authApi = baseApi.injectEndpoints({
 
     changePassword: builder.mutation<void, { old_password: string; new_password: string }>({
       query: (data) => ({
-        url: '/user/api/v1/user/change-password/',
+        url: API_ENDPOINTS.USER.CHANGE_PASSWORD,
         method: 'POST',
         body: data,
       }),
@@ -77,7 +127,7 @@ export const authApi = baseApi.injectEndpoints({
 
     forgotPassword: builder.mutation<void, { email: string }>({
       query: ({ email }) => ({
-        url: '/user/api/v1/user/forgot-password/',
+        url: API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
         method: 'POST',
         body: { email },
       }),
@@ -85,23 +135,42 @@ export const authApi = baseApi.injectEndpoints({
 
     resetPassword: builder.mutation<void, { token: string; password: string }>({
       query: (data) => ({
-        url: '/user/api/v1/user/reset-password/',
+        url: API_ENDPOINTS.AUTH.RESET_PASSWORD,
         method: 'POST',
         body: data,
       }),
     }),
 
-    verifyEmail: builder.mutation<void, { token: string }>({
-      query: ({ token }) => ({
-        url: '/user/api/v1/user/verify-email/',
+    verifyEmail: builder.mutation<void, VerificationData>({
+      query: (data) => ({
+        url: API_ENDPOINTS.AUTH.VERIFY_EMAIL,
         method: 'POST',
-        body: { token },
+        body: data,
+      }),
+    }),
+
+    // Additional verification endpoint if needed for registration
+    verifyRegistration: builder.mutation<void, { code: string; email: string }>({
+      query: (data) => ({
+        url: API_ENDPOINTS.AUTH.VERIFY_EMAIL,
+        method: 'POST',
+        body: data,
+      }),
+    }),
+
+    // Resend verification code
+    resendVerificationCode: builder.mutation<void, { email: string }>({
+      query: ({ email }) => ({
+        url: API_ENDPOINTS.AUTH.RESEND_VERIFICATION,
+        method: 'POST',
+        body: { email },
       }),
     }),
   }),
 });
 
 export const {
+  useRegisterMutation,
   useLoginMutation,
   useLogoutMutation,
   useRefreshTokenMutation,
@@ -111,6 +180,8 @@ export const {
   useForgotPasswordMutation,
   useResetPasswordMutation,
   useVerifyEmailMutation,
+  useVerifyRegistrationMutation,
+  useResendVerificationCodeMutation,
 } = authApi;
 
 export const authUtils = {

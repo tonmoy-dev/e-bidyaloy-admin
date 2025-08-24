@@ -39,7 +39,7 @@ export interface AuthState {
 }
 
 export interface LoginCredentials {
-  email: string;
+  username: string;
   password: string;
   rememberMe?: boolean;
 }
@@ -58,9 +58,9 @@ export const loginUser = createAsyncThunk<LoginResponse, LoginCredentials, { rej
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies for HTTP-only cookie handling
+        // credentials: 'include', // Include cookies for HTTP-only cookie handling
         body: JSON.stringify({
-          email: credentials.email,
+          username: credentials.username,
           password: credentials.password,
         }),
       });

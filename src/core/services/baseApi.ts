@@ -26,8 +26,11 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
   if (result.error && result.error.status === 401) {
     const requestUrl = typeof args === 'string' ? args : args.url;
 
-    // Don't refresh on login endpoint
-    if (!requestUrl.includes(API_ENDPOINTS.AUTH.LOGIN)) {
+    // Don't refresh on login or register endpoints
+    if (
+      !requestUrl.includes(API_ENDPOINTS.AUTH.LOGIN) &&
+      !requestUrl.includes(API_ENDPOINTS.AUTH.REGISTER)
+    ) {
       console.log('401 detected, attempting token refresh');
 
       // Attempt to refresh token
@@ -51,7 +54,14 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         console.log('Token refresh failed, clearing auth');
         // Refresh failed, clear auth and redirect
         api.dispatch(clearAuth());
-        window.location.href = '/login';
+
+        // Only redirect to login if not already on auth pages
+        if (
+          !window.location.pathname.includes('/login') &&
+          !window.location.pathname.includes('/register')
+        ) {
+          window.location.href = '/login';
+        }
       }
     }
   }
@@ -62,6 +72,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  tagTypes: ['User', 'Auth'],
+  tagTypes: ['User', 'Auth', 'School'],
   endpoints: () => ({}),
 });
