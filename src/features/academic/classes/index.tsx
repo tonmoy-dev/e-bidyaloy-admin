@@ -1,34 +1,35 @@
-import  { useRef } from "react";
-import { classes } from "../../../core/data/json/classes";
-import Table from "../../../core/common/dataTable/index";
-import PredefinedDateRanges from "../../../core/common/datePicker";
+import { useRef } from 'react';
+import { Link } from 'react-router-dom';
+import CommonSelect from '../../../core/common/commonSelect';
+import Table from '../../../core/common/dataTable/index';
+import PredefinedDateRanges from '../../../core/common/datePicker';
 import {
   activeList,
   classSection,
   classSylabus,
-} from "../../../core/common/selectoption/selectoption";
-import CommonSelect from "../../../core/common/commonSelect";
-import type { TableData } from "../../../core/data/interface";
-import { Link } from "react-router-dom";
-import TooltipOption from "../../../core/common/tooltipOption";
-import { all_routes } from "../../router/all_routes";
+} from '../../../core/common/selectoption/selectoption';
+import type { TableData } from '../../../core/data/interface';
+import { classes } from '../../../core/data/json/classes';
+import PageFilter from '../../../shared/components/layout/PageFilter';
+import PageHeader from '../../../shared/components/layout/PageHeader';
+import PageTable from '../../../shared/components/layout/PageTable';
+import EntityModal from '../../../shared/components/modals/EntityModal';
+import { all_routes } from '../../router/all_routes';
 
 const Classes = () => {
-  
-
   const data = classes;
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+      dropdownMenuRef.current.classList.remove('show');
     }
   };
-  const route = all_routes
+  const route = all_routes;
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      render: ( record: any) => (
+      title: 'ID',
+      dataIndex: 'id',
+      render: (record: any) => (
         <>
           <Link to="#" className="link-primary">
             {record.id}
@@ -38,34 +39,31 @@ const Classes = () => {
     },
 
     {
-      title: "Class",
-      dataIndex: "class",
+      title: 'Class',
+      dataIndex: 'class',
       sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
     },
     {
-      title: "Section",
-      dataIndex: "section",
-      sorter: (a: TableData, b: TableData) =>
-        a.section.length - b.section.length,
+      title: 'Section',
+      dataIndex: 'section',
+      sorter: (a: TableData, b: TableData) => a.section.length - b.section.length,
     },
     {
-      title: "No of Student",
-      dataIndex: "noOfStudents",
-      sorter: (a: TableData, b: TableData) =>
-        a.noOfStudents.length - b.noOfStudents.length,
+      title: 'No of Student',
+      dataIndex: 'noOfStudents',
+      sorter: (a: TableData, b: TableData) => a.noOfStudents.length - b.noOfStudents.length,
     },
     {
-      title: "No of Subjects",
-      dataIndex: "noOfSubjects",
-      sorter: (a: TableData, b: TableData) =>
-        a.noOfSubjects.length - b.noOfSubjects.length,
+      title: 'No of Subjects',
+      dataIndex: 'noOfSubjects',
+      sorter: (a: TableData, b: TableData) => a.noOfSubjects.length - b.noOfSubjects.length,
     },
     {
-      title: "Status",
-      dataIndex: "status",
+      title: 'Status',
+      dataIndex: 'status',
       render: (text: string) => (
         <>
-          {text === "Active" ? (
+          {text === 'Active' ? (
             <span className="badge badge-soft-success d-inline-flex align-items-center">
               <i className="ti ti-circle-filled fs-5 me-1"></i>
               {text}
@@ -80,8 +78,8 @@ const Classes = () => {
       ),
     },
     {
-      title: "Action",
-      dataIndex: "action",
+      title: 'Action',
+      dataIndex: 'action',
       render: () => (
         <>
           <div className="d-flex align-items-center">
@@ -130,40 +128,27 @@ const Classes = () => {
       <div className="page-wrapper">
         <div className="content">
           {/* Page Header */}
-          <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
-            <div className="my-auto mb-2">
-              <h3 className="page-title mb-1">Classes List</h3>
-              <nav>
-                <ol className="breadcrumb mb-0">
-                  <li className="breadcrumb-item">
-                    <Link to={route.adminDashboard}>Dashboard</Link>
-                  </li>
-                  <li className="breadcrumb-item">
-                    <Link to="#">Classes </Link>
-                  </li>
-                  <li className="breadcrumb-item active" aria-current="page">
-                    All Classes
-                  </li>
-                </ol>
-              </nav>
-            </div>
-            <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
-            <TooltipOption />
-              <div className="mb-2">
-                <Link
-                  to="#"
-                  className="btn btn-primary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#add_class"
-                >
-                  <i className="ti ti-square-rounded-plus-filled me-2" />
-                  Add Class
-                </Link>
-              </div>
-            </div>
-          </div>
+          <PageHeader
+            title="Classes"
+            breadcrumb={[
+              { label: 'Dashboard', path: `${route.adminDashboard}` },
+              { label: 'Classes', path: '#' },
+              { label: 'All Classes' },
+            ]}
+            addButtonLabel="Add Class"
+            onAddClick={() => {}}
+          />
           {/* /Page Header */}
-          {/* Guardians List */}
+          <PageFilter onApply={() => console.log('Filter applied')}>
+            <div className="mb-3">
+              <label className="form-label">Class Name</label>
+              <input type="text" className="form-control" name="className" />
+            </div>
+          </PageFilter>
+
+          {/* Page Table */}
+          <PageTable title="Classes List" columns={columns} data={data} />
+          {/* /Page Table */}
           <div className="card">
             <div className="card-header d-flex align-items-center justify-content-between flex-wrap pb-0">
               <h4 className="mb-3">Classes List</h4>
@@ -181,8 +166,8 @@ const Classes = () => {
                     <i className="ti ti-filter me-2" />
                     Filter
                   </Link>
-                  <div className="dropdown-menu drop-width"  ref={dropdownMenuRef}>
-                    <form >
+                  <div className="dropdown-menu drop-width" ref={dropdownMenuRef}>
+                    <form>
                       <div className="d-flex align-items-center border-bottom p-3">
                         <h4>Filter</h4>
                       </div>
@@ -224,11 +209,7 @@ const Classes = () => {
                         <Link to="#" className="btn btn-light me-3">
                           Reset
                         </Link>
-                        <Link
-                          to="#"
-                          className="btn btn-primary"
-                          onClick={handleApplyClick}
-                        >
+                        <Link to="#" className="btn btn-primary" onClick={handleApplyClick}>
                           Apply
                         </Link>
                       </div>
@@ -275,10 +256,23 @@ const Classes = () => {
               {/* /Guardians List */}
             </div>
           </div>
-          {/* /Guardians List */}
         </div>
       </div>
-      ;{/* /Page Wrapper */}
+      {/* /Page Wrapper */}
+      <EntityModal
+        id="add_class"
+        title="Add Class"
+        fields={[
+          { label: 'Class Name', name: 'className', type: 'text' },
+          {
+            label: 'Section',
+            name: 'section',
+            type: 'select',
+            options: [{ label: 'A', value: 'A' }],
+          },
+        ]}
+        onSubmit={(data) => console.log(data)}
+      />
       <>
         {/* Add Classes */}
         <div className="modal fade" id="add_class">
@@ -337,11 +331,7 @@ const Classes = () => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
+                  <Link to="#" className="btn btn-light me-2" data-bs-dismiss="modal">
                     Cancel
                   </Link>
                   <Link to="#" className="btn btn-primary" data-bs-dismiss="modal">
@@ -368,7 +358,7 @@ const Classes = () => {
                   <i className="ti ti-x" />
                 </button>
               </div>
-              <form >
+              <form>
                 <div className="modal-body">
                   <div className="row">
                     <div className="col-md-12">
@@ -425,14 +415,10 @@ const Classes = () => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
+                  <Link to="#" className="btn btn-light me-2" data-bs-dismiss="modal">
                     Cancel
                   </Link>
-                  <Link to="#"  className="btn btn-primary" data-bs-dismiss="modal">
+                  <Link to="#" className="btn btn-primary" data-bs-dismiss="modal">
                     Save Changes
                   </Link>
                 </div>
@@ -445,26 +431,20 @@ const Classes = () => {
         <div className="modal fade" id="delete-modal">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
-              <form >
+              <form>
                 <div className="modal-body text-center">
                   <span className="delete-icon">
                     <i className="ti ti-trash-x" />
                   </span>
                   <h4>Confirm Deletion</h4>
                   <p>
-                    You want to delete all the marked items, this cant be undone
-                    once you delete.
+                    You want to delete all the marked items, this cant be undone once you delete.
                   </p>
                   <div className="d-flex justify-content-center">
-                    <Link
-                      to="#"
-                      className="btn btn-light me-3"
-                      data-bs-dismiss="modal"
-                    >
+                    <Link to="#" className="btn btn-light me-3" data-bs-dismiss="modal">
                       Cancel
                     </Link>
-                    <Link to="#" className="btn btn-danger" data-bs-dismiss="modal"
-                    >
+                    <Link to="#" className="btn btn-danger" data-bs-dismiss="modal">
                       Yes, Delete
                     </Link>
                   </div>
@@ -495,7 +475,7 @@ const Classes = () => {
                   <i className="ti ti-x" />
                 </button>
               </div>
-              <form >
+              <form>
                 <div className="modal-body">
                   <div className="row">
                     <div className="col-md-6">
