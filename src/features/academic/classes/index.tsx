@@ -14,6 +14,7 @@ import PageFilter from '../../../shared/components/layout/PageFilter';
 import PageHeader from '../../../shared/components/layout/PageHeader';
 import PageTable from '../../../shared/components/layout/PageTable';
 import EntityModal from '../../../shared/components/modals/EntityModal';
+import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { all_routes } from '../../router/all_routes';
 
 const Classes = () => {
@@ -137,7 +138,9 @@ const Classes = () => {
             ]}
             addButtonLabel="Add Class"
             onAddClick={() => {}}
-          />
+          >
+            <TooltipOptions showPrint={true} showExport={true} />
+          </PageHeader>
           {/* /Page Header */}
           <PageFilter onApply={() => console.log('Filter applied')}>
             <div className="mb-3">

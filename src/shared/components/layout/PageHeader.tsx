@@ -1,6 +1,6 @@
 // components/layout/PageHeader.tsx
+import type React from 'react';
 import { Link } from 'react-router-dom';
-import TooltipOption from '../../../core/common/tooltipOption';
 
 type BreadcrumbItem = { label: string; path?: string };
 type PageHeaderProps = {
@@ -8,6 +8,7 @@ type PageHeaderProps = {
   breadcrumb: BreadcrumbItem[];
   onAddClick?: () => void;
   addButtonLabel?: string;
+  children?: React.ReactNode;
 };
 
 const PageHeader: React.FC<PageHeaderProps> = ({
@@ -15,6 +16,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   breadcrumb,
   onAddClick,
   addButtonLabel = 'Add',
+  children,
 }) => (
   <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
     <div className="my-auto mb-2">
@@ -38,7 +40,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     </div>
 
     <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
-      <TooltipOption />
+      {children}
       {onAddClick && (
         <button className="btn btn-primary mb-2" onClick={onAddClick}>
           <i className="ti ti-square-rounded-plus-filled me-2" />
