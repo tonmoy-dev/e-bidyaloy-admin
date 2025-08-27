@@ -3,29 +3,41 @@ import type { LoginCredentials, LoginResponse, User } from '../store/types';
 import { baseApi } from './baseApi';
 
 export interface RegistrationData {
-  username: string;
-  password: string;
-  password_confirm: string;
-  school_name?: string;
-  ieen_number?: string;
-  school_website?: string;
-  phone_number?: string;
-  address?: string;
-  principal_name?: string;
-  total_teachers?: number;
-  total_students?: number;
-  classes?: string;
-  total_sections?: number;
-  has_biometric_system?: boolean;
-  has_unique_ids?: boolean;
-  has_existing_website?: boolean;
+  // Backend required fields
+  name: string;
+  slug: string;
+  website?: string;
+  ieen_no: string;
+  phone: string;
+  email: string;
+  admin_username: string;
+  admin_email: string;
+  admin_first_name: string;
+  admin_last_name: string;
+  admin_password: string;
+  admin_password_confirm: string;
+
+  // Additional data (optional)
+  additional_data?: {
+    address?: string;
+    total_teachers?: number;
+    total_students?: number;
+    classes?: string;
+    total_sections?: number;
+    has_biometric_system?: boolean;
+    has_unique_ids?: boolean;
+    has_existing_website?: boolean;
+  };
 }
 
 export interface RegistrationResponse {
-  access: string;
-  refresh: string;
-  user: User;
-  message?: string;
+  organization: {
+    id: string;
+    name: string;
+    slug: string;
+    subscription_plan: string;
+  };
+  message: string;
 }
 
 export interface VerificationData {
@@ -36,16 +48,15 @@ export interface VerificationData {
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     register: builder.mutation<RegistrationResponse, RegistrationData>({
-      query: (registrationData) => ({
+      query: (data) => ({
         url: API_ENDPOINTS.AUTH.REGISTER,
         method: 'POST',
-        body: registrationData,
+        body: data,
       }),
       invalidatesTags: ['Auth', 'User'],
-      async onQueryStarted(registrationData, { queryFulfilled }) {
+      async onQueryStarted(_, { queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          // Optionally store user data after successful registration
           console.log('Registration successful:', data);
         } catch (error) {
           console.error('Registration failed:', error);
