@@ -1,19 +1,15 @@
 import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import CommonSelect from '../../../core/common/commonSelect';
-import Table from '../../../core/common/dataTable/index';
-import PredefinedDateRanges from '../../../core/common/datePicker';
-import {
-  activeList,
-  classSection,
-  classSylabus,
-} from '../../../core/common/selectoption/selectoption';
+import { classSection } from '../../../core/common/selectoption/selectoption';
 import type { TableData } from '../../../core/data/interface';
 import { classes } from '../../../core/data/json/classes';
-import PageFilter from '../../../shared/components/layout/PageFilter';
 import PageHeader from '../../../shared/components/layout/PageHeader';
-import PageTable from '../../../shared/components/layout/PageTable';
 import EntityModal from '../../../shared/components/modals/EntityModal';
+import DataTable from '../../../shared/components/table/DataTable';
+import DataTableBody from '../../../shared/components/table/DataTableBody';
+import DataTableFooter from '../../../shared/components/table/DataTableFooter';
+import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { all_routes } from '../../router/all_routes';
 
@@ -123,6 +119,29 @@ const Classes = () => {
       ),
     },
   ];
+
+  const filtersConfig: FilterConfig[] = [
+    {
+      label: 'Class',
+      options: [
+        { label: 'Class 1', value: 'class1' },
+        { label: 'Class 2', value: 'class2' },
+      ],
+      onChange: (selected) => console.log('Class:', selected),
+      defaultValue: { label: 'Class 1', value: 'class1' },
+    },
+    {
+      label: 'Section',
+      options: [
+        { label: 'A', value: 'A' },
+        { label: 'B', value: 'B' },
+      ],
+      onChange: (selected) => console.log('Section:', selected),
+    },
+  ];
+
+  const sortingOptions = ['Ascending', 'Descending', 'Recently Viewed'];
+
   return (
     <div>
       {/* Page Wrapper */}
@@ -142,123 +161,23 @@ const Classes = () => {
             <TooltipOptions showPrint={true} showExport={true} />
           </PageHeader>
           {/* /Page Header */}
-          <PageFilter onApply={() => console.log('Filter applied')}>
-            <div className="mb-3">
-              <label className="form-label">Class Name</label>
-              <input type="text" className="form-control" name="className" />
-            </div>
-          </PageFilter>
-
           {/* Page Table */}
-          <PageTable title="Classes List" columns={columns} data={data} />
+          <DataTable
+            header={
+              <DataTableHeader
+                filters={filtersConfig}
+                sortingOptions={sortingOptions}
+                onApply={() => console.log('Apply clicked')}
+                onReset={() => console.log('Reset clicked')}
+                onSortChange={(sort) => console.log('Sort:', sort)}
+                defaultSort="Ascending"
+              />
+            }
+            footer={<DataTableFooter />}
+          >
+            <DataTableBody columns={columns} dataSource={data} Selection={true} />
+          </DataTable>
           {/* /Page Table */}
-          <div className="card">
-            <div className="card-header d-flex align-items-center justify-content-between flex-wrap pb-0">
-              <h4 className="mb-3">Classes List</h4>
-              <div className="d-flex align-items-center flex-wrap">
-                <div className="input-icon-start mb-3 me-2 position-relative">
-                  <PredefinedDateRanges />
-                </div>
-                <div className="dropdown mb-3 me-2">
-                  <Link
-                    to="#"
-                    className="btn btn-outline-light bg-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    data-bs-auto-close="outside"
-                  >
-                    <i className="ti ti-filter me-2" />
-                    Filter
-                  </Link>
-                  <div className="dropdown-menu drop-width" ref={dropdownMenuRef}>
-                    <form>
-                      <div className="d-flex align-items-center border-bottom p-3">
-                        <h4>Filter</h4>
-                      </div>
-                      <div className="p-3 border-bottom pb-0">
-                        <div className="row">
-                          <div className="col-md-12">
-                            <div className="mb-3">
-                              <label className="form-label">Class</label>
-                              <CommonSelect
-                                className="select"
-                                options={classSylabus}
-                                defaultValue={classSylabus[0]}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-md-12">
-                            <div className="mb-3">
-                              <label className="form-label">Section</label>
-                              <CommonSelect
-                                className="select"
-                                options={classSection}
-                                defaultValue={classSection[0]}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-md-12">
-                            <div className="mb-3">
-                              <label className="form-label">Status</label>
-                              <CommonSelect
-                                className="select"
-                                options={activeList}
-                                defaultValue={activeList[0]}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-3 d-flex align-items-center justify-content-end">
-                        <Link to="#" className="btn btn-light me-3">
-                          Reset
-                        </Link>
-                        <Link to="#" className="btn btn-primary" onClick={handleApplyClick}>
-                          Apply
-                        </Link>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-                <div className="dropdown mb-3">
-                  <Link
-                    to="#"
-                    className="btn btn-outline-light bg-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    <i className="ti ti-sort-ascending-2 me-2" />
-                    Sort by A-Z
-                  </Link>
-                  <ul className="dropdown-menu p-3">
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1 active">
-                        Ascending
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Descending
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Recently Viewed
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Recently Added
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body p-0 py-3">
-              {/* Guardians List */}
-              <Table columns={columns} dataSource={data} Selection={true} />
-              {/* /Guardians List */}
-            </div>
-          </div>
         </div>
       </div>
       {/* /Page Wrapper */}
