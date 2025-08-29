@@ -40,6 +40,10 @@ a {
 }
 
 //ant datatable pagination
+.ant-pagination {
+  margin: 16px !important;
+}
+
 .ant-pagination-item.ant-pagination-item-1.ant-pagination-item-active {
   background: #3d5ee1;
   border-color: #3d5ee1;
@@ -658,7 +662,7 @@ div.sidebar-themesettings .input-themeselect input[type="radio"]:checked~label .
 .ant-pagination-options {
   position: absolute;
   left: 106px;
-  top: -48px;
+  // top: -48px;
 }
 
 .ant-pagination-options-size-changer {

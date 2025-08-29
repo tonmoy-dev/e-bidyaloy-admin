@@ -1,4 +1,3 @@
-// index.tsx
 import { Table } from 'antd';
 import { useEffect, useState } from 'react';
 import type { DatatableProps } from '../../../core/data/interface';
@@ -52,7 +51,7 @@ const DataTableBody: React.FC<DatatableProps> = ({ columns, dataSource, Selectio
             prevIcon: <span>Prev</span>,
             defaultPageSize: 10,
             showSizeChanger: true,
-            pageSizeOptions: ['10', '20', '30'],
+            pageSizeOptions: ['5', '10', '20', '30'],
           }}
         />
       )}

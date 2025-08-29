@@ -74,7 +74,7 @@ const TooltipOptions = ({
             {exportOptions.map((option, index) => (
               <li key={index}>
                 <button onClick={option.onClick} className="dropdown-item rounded-1">
-                  <i className={option.icon} />
+                  <i className={`${option.icon} me-2`} />
                   {option.label}
                 </button>
               </li>

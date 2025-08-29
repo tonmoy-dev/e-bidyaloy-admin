@@ -7,6 +7,7 @@ type PageHeaderProps = {
   title: string;
   breadcrumb: BreadcrumbItem[];
   onAddClick?: () => void;
+  addButtonId: string;
   addButtonLabel?: string;
   children?: React.ReactNode;
 };
@@ -15,6 +16,7 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   title,
   breadcrumb,
   onAddClick,
+  addButtonId,
   addButtonLabel = 'Add',
   children,
 }) => (
@@ -42,7 +44,12 @@ const PageHeader: React.FC<PageHeaderProps> = ({
     <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
       {children}
       {onAddClick && (
-        <button className="btn btn-primary mb-2" onClick={onAddClick}>
+        <button
+          className="btn btn-primary mb-2"
+          data-bs-toggle="modal"
+          data-bs-target={`#${addButtonId}`}
+          onClick={onAddClick}
+        >
           <i className="ti ti-square-rounded-plus-filled me-2" />
           {addButtonLabel}
         </button>
