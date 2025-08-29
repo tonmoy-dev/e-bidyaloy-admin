@@ -1,32 +1,44 @@
+import { useCallback } from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
 import { useAppDispatch, useAppSelector } from '../../core/store';
-import { clearError, loginUser, logoutUser, refreshToken } from '../../core/store/slices/authSlice';
-import type { LoginCredentials } from '../../core/store/types';
+import { logoutUser } from '../../core/store/slices/authSlice';
+import { all_routes } from '../../features/router/all_routes';
 
 export const useAuth = () => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
   const authState = useAppSelector((state) => state.auth);
 
-  const login = async (credentials: LoginCredentials) => {
-    return dispatch(loginUser(credentials)).unwrap();
-  };
+  const logout = useCallback(async () => {
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate(all_routes.login, { replace: true });
+    } catch (error) {
+      // Still redirect even if logout fails
+      navigate(all_routes.login, { replace: true });
+    }
+  }, [dispatch, navigate]);
 
-  const logout = async () => {
-    return dispatch(logoutUser()).unwrap();
-  };
+  const isUserType = useCallback(
+    (userType: string) => {
+      return authState.user?.user_type === userType;
+    },
+    [authState.user],
+  );
 
-  const refresh = async () => {
-    return dispatch(refreshToken()).unwrap();
-  };
-
-  const clearAuthError = () => {
-    dispatch(clearError());
-  };
+  const hasAccess = useCallback(
+    (allowedTypes: string[]) => {
+      return authState.user?.user_type ? allowedTypes.includes(authState.user.user_type) : false;
+    },
+    [authState.user],
+  );
 
   return {
     ...authState,
-    login,
     logout,
-    refresh,
-    clearError: clearAuthError,
+    isUserType,
+    hasAccess,
   };
 };

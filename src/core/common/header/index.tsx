@@ -1,26 +1,24 @@
-import { Link, useLocation } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  setDataLayout,
-  setDataTheme,
-} from "../../store/slices/themeSettingSlice";
-import ImageWithBasePath from "../imageWithBasePath";
-import {
-  setExpandMenu,
-  setMobileSidebar,
-} from "../../store/slices/sidebarSlice";
-import { useState } from "react";
-import { all_routes } from "../../../features/router/all_routes";
+import { useState } from 'react';
+import { useSelector } from 'react-redux';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { all_routes } from '../../../features/router/all_routes';
+import { useAppDispatch, useAppSelector } from '../../store';
+import { logoutUser } from '../../store/slices/authSlice';
+import { setExpandMenu, setMobileSidebar } from '../../store/slices/sidebarSlice';
+import { setDataLayout, setDataTheme } from '../../store/slices/themeSettingSlice';
+import ImageWithBasePath from '../imageWithBasePath';
+
 const Header = () => {
   const routes = all_routes;
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+
+  const { user, isLoading } = useAppSelector((state) => state.auth);
   const dataTheme = useSelector((state: any) => state.themeSetting.dataTheme);
   const dataLayout = useSelector((state: any) => state.themeSetting.dataLayout);
   const [notificationVisible, setNotificationVisible] = useState(false);
 
-  const mobileSidebar = useSelector(
-    (state: any) => state.sidebarSlice.mobileSidebar
-  );
+  const mobileSidebar = useSelector((state: any) => state.sidebarSlice.mobileSidebar);
 
   const toggleMobileSidebar = () => {
     dispatch(setMobileSidebar(!mobileSidebar));
@@ -33,25 +31,38 @@ const Header = () => {
     dispatch(setExpandMenu(false));
   };
   const handleToggleMiniSidebar = () => {
-    if (dataLayout === "mini_layout") {
-      dispatch(setDataLayout("default_layout"));
-      localStorage.setItem("dataLayout", "default_layout");
+    if (dataLayout === 'mini_layout') {
+      dispatch(setDataLayout('default_layout'));
+      localStorage.setItem('dataLayout', 'default_layout');
     } else {
-      dispatch(setDataLayout("mini_layout"));
-      localStorage.setItem("dataLayout", "mini_layout");
+      dispatch(setDataLayout('mini_layout'));
+      localStorage.setItem('dataLayout', 'mini_layout');
     }
   };
 
   const handleToggleClick = () => {
-    if (dataTheme === "default_data_theme") {
-      dispatch(setDataTheme("dark_data_theme"));
+    if (dataTheme === 'default_data_theme') {
+      dispatch(setDataTheme('dark_data_theme'));
       // localStorage.setItem(dataTheme,"dark_data_theme")
     } else {
-      dispatch(setDataTheme("default_data_theme"));
+      dispatch(setDataTheme('default_data_theme'));
       // localStorage.removeItem(dataTheme)
     }
   };
   const location = useLocation();
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent default link behavior
+    try {
+      await dispatch(logoutUser()).unwrap();
+      navigate(routes.login, { replace: true });
+    } catch (error) {
+      // Even if logout fails, we're still logged out locally
+      console.error('Logout error:', error);
+      navigate(routes.login, { replace: true });
+    }
+  };
+
   const toggleNotification = () => {
     setNotificationVisible(!notificationVisible);
   };
@@ -78,11 +89,7 @@ const Header = () => {
       {/* Header */}
       <div className="header">
         {/* Logo */}
-        <div
-          className="header-left active"
-          onMouseEnter={onMouseEnter}
-          onMouseLeave={onMouseLeave}
-        >
+        <div className="header-left active" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
           <Link to={routes.adminDashboard} className="logo logo-normal">
             <ImageWithBasePath src="assets/img/logo.svg" alt="Logo" />
           </Link>
@@ -97,12 +104,7 @@ const Header = () => {
           </Link>
         </div>
         {/* /Logo */}
-        <Link
-          id="mobile_btn"
-          className="mobile_btn"
-          to="#sidebar"
-          onClick={toggleMobileSidebar}
-        >
+        <Link id="mobile_btn" className="mobile_btn" to="#sidebar" onClick={toggleMobileSidebar}>
           <span className="bar-icon">
             <span />
             <span />
@@ -142,22 +144,13 @@ const Header = () => {
                   Academic Year : 2024 / 2025
                 </Link>
                 <div className="dropdown-menu dropdown-menu-right">
-                  <Link
-                    to="#"
-                    className="dropdown-item d-flex align-items-center"
-                  >
+                  <Link to="#" className="dropdown-item d-flex align-items-center">
                     Academic Year : 2023 / 2024
                   </Link>
-                  <Link
-                    to="#"
-                    className="dropdown-item d-flex align-items-center"
-                  >
+                  <Link to="#" className="dropdown-item d-flex align-items-center">
                     Academic Year : 2022 / 2023
                   </Link>
-                  <Link
-                    to="#"
-                    className="dropdown-item d-flex align-items-center"
-                  >
+                  <Link to="#" className="dropdown-item d-flex align-items-center">
                     Academic Year : 2021 / 2022
                   </Link>
                 </div>
@@ -177,56 +170,44 @@ const Header = () => {
                     />
                   </Link>
                   <div className="dropdown-menu dropdown-menu-right">
-                    <Link
-                      to="#"
-                      className="dropdown-item active d-flex align-items-center"
-                    >
+                    <Link to="#" className="dropdown-item active d-flex align-items-center">
                       <ImageWithBasePath
                         className="me-2 rounded-pill"
                         src="assets/img/flags/us.png"
                         alt="Img"
                         height={22}
                         width={22}
-                      />{" "}
+                      />{' '}
                       English
                     </Link>
-                    <Link
-                      to="#"
-                      className="dropdown-item d-flex align-items-center"
-                    >
+                    <Link to="#" className="dropdown-item d-flex align-items-center">
                       <ImageWithBasePath
                         className="me-2 rounded-pill"
                         src="assets/img/flags/fr.png"
                         alt="Img"
                         height={22}
                         width={22}
-                      />{" "}
+                      />{' '}
                       French
                     </Link>
-                    <Link
-                      to="#"
-                      className="dropdown-item d-flex align-items-center"
-                    >
+                    <Link to="#" className="dropdown-item d-flex align-items-center">
                       <ImageWithBasePath
                         className="me-2 rounded-pill"
                         src="assets/img/flags/es.png"
                         alt="Img"
                         height={22}
                         width={22}
-                      />{" "}
+                      />{' '}
                       Spanish
                     </Link>
-                    <Link
-                      to="#"
-                      className="dropdown-item d-flex align-items-center"
-                    >
+                    <Link to="#" className="dropdown-item d-flex align-items-center">
                       <ImageWithBasePath
                         className="me-2 rounded-pill"
                         src="assets/img/flags/de.png"
                         alt="Img"
                         height={22}
                         width={22}
-                      />{" "}
+                      />{' '}
                       German
                     </Link>
                   </div>
@@ -306,7 +287,7 @@ const Header = () => {
                 </div>
               </div>
               <div className="pe-1">
-                {!location.pathname.includes("layout-dark") && (
+                {!location.pathname.includes('layout-dark') && (
                   <Link
                     onClick={handleToggleClick}
                     to="#"
@@ -315,18 +296,14 @@ const Header = () => {
                   >
                     <i
                       className={
-                        dataTheme === "default_data_theme"
-                          ? "ti ti-moon"
-                          : "ti ti-brightness-up"
+                        dataTheme === 'default_data_theme' ? 'ti ti-moon' : 'ti ti-brightness-up'
                       }
                     />
                   </Link>
                 )}
               </div>
               <div
-                className={`pe-1 ${
-                  notificationVisible ? "notification-item-show" : ""
-                }`}
+                className={`pe-1 ${notificationVisible ? 'notification-item-show' : ''}`}
                 id="notification_item"
               >
                 <Link
@@ -346,11 +323,7 @@ const Header = () => {
                         Mark all as read
                       </Link>
                       <div className="dropdown">
-                        <Link
-                          to="#"
-                          className="bg-white dropdown-toggle"
-                          data-bs-toggle="dropdown"
-                        >
+                        <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
                           <i className="ti ti-calendar-due me-1" />
                           Today
                         </Link>
@@ -387,10 +360,8 @@ const Header = () => {
                             </span>
                             <div className="flex-grow-1">
                               <p className="mb-1">
-                                <span className="text-dark fw-semibold">
-                                  Shawn
-                                </span>{" "}
-                                performance in Math is below the threshold.
+                                <span className="text-dark fw-semibold">Shawn</span> performance in
+                                Math is below the threshold.
                               </p>
                               <span>Just Now</span>
                             </div>
@@ -408,19 +379,13 @@ const Header = () => {
                             </span>
                             <div className="flex-grow-1">
                               <p className="mb-1">
-                                <span className="text-dark fw-semibold">
-                                  Sylvia
-                                </span>{" "}
-                                added appointment on 02:00 PM
+                                <span className="text-dark fw-semibold">Sylvia</span> added
+                                appointment on 02:00 PM
                               </p>
                               <span>10 mins ago</span>
                               <div className="d-flex justify-content-start align-items-center mt-1">
-                                <span className="btn btn-light btn-sm me-2">
-                                  Deny
-                                </span>
-                                <span className="btn btn-primary btn-sm">
-                                  Approve
-                                </span>
+                                <span className="btn btn-light btn-sm me-2">Deny</span>
+                                <span className="btn btn-primary btn-sm">Approve</span>
                               </div>
                             </div>
                           </div>
@@ -437,15 +402,9 @@ const Header = () => {
                             </span>
                             <div className="flex-grow-1">
                               <p className="mb-1">
-                                New student record{" "}
-                                <span className="text-dark fw-semibold">
-                                  {" "}
-                                  George
-                                </span>{" "}
-                                is created by{" "}
-                                <span className="text-dark fw-semibold">
-                                  Teressa
-                                </span>
+                                New student record{' '}
+                                <span className="text-dark fw-semibold"> George</span> is created by{' '}
+                                <span className="text-dark fw-semibold">Teressa</span>
                               </p>
                               <span>2 hrs ago</span>
                             </div>
@@ -463,10 +422,8 @@ const Header = () => {
                             </span>
                             <div className="flex-grow-1">
                               <p className="mb-1">
-                                A new teacher record for{" "}
-                                <span className="text-dark fw-semibold">
-                                  Elisa
-                                </span>
+                                A new teacher record for{' '}
+                                <span className="text-dark fw-semibold">Elisa</span>
                               </p>
                               <span>09:45 AM</span>
                             </div>
@@ -479,10 +436,7 @@ const Header = () => {
                     <Link to="#" className="btn btn-light w-100 me-2">
                       Cancel
                     </Link>
-                    <Link
-                      to={routes.activity}
-                      className="btn btn-primary w-100"
-                    >
+                    <Link to={routes.activity} className="btn btn-primary w-100">
                       View All
                     </Link>
                   </div>
@@ -498,10 +452,7 @@ const Header = () => {
                 </Link>
               </div>
               <div className="pe-1">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon me-1"
-                >
+                <Link to="#" className="btn btn-outline-light bg-white btn-icon me-1">
                   <i className="ti ti-chart-bar" />
                 </Link>
               </div>
@@ -533,14 +484,11 @@ const Header = () => {
                   <div className="d-block">
                     <div className="d-flex align-items-center p-2">
                       <span className="avatar avatar-md me-2 online avatar-rounded">
-                        <ImageWithBasePath
-                          src="assets/img/profiles/avatar-27.jpg"
-                          alt="img"
-                        />
+                        <ImageWithBasePath src="assets/img/profiles/avatar-27.jpg" alt="img" />
                       </span>
                       <div>
-                        <h6>Kevin Larry</h6>
-                        <p className="text-primary mb-0">Administrator</p>
+                        <h6>{user?.full_name || 'Kevin Larry'}</h6>
+                        <p className="text-primary mb-0">{user?.user_type || 'Administrator'}</p>
                       </div>
                     </div>
                     <hr className="m-0" />
@@ -561,10 +509,11 @@ const Header = () => {
                     <hr className="m-0" />
                     <Link
                       className="dropdown-item d-inline-flex align-items-center p-2"
-                      to={routes.login}
+                      to="#"
+                      onClick={handleLogout}
                     >
-                      <i className="ti ti-login me-2" />
-                      Logout
+                      <i className="ti ti-logout me-2" />
+                      {isLoading ? 'Logging out...' : 'Logout'}
                     </Link>
                   </div>
                 </div>
@@ -589,8 +538,8 @@ const Header = () => {
             <Link className="dropdown-item" to={routes.profilesettings}>
               Settings
             </Link>
-            <Link className="dropdown-item" to={routes.login}>
-              Logout
+            <Link className="dropdown-item" to="#" onClick={handleLogout}>
+              {isLoading ? 'Logging out...' : 'Logout'}
             </Link>
           </div>
         </div>
