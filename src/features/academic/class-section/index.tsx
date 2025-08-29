@@ -1,18 +1,14 @@
-import { useRef } from "react";
-import { classSection } from "../../../core/data/json/class-section";
-import Table from "../../../core/common/dataTable/index";
-import {
-  activeList,
-  
-} from "../../../core/common/selectoption/selectoption";
+import { useRef } from 'react';
+import Table from '../../../core/common/dataTable/index';
+import { activeList } from '../../../core/common/selectoption/selectoption';
+import { classSection } from '../../../core/data/json/class-section';
 
-import type { TableData } from "../../../core/data/interface";
-import PredefinedDateRanges from "../../../core/common/datePicker";
-import CommonSelect from "../../../core/common/commonSelect";
-import { Link } from "react-router-dom";
-import TooltipOption from "../../../core/common/tooltipOption";
-import { all_routes } from "../../router/all_routes";
-
+import { Link } from 'react-router-dom';
+import CommonSelect from '../../../core/common/commonSelect';
+import PredefinedDateRanges from '../../../core/common/datePicker';
+import TooltipOption from '../../../core/common/tooltipOption';
+import type { TableData } from '../../../core/data/interface';
+import { all_routes } from '../../router/all_routes';
 
 const ClassSection = () => {
   const routes = all_routes;
@@ -21,42 +17,45 @@ const ClassSection = () => {
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+      dropdownMenuRef.current.classList.remove('show');
     }
   };
 
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      render: ( record: any) => (
+      title: 'ID',
+      dataIndex: 'id',
+      render: (record: any) => (
         <>
-         <Link to="#" className="link-primary">{record.id}</Link>
+          <Link to="#" className="link-primary">
+            {record.id}
+          </Link>
         </>
       ),
       sorter: (a: TableData, b: TableData) => a.id.length - b.id.length,
     },
 
     {
-      title: "Section Name",
-      dataIndex: "sectionName",
+      title: 'Section Name',
+      dataIndex: 'sectionName',
       sorter: (a: TableData, b: TableData) => a.sectionName.length - b.sectionName.length,
     },
     {
-      title: "Status",
-      dataIndex: "status",
+      title: 'Status',
+      dataIndex: 'status',
       render: () => (
         <>
-         <span className="badge badge-soft-success d-inline-flex align-items-center"><i
-					className="ti ti-circle-filled fs-5 me-1"></i>Active</span>
+          <span className="badge badge-soft-success d-inline-flex align-items-center">
+            <i className="ti ti-circle-filled fs-5 me-1"></i>Active
+          </span>
         </>
       ),
-       sorter: (a: TableData, b: TableData) => a.status.length - b.status.length,      
+      sorter: (a: TableData, b: TableData) => a.status.length - b.status.length,
     },
 
     {
-      title: "Action",
-      dataIndex: "action",
+      title: 'Action',
+      dataIndex: 'action',
       render: () => (
         <>
           <div className="d-flex align-items-center">
@@ -124,7 +123,7 @@ const ClassSection = () => {
                 </nav>
               </div>
               <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
-              <TooltipOption />
+                <TooltipOption />
                 <div className="mb-2">
                   <Link
                     to="#"
@@ -145,7 +144,7 @@ const ClassSection = () => {
                 <h4 className="mb-3">Class Section</h4>
                 <div className="d-flex align-items-center flex-wrap">
                   <div className="input-icon-start mb-3 me-2 position-relative">
-                  <PredefinedDateRanges />
+                    <PredefinedDateRanges />
                   </div>
                   <div className="dropdown mb-3 me-2">
                     <Link
@@ -158,7 +157,7 @@ const ClassSection = () => {
                       Filter
                     </Link>
                     <div className="dropdown-menu drop-width" ref={dropdownMenuRef}>
-                      <form >
+                      <form>
                         <div className="d-flex align-items-center border-bottom p-3">
                           <h4>Filter</h4>
                         </div>
@@ -167,11 +166,7 @@ const ClassSection = () => {
                             <div className="col-md-12">
                               <div className="mb-3">
                                 <label className="form-label">Section</label>
-                                <CommonSelect
-                                  className="select"
-                                  options={activeList}
-                                   
-                                />
+                                <CommonSelect className="select" options={activeList} />
                               </div>
                             </div>
                             <div className="col-md-12">
@@ -181,7 +176,6 @@ const ClassSection = () => {
                                   className="select"
                                   options={activeList}
                                   defaultValue={activeList[0]}
-                                   
                                 />
                               </div>
                             </div>
@@ -191,11 +185,7 @@ const ClassSection = () => {
                           <Link to="#" className="btn btn-light me-3">
                             Reset
                           </Link>
-                          <Link
-                            to="#"
-                            className="btn btn-primary"
-                            onClick={handleApplyClick}
-                          >
+                          <Link to="#" className="btn btn-primary" onClick={handleApplyClick}>
                             Apply
                           </Link>
                         </div>
@@ -213,34 +203,22 @@ const ClassSection = () => {
                     </Link>
                     <ul className="dropdown-menu p-3">
                       <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1 active"
-                        >
+                        <Link to="#" className="dropdown-item rounded-1 active">
                           Ascending
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1"
-                        >
+                        <Link to="#" className="dropdown-item rounded-1">
                           Descending
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1"
-                        >
+                        <Link to="#" className="dropdown-item rounded-1">
                           Recently Viewed
                         </Link>
                       </li>
                       <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1"
-                        >
+                        <Link to="#" className="dropdown-item rounded-1">
                           Recently Added
                         </Link>
                       </li>
@@ -275,7 +253,7 @@ const ClassSection = () => {
                   <i className="ti ti-x" />
                 </button>
               </div>
-              <form >
+              <form>
                 <div className="modal-body">
                   <div className="row">
                     <div className="col-md-12">
@@ -301,11 +279,7 @@ const ClassSection = () => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
+                  <Link to="#" className="btn btn-light me-2" data-bs-dismiss="modal">
                     Cancel
                   </Link>
                   <Link to="#" className="btn btn-primary" data-bs-dismiss="modal">
@@ -332,7 +306,7 @@ const ClassSection = () => {
                   <i className="ti ti-x" />
                 </button>
               </div>
-              <form >
+              <form>
                 <div className="modal-body">
                   <div className="row">
                     <div className="col-md-12">
@@ -363,15 +337,10 @@ const ClassSection = () => {
                   </div>
                 </div>
                 <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
+                  <Link to="#" className="btn btn-light me-2" data-bs-dismiss="modal">
                     Cancel
                   </Link>
-                  <Link to="#" className="btn btn-primary" data-bs-dismiss="modal"
-                  >
+                  <Link to="#" className="btn btn-primary" data-bs-dismiss="modal">
                     Save Changes
                   </Link>
                 </div>
@@ -384,22 +353,17 @@ const ClassSection = () => {
         <div className="modal fade" id="delete-modal">
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content">
-              <form >
+              <form>
                 <div className="modal-body text-center">
                   <span className="delete-icon">
                     <i className="ti ti-trash-x" />
                   </span>
                   <h4>Confirm Deletion</h4>
                   <p>
-                    You want to delete all the marked items, this cant be undone
-                    once you delete.
+                    You want to delete all the marked items, this cant be undone once you delete.
                   </p>
                   <div className="d-flex justify-content-center">
-                    <Link
-                      to="#"
-                      className="btn btn-light me-3"
-                      data-bs-dismiss="modal"
-                    >
+                    <Link to="#" className="btn btn-light me-3" data-bs-dismiss="modal">
                       Cancel
                     </Link>
                     <Link to="#" className="btn btn-danger" data-bs-dismiss="modal">
