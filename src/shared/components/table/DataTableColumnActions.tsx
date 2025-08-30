@@ -14,7 +14,7 @@ export default function DataTableColumnActions({
   editActionId?: string;
 }) {
   return (
-    <div className="d-flex align-items-center gap-2">
+    <div className="d-flex align-items-center justify-content-center gap-2">
       {showViewAction && viewActionId && (
         <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip-top">View</Tooltip>}>
           <button

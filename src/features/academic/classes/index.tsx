@@ -27,8 +27,9 @@ const Classes = () => {
   const route = all_routes;
   const columns = [
     {
-      title: 'ID',
+      title: 'SL',
       dataIndex: 'id',
+      align: 'center',
       render: (record: TableData) => (
         <>
           <Link to="#" className="link-primary">
@@ -41,16 +42,19 @@ const Classes = () => {
     {
       title: 'Class',
       dataIndex: 'class',
+      align: 'center',
       sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
     },
     {
       title: 'Section',
       dataIndex: 'section',
+      align: 'center',
       sorter: (a: TableData, b: TableData) => a.section.length - b.section.length,
     },
     {
       title: 'Status',
       dataIndex: 'status',
+      align: 'center',
       render: (text: string) => (
         <>
           {text === 'Active' ? (
@@ -70,6 +74,7 @@ const Classes = () => {
     {
       title: 'Action',
       dataIndex: 'action',
+      align: 'center',
       render: () => (
         <>
           <DataTableColumnActions viewActionId={viewActionId} editActionId={editActionId} />
