@@ -46,12 +46,6 @@ const Classes = () => {
       sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
     },
     {
-      title: 'Section',
-      dataIndex: 'section',
-      align: 'center',
-      sorter: (a: TableData, b: TableData) => a.section.length - b.section.length,
-    },
-    {
       title: 'Status',
       dataIndex: 'status',
       align: 'center',
@@ -83,22 +77,12 @@ const Classes = () => {
     },
   ];
 
-  const sectionOptions: FilterOption[] = [
-    { label: 'A', value: 'a' },
-    { label: 'B', value: 'b' },
-  ];
-
   const statusOptions: FilterOption[] = [
     { label: 'Active', value: 'active' },
     { label: 'Inactive', value: 'inactive' },
   ];
 
   const classFilters: FilterConfig[] = [
-    {
-      key: 'section',
-      label: 'Section',
-      options: sectionOptions,
-    },
     {
       key: 'status',
       label: 'Status',
