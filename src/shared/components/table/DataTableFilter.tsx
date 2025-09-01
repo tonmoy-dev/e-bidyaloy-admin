@@ -1,6 +1,6 @@
 import React, { useEffect, useState, type RefObject } from 'react';
 import { Link } from 'react-router';
-import CommonSelect from '../../../core/common/commonSelect';
+import SelectDropDown from '../utils/SelectDropDown';
 
 // Type for an individual filter option
 export interface FilterOption {
@@ -83,11 +83,11 @@ const TableFilter: React.FC<TableFilterProps> = ({
                 <div className="col-md-12" key={key}>
                   <div className="mb-3">
                     <label className="form-label">{label}</label>
-                    <CommonSelect
+                    <SelectDropDown
                       className="select"
-                      options={options}
-                      value={selectedValues[key]}
-                      onChange={(value: FilterOption | null) => handleSelectChange(key, value)}
+                      options={options} // no need to map
+                      value={selectedValues[key]} // no need to convert
+                      onChange={(value) => handleSelectChange(key, value)}
                     />
                   </div>
                 </div>
