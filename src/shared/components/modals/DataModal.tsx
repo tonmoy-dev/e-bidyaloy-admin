@@ -4,17 +4,9 @@ interface DataModalProps {
   header: React.ReactNode;
   body: React.ReactNode;
   footer: React.ReactNode;
-  handleModalFormSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }
 
-export default function DataModal({
-  modalId,
-  modalTitle,
-  handleModalFormSubmit = (event) => event.preventDefault(),
-  header,
-  footer,
-  body,
-}: DataModalProps) {
+export default function DataModal({ modalId, modalTitle, header, footer, body }: DataModalProps) {
   return (
     <div className="modal fade" id={modalId}>
       <div className="modal-dialog modal-dialog-centered">
@@ -33,10 +25,8 @@ export default function DataModal({
               <i className="ti ti-x" />
             </button>
           </div>
-          <form onSubmit={handleModalFormSubmit}>
-            <div className="modal-body">{body}</div>
-            <div className="modal-footer">{footer}</div>
-          </form>
+          <div className="modal-body">{body}</div>
+          <div className="modal-footer">{footer}</div>
         </div>
       </div>
     </div>
