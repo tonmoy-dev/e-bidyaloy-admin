@@ -7,6 +7,7 @@ interface ClassFormProps {
   defaultValues?: ClassModel;
   mode?: 'add' | 'edit';
   onSubmit: (data: ClassModel) => Promise<void> | void;
+  onActiveModal: (modalType: null) => void;
 }
 
 export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormProps) {
@@ -17,12 +18,11 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
   } = useForm<ClassModel>({
     resolver: yupResolver(classSchema),
     defaultValues: {
-      name: defaultValues?.name || '',
       is_active: defaultValues?.is_active ?? true,
     },
   });
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form id="class-form" onSubmit={handleSubmit(onSubmit)}>
       <div className="row">
         <div className="col-md-12">
           {/* Class Name */}
