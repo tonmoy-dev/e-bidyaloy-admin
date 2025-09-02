@@ -16,7 +16,10 @@ import TableFilter, {
 import DataTableFooter from '../../../shared/components/table/DataTableFooter';
 import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
+import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
+import ClassForm from './components/ClassForm';
+import type { ClassModel } from './models/model';
 
 const viewActionId = 'view-class';
 const editActionId = 'edit-class';
@@ -25,6 +28,9 @@ const addActionId = 'add-class';
 const Classes = () => {
   const data = classes;
   const route = all_routes;
+  const authData = useAuth();
+  console.log('authData', authData);
+
   const columns = [
     {
       title: 'SL',
@@ -93,6 +99,9 @@ const Classes = () => {
 
   const sortingOptions = ['Ascending', 'Descending'];
 
+  const createClassHandler = async (data: ClassModel) => {
+    console.log('class', data);
+  };
   return (
     <div>
       {/* Page Wrapper */}
@@ -145,46 +154,7 @@ const Classes = () => {
           modalTitle="Add Class"
           handleModalFormSubmit={() => {}}
           header={<></>}
-          body={
-            <div className="row">
-              <div className="col-md-12">
-                <div className="mb-3">
-                  <label className="form-label">Class Name</label>
-                  <input type="text" className="form-control" />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">Section</label>
-                  <CommonSelect
-                    className="select"
-                    options={classSection}
-                    defaultValue={classSection[0]}
-                  />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">No of Students</label>
-                  <input type="text" className="form-control" />
-                </div>
-                <div className="mb-3">
-                  <label className="form-label">No of Subjects</label>
-                  <input type="text" className="form-control" />
-                </div>
-                <div className="d-flex align-items-center justify-content-between">
-                  <div className="status-title">
-                    <h5>Status</h5>
-                    <p>Change the Status by toggle </p>
-                  </div>
-                  <div className="form-check form-switch">
-                    <input
-                      className="form-check-input"
-                      type="checkbox"
-                      role="switch"
-                      id="switch-sm"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          }
+          body={<ClassForm mode="add" onSubmit={createClassHandler} />}
           footer={
             <>
               <Link to="#" className="btn btn-light me-2" data-bs-dismiss="modal">
