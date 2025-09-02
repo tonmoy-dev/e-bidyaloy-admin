@@ -1,4 +1,4 @@
-import { Button, Modal } from 'react-bootstrap';
+import { Modal } from 'react-bootstrap';
 
 export type ModalType = 'add' | 'edit' | 'view' | 'delete' | null;
 
@@ -39,15 +39,7 @@ export default function DataTableModal({
 
       <Modal.Body>{body}</Modal.Body>
 
-      <Modal.Footer>
-        {footer ? (
-          footer
-        ) : (
-          <Button variant="secondary" onClick={onClose}>
-            Close
-          </Button>
-        )}
-      </Modal.Footer>
+      <Modal.Footer>{footer}</Modal.Footer>
     </Modal>
   );
 }

@@ -171,7 +171,6 @@ const Classes = () => {
               }}
             />
           }
-          footer={<></>}
         />
 
         {/* Edit Classes */}
@@ -189,7 +188,6 @@ const Classes = () => {
               }}
             />
           }
-          footer={<></>}
         />
 
         {/* View Classes */}
@@ -231,7 +229,6 @@ const Classes = () => {
               </div>
             </div>
           }
-          footer={<></>}
         />
 
         {/* Delete Modal */}
