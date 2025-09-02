@@ -19,13 +19,20 @@ import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
 import ClassForm from './components/ClassForm';
 import type { ClassModel } from './models/model';
+import { useGetClassesQuery } from './services/classApi';
 
 const Classes = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const authData = useAuth();
+  const [page, setPage] = useState(1);
+  const { data: classesData, isLoading, error } = useGetClassesQuery(page);
+
   const data = classes;
   const route = all_routes;
-  const authData = useAuth();
   console.log('authData', authData);
+  console.log('classesData', classesData);
+  console.log('isLoading', isLoading);
+  console.log('error', error);
 
   const columns = [
     {

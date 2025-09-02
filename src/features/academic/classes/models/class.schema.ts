@@ -1,4 +1,3 @@
-// class.schema.ts
 import * as yup from "yup";
 import type { ClassModel } from "./model";
 

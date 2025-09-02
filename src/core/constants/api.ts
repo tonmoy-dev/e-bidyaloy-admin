@@ -18,4 +18,11 @@ export const API_ENDPOINTS = {
   POKEMON: {
     LIST: '/pokemon',
   },
+  CLASS: {
+    LIST: '/api/v1/classes/',
+    CREATE: '/api/v1/classes/',
+    UPDATE_BY_ID: '/api/v1/classes/',
+    DELETE_BY_ID: '/api/v1/classes/',
+    DETAILS_BY_ID: '/api/v1/classes/',
+  }
 };
