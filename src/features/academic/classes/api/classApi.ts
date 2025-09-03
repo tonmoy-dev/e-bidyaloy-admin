@@ -20,7 +20,7 @@ export const classApi = baseApi.injectEndpoints({
 
     getClassById: builder.query<ClassModel, number>({
       query: (id) => `${API_ENDPOINTS.CLASS.DETAILS_BY_ID}${id}/`,
-      providesTags: (result, error, id) => [{ type: 'Class', id }],
+      providesTags: (_result, _error, id) => [{ type: 'Class', id }],
     }),
 
     createClass: builder.mutation<ClassModel, Partial<ClassModel>>({
@@ -38,7 +38,7 @@ export const classApi = baseApi.injectEndpoints({
         method: 'PUT',
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { id }) => [
         { type: 'Class', id },
         { type: 'Class', id: 'LIST' },
       ],
@@ -49,7 +49,7 @@ export const classApi = baseApi.injectEndpoints({
         url: `${API_ENDPOINTS.CLASS.DELETE_BY_ID}${id}/`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, id) => [
+      invalidatesTags: (_result, _error, id) => [
         { type: 'Class', id },
         { type: 'Class', id: 'LIST' },
       ],

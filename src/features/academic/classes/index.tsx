@@ -18,23 +18,30 @@ import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
 import ClassForm from './components/ClassForm';
+import { useClassById } from './hooks/useClassById';
 import { useClasses } from './hooks/useClasses';
 import { useClassMutations } from './hooks/useClassMutations';
 import type { ClassModel } from './models/class.model';
 
 const Classes = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
   const authData = useAuth();
   const [page, setPage] = useState(1);
-  const { classes, isLoading, error } = useClasses(page);
-  const { createClass } = useClassMutations();
+  const { classes, isLoading } = useClasses(page);
+  const { classDetails } = useClassById(selectedId ?? -1);
+  const { createClass, updateClass, deleteClass } = useClassMutations();
 
   const data = classes?.results;
   const route = all_routes;
   console.log('authData', authData);
-  console.log('classesData', classes);
-  console.log('isLoading', isLoading);
-  console.log('error', error);
+  // console.log('classesData', classes);
+  // console.log('isLoading', isLoading);
+  // console.log('error', error);
+
+  // console.log('classDetails', classDetails);
+  console.log('selectedId', selectedId);
+  console.log('activeModal', activeModal);
 
   const columns = [
     {
@@ -80,16 +87,19 @@ const Classes = () => {
       title: 'Action',
       dataIndex: 'action',
       align: 'center',
-      render: () => (
+      render: (record: TableData) => (
         <>
           <DataTableColumnActions
             onEditButtonClick={() => {
+              setSelectedId(record?.id);
               setActiveModal('edit');
             }}
             onViewButtonClick={() => {
+              setSelectedId(record?.id);
               setActiveModal('view');
             }}
             onDeleteButtonClick={() => {
+              setSelectedId(record?.id);
               setActiveModal('delete');
             }}
           />
@@ -114,14 +124,24 @@ const Classes = () => {
 
   const sortingOptions = ['Ascending', 'Descending'];
 
-  const createClassHandler = async (data: ClassModel) => {
+  const handleClassForm = async (data: ClassModel, mode: string) => {
     console.log('class', data);
     try {
-      const response = await createClass(data);
-      console.log('response', response);
+      if (mode === 'add') {
+        const response = await createClass(data);
+        console.log('response', response);
+      } else if (mode === 'edit' && data?.id) {
+        const response = await updateClass({ id: data?.id, data: data });
+        console.log('response', response);
+      }
     } catch (error) {
       console.log('error', error);
     }
+  };
+
+  const handleClassDelete = async () => {
+    const response = await deleteClass(selectedId ?? -1);
+    console.log('response', response);
   };
 
   if (isLoading) {
@@ -185,7 +205,7 @@ const Classes = () => {
               mode="add"
               onActiveModal={setActiveModal}
               onSubmit={async (data) => {
-                await createClassHandler(data);
+                await handleClassForm(data, 'add');
                 setActiveModal(null); // close only on success
               }}
             />
@@ -195,15 +215,19 @@ const Classes = () => {
         {/* Edit Classes */}
         <DataModal
           show={activeModal === 'edit'}
-          onClose={() => setActiveModal(null)}
+          onClose={() => {
+            setActiveModal(null);
+            setSelectedId(null);
+          }}
           modalTitle="Edit Class"
           body={
             <ClassForm
               mode="edit"
               onActiveModal={setActiveModal}
               onSubmit={async (data) => {
-                await createClassHandler(data);
-                setActiveModal(null); // close only on success
+                await handleClassForm(data, 'edit');
+                setActiveModal(null);
+                setSelectedId(null);
               }}
             />
           }
@@ -212,7 +236,10 @@ const Classes = () => {
         {/* View Classes */}
         <DataModal
           show={activeModal === 'view'}
-          onClose={() => setActiveModal(null)}
+          onClose={() => {
+            setActiveModal(null);
+            setSelectedId(null);
+          }}
           modalTitle="Class Details"
           header={
             <span className="badge badge-soft-success ms-2">
@@ -221,40 +248,47 @@ const Classes = () => {
             </span>
           }
           body={
-            <div className="row">
-              <div className="col-md-6">
-                <div className="class-detail-info">
-                  <p>Class Name</p>
-                  <span>III</span>
+            <>
+              {classDetails && (
+                <div className="row">
+                  <div className="col-md-6">
+                    <div className="class-detail-info">
+                      <p>Class Name</p>
+                      <span>III</span>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="class-detail-info">
+                      <p>Section</p>
+                      <span>A</span>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="class-detail-info">
+                      <p>No of Subjects</p>
+                      <span>05</span>
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <div className="class-detail-info">
+                      <p>No of Students</p>
+                      <span>25</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
-              <div className="col-md-6">
-                <div className="class-detail-info">
-                  <p>Section</p>
-                  <span>A</span>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="class-detail-info">
-                  <p>No of Subjects</p>
-                  <span>05</span>
-                </div>
-              </div>
-              <div className="col-md-6">
-                <div className="class-detail-info">
-                  <p>No of Students</p>
-                  <span>25</span>
-                </div>
-              </div>
-            </div>
+              )}
+            </>
           }
         />
 
         {/* Delete Modal */}
         <DeleteConfirmationModal
           show={activeModal === 'delete'}
-          onClose={() => setActiveModal(null)}
-          onConfirm={() => {}}
+          onClose={() => {
+            setActiveModal(null);
+            setSelectedId(null);
+          }}
+          onConfirm={handleClassDelete}
           title="Delete Item"
           message="Do you really want to delete? This action cannot be undone."
         />
