@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm } from 'react-hook-form';
+import type { ClassModel } from '../models/class.model';
 import { classSchema } from '../models/class.schema';
-import type { ClassModel } from '../models/model';
 
 interface ClassFormProps {
   defaultValues?: ClassModel;
@@ -19,8 +19,10 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
     resolver: yupResolver(classSchema),
     defaultValues: {
       is_active: defaultValues?.is_active ?? true,
+      academic_year: defaultValues?.academic_year ?? '',
     },
   });
+
   return (
     <form id="class-form" onSubmit={handleSubmit(onSubmit)}>
       <div className="row">
@@ -36,11 +38,23 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
             {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
           </div>
 
+          {/* Academic Year */}
+          <div className="mb-3">
+            <label className="form-label">Academic Year</label>
+            <input
+              type="text"
+              className={`form-control ${errors.academic_year ? 'is-invalid' : ''}`}
+              {...register('academic_year')}
+            />
+            {errors.academic_year && (
+              <div className="invalid-feedback">{errors.academic_year.message}</div>
+            )}
+          </div>
+
           {/* Status */}
-          <div className="d-flex align-items-center justify-content-between">
+          <div className="d-flex align-items-center justify-content-start gap-3">
             <div className="status-title">
               <h5>Status</h5>
-              <p>Change the Status by toggle</p>
             </div>
             <div className="form-check form-switch">
               <input

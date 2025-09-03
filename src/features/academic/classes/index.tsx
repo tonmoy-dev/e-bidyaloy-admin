@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { TableData } from '../../../core/data/interface';
-import { classes } from '../../../core/data/json/classes';
 import PageHeader from '../../../shared/components/layout/PageHeader';
 import DeleteConfirmationModal from '../../../shared/components/modals/DeleteConfirmationModal';
 import DataTable from '../../../shared/components/table/DataTable';
@@ -14,23 +13,26 @@ import TableFilter, {
 import DataTableFooter from '../../../shared/components/table/DataTableFooter';
 import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
+import PageLoader from '../../../shared/components/utils/PageLoader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
 import ClassForm from './components/ClassForm';
-import type { ClassModel } from './models/model';
-import { useGetClassesQuery } from './services/classApi';
+import { useClasses } from './hooks/useClasses';
+import { useClassMutations } from './hooks/useClassMutations';
+import type { ClassModel } from './models/class.model';
 
 const Classes = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const authData = useAuth();
   const [page, setPage] = useState(1);
-  const { data: classesData, isLoading, error } = useGetClassesQuery(page);
+  const { classes, isLoading, error } = useClasses(page);
+  const { createClass } = useClassMutations();
 
-  const data = classes;
+  const data = classes?.results;
   const route = all_routes;
   console.log('authData', authData);
-  console.log('classesData', classesData);
+  console.log('classesData', classes);
   console.log('isLoading', isLoading);
   console.log('error', error);
 
@@ -114,7 +116,17 @@ const Classes = () => {
 
   const createClassHandler = async (data: ClassModel) => {
     console.log('class', data);
+    try {
+      const response = await createClass(data);
+      console.log('response', response);
+    } catch (error) {
+      console.log('error', error);
+    }
   };
+
+  if (isLoading) {
+    return <PageLoader />;
+  }
   return (
     <div>
       {/* Page Wrapper */}
@@ -156,7 +168,7 @@ const Classes = () => {
             }
             footer={<DataTableFooter />}
           >
-            <DataTableBody columns={columns} dataSource={data} Selection={true} />
+            <DataTableBody columns={columns} dataSource={data ?? []} Selection={true} />
           </DataTable>
         </div>
       </div>

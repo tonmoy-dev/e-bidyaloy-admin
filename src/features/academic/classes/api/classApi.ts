@@ -2,7 +2,7 @@
 
 import { API_ENDPOINTS } from "../../../../core/constants/api";
 import { baseApi } from "../../../../core/services/baseApi";
-import type { ClassModel, PaginatedResponse } from "../models/model";
+import type { ClassModel, PaginatedResponse } from "../models/class.model";
 
 
 export const classApi = baseApi.injectEndpoints({
