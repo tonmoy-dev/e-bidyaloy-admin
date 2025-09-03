@@ -41,8 +41,20 @@ export interface RegistrationResponse {
 }
 
 export interface VerificationData {
-  token: string;
-  code?: string;
+  email: string;
+  code: string;
+}
+
+export interface VerificationResponse {
+  message: string;
+}
+
+export interface ResendVerificationData {
+  email: string;
+}
+
+export interface ResendVerificationResponse {
+  message: string;
 }
 
 export const authApi = baseApi.injectEndpoints({
@@ -152,30 +164,54 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    verifyEmail: builder.mutation<void, VerificationData>({
+    verifyEmail: builder.mutation<VerificationResponse, VerificationData>({
       query: (data) => ({
         url: API_ENDPOINTS.AUTH.VERIFY_EMAIL,
         method: 'POST',
-        body: data,
+        body: {
+          email: data.email,
+          code: data.code,
+        },
       }),
+      invalidatesTags: ['Auth'],
+      async onQueryStarted(_, { queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          console.log('Email verification successful:', data);
+        } catch (error) {
+          console.error('Email verification failed:', error);
+        }
+      },
     }),
 
     // Additional verification endpoint if needed for registration
-    verifyRegistration: builder.mutation<void, { code: string; email: string }>({
+    verifyRegistration: builder.mutation<VerificationResponse, { code: string; email: string }>({
       query: (data) => ({
         url: API_ENDPOINTS.AUTH.VERIFY_EMAIL,
         method: 'POST',
-        body: data,
+        body: {
+          email: data.email,
+          code: data.code,
+        },
       }),
+      invalidatesTags: ['Auth'],
     }),
 
     // Resend verification code
-    resendVerificationCode: builder.mutation<void, { email: string }>({
+    resendVerificationCode: builder.mutation<ResendVerificationResponse, ResendVerificationData>({
       query: ({ email }) => ({
         url: API_ENDPOINTS.AUTH.RESEND_VERIFICATION,
         method: 'POST',
         body: { email },
       }),
+      async onQueryStarted(_, { queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          console.log('Verification code resent successfully:', data);
+        } catch (error) {
+          console.error('Failed to resend verification code:', error);
+        }
+      },
     }),
   }),
 });
