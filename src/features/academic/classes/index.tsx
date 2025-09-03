@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
 import PageHeader from '../../../shared/components/layout/PageHeader';
 import DeleteConfirmationModal from '../../../shared/components/modals/DeleteConfirmationModal';
@@ -196,7 +197,7 @@ const Classes = () => {
       <>
         {/* Add Classes */}
         <DataModal
-          show={activeModal === 'add'}
+          show={activeModal === MODAL_TYPE.ADD}
           onClose={() => setActiveModal(null)}
           size="md"
           modalTitle="Add Class"
@@ -214,7 +215,7 @@ const Classes = () => {
 
         {/* Edit Classes */}
         <DataModal
-          show={activeModal === 'edit'}
+          show={activeModal === MODAL_TYPE.EDIT}
           onClose={() => {
             setActiveModal(null);
             setSelectedId(null);
@@ -235,7 +236,7 @@ const Classes = () => {
 
         {/* View Classes */}
         <DataModal
-          show={activeModal === 'view'}
+          show={activeModal === MODAL_TYPE.VIEW}
           onClose={() => {
             setActiveModal(null);
             setSelectedId(null);
@@ -283,7 +284,7 @@ const Classes = () => {
 
         {/* Delete Modal */}
         <DeleteConfirmationModal
-          show={activeModal === 'delete'}
+          show={activeModal === MODAL_TYPE.DELETE}
           onClose={() => {
             setActiveModal(null);
             setSelectedId(null);
