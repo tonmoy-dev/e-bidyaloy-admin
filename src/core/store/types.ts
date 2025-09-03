@@ -45,6 +45,7 @@ export interface LoginCredentials {
 export interface LoginResponse {
   access: string;
   user: User;
+  refresh: string;
 }
 
 // Registration related types
@@ -115,7 +116,7 @@ export interface ApiError {
     username?: string[];
     password?: string[];
     password_confirm?: string[];
-    [key: string]: any;
+    [key: string]: string | string[] | undefined;
   };
   message?: string;
   status?: number;

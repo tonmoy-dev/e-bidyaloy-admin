@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ImageWithBasePath from '../../../core/common/imageWithBasePath';
-import { useRegisterMutation } from '../../../core/services/authService';
+
+import { useRegisterMutation } from '../../../core/services/authApi';
 import { all_routes } from '../../router/all_routes';
 
 type PasswordField = 'password' | 'confirmPassword';
@@ -236,11 +237,16 @@ const Register = () => {
 
       const result = await register(registrationPayload).unwrap();
 
-      setSuccessMessage(result.message || 'Registration successful! Please login to continue.');
+      setSuccessMessage(
+        result.message || 'Registration successful! Please verify your email to continue.',
+      );
 
-      // Navigate to login page after successful registration
+      // Store principal email in session storage for email verification
+      sessionStorage.setItem('principalEmail', formData.principalEmail);
+
+      // Navigate to email verification page after successful registration
       setTimeout(() => {
-        navigate(routes.login);
+        navigate(routes.emailVerification);
       }, 2000);
     } catch (err: unknown) {
       console.error('Registration error:', err);

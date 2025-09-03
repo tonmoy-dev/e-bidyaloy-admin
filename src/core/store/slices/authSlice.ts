@@ -1,99 +1,43 @@
-// 1. Enhanced authSlice.ts with proper logout handling
 import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import { API_BASE_URL, API_ENDPOINTS } from '../../constants/api';
+import { authUtils } from '../../services/authService';
+import type { LoginCredentials, LoginResponse, User } from '../types';
 
-export interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  full_name: string;
-  username: string;
-  user_type: string;
-  date_joined: string;
-}
-
-export interface AuthState {
+interface AuthState {
   user: User | null;
+  accessToken: string | null;
+  refreshToken: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   error: string | null;
   loginAttempts: number;
   lastLoginAttempt: number | null;
   isRefreshing: boolean;
-  accessToken: string | null;
 }
 
-export interface LoginCredentials {
-  username: string;
-  password: string;
-  rememberMe?: boolean;
-}
+const initialState: AuthState = {
+  user: null,
+  accessToken: null,
+  refreshToken: null,
+  isAuthenticated: false,
+  isLoading: false,
+  error: null,
+  loginAttempts: 0,
+  lastLoginAttempt: null,
+  isRefreshing: false,
+};
 
-export interface LoginResponse {
-  access: string;
-  refresh: string;
-  user: User;
-  message: string;
-}
-
-// Enhanced logout that works even without API
-export const logoutUser = createAsyncThunk<void, void, { rejectValue: string }>(
-  'auth/logoutUser',
-  async (_, { rejectWithValue, getState }) => {
-    try {
-      const state = getState() as { auth: AuthState };
-      const token = state.auth.accessToken;
-
-      // Try to call logout API if available and we have a token
-      if (token) {
-        try {
-          await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGOUT}`, {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-          });
-        } catch (apiError) {
-          // Log API error but don't fail logout
-          console.warn('Logout API call failed, proceeding with local logout:', apiError);
-        }
-      }
-
-      // Always clear local storage regardless of API response
-      localStorage.removeItem('user');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      sessionStorage.removeItem('user');
-      sessionStorage.removeItem('access_token');
-      sessionStorage.removeItem('refresh_token');
-
-      return;
-    } catch {
-      // Even if everything fails, we should still clear local state
-      localStorage.removeItem('user');
-      localStorage.removeItem('access_token');
-      localStorage.removeItem('refresh_token');
-      sessionStorage.removeItem('user');
-      sessionStorage.removeItem('access_token');
-      sessionStorage.removeItem('refresh_token');
-
-      return rejectWithValue('Logout completed with errors');
-    }
-  },
-);
-
-export const loginUser = createAsyncThunk<LoginResponse, LoginCredentials, { rejectValue: string }>(
+// Async thunk for login
+export const loginUser = createAsyncThunk(
   'auth/loginUser',
-  async (credentials, { rejectWithValue }) => {
+  async (credentials: LoginCredentials, { rejectWithValue }) => {
     try {
       const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGIN}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           username: credentials.username,
           password: credentials.password,
@@ -102,16 +46,24 @@ export const loginUser = createAsyncThunk<LoginResponse, LoginCredentials, { rej
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        throw new Error(errorData.message || errorData.detail || 'Login failed');
       }
 
-      const data = await response.json();
+      const data: LoginResponse = await response.json();
 
-      // Store tokens and user data
+      // Store tokens and user data based on rememberMe preference
       const storage = credentials.rememberMe ? localStorage : sessionStorage;
-      storage.setItem('user', JSON.stringify(data.user));
-      storage.setItem('access_token', data.access);
-      storage.setItem('refresh_token', data.refresh);
+
+      // Store the complete user data
+      storage.setItem('user', JSON.stringify(data.user || data));
+
+      // Extract and store tokens separately
+      if (data.access) {
+        storage.setItem('access_token', data.access);
+      }
+      if (data.refresh) {
+        storage.setItem('refresh_token', data.refresh);
+      }
 
       return data;
     } catch (error) {
@@ -120,16 +72,109 @@ export const loginUser = createAsyncThunk<LoginResponse, LoginCredentials, { rej
   },
 );
 
-const initialState: AuthState = {
-  user: null,
-  isAuthenticated: false,
-  isLoading: false,
-  error: null,
-  loginAttempts: 0,
-  lastLoginAttempt: null,
-  isRefreshing: false,
-  accessToken: null,
-};
+// Async thunk for logout
+export const logoutUser = createAsyncThunk(
+  'auth/logoutUser',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as { auth: AuthState };
+      const refreshToken =
+        state.auth.refreshToken ||
+        localStorage.getItem('refresh_token') ||
+        sessionStorage.getItem('refresh_token');
+
+      // Try to call logout API if we have a refresh token
+      if (refreshToken) {
+        try {
+          const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.LOGOUT}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ refresh: refreshToken }),
+          });
+
+          if (!response.ok) {
+            console.warn('Logout API failed, but will still clear local data');
+          }
+        } catch (apiError) {
+          console.warn('Logout API call failed:', apiError);
+        }
+      }
+
+      // Always clear stored data regardless of API response
+      authUtils.clearStoredAuth();
+      return true;
+    } catch (error) {
+      // Even if everything fails, clear local storage
+      authUtils.clearStoredAuth();
+      return rejectWithValue(error instanceof Error ? error.message : 'Logout failed');
+    }
+  },
+);
+
+// Async thunk for refreshing token
+export const refreshAuthToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as { auth: AuthState };
+      const refreshToken =
+        state.auth.refreshToken ||
+        localStorage.getItem('refresh_token') ||
+        sessionStorage.getItem('refresh_token');
+
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
+      }
+
+      const response = await fetch(`${API_BASE_URL}${API_ENDPOINTS.AUTH.REFRESH}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({ refresh: refreshToken }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || errorData.detail || 'Token refresh failed');
+      }
+
+      const data = await response.json();
+
+      // Update stored tokens
+      const useLocalStorage = !!localStorage.getItem('access_token');
+      const storage = useLocalStorage ? localStorage : sessionStorage;
+
+      storage.setItem('access_token', data.access);
+      if (data.refresh) {
+        storage.setItem('refresh_token', data.refresh);
+      }
+
+      return data;
+    } catch (error) {
+      // Clear auth data on refresh failure
+      authUtils.clearStoredAuth();
+      return rejectWithValue(error instanceof Error ? error.message : 'Token refresh failed');
+    }
+  },
+);
+
+// Initialize auth state from storage
+export const initializeAuth = createAsyncThunk('auth/initialize', async () => {
+  const user = authUtils.getStoredUser();
+  const { accessToken, refreshToken } = authUtils.getStoredTokens();
+
+  return {
+    user,
+    accessToken,
+    refreshToken,
+    isAuthenticated: !!(user && accessToken),
+  };
+});
 
 const authSlice = createSlice({
   name: 'auth',
@@ -137,6 +182,23 @@ const authSlice = createSlice({
   reducers: {
     clearError: (state) => {
       state.error = null;
+    },
+    clearAuth: (state) => {
+      state.user = null;
+      state.accessToken = null;
+      state.refreshToken = null;
+      state.isAuthenticated = false;
+      state.error = null;
+      state.loginAttempts = 0;
+      state.lastLoginAttempt = null;
+      state.isRefreshing = false;
+      authUtils.clearStoredAuth();
+    },
+    updateTokens: (state, action: PayloadAction<{ access: string; refresh?: string }>) => {
+      state.accessToken = action.payload.access;
+      if (action.payload.refresh) {
+        state.refreshToken = action.payload.refresh;
+      }
     },
     resetLoginAttempts: (state) => {
       state.loginAttempts = 0;
@@ -146,89 +208,95 @@ const authSlice = createSlice({
       state.user = action.payload;
       state.isAuthenticated = true;
     },
-    clearAuth: (state) => {
-      state.user = null;
-      state.isAuthenticated = false;
-      state.error = null;
-      state.isLoading = false;
-      state.accessToken = null;
-      state.loginAttempts = 0;
-      state.lastLoginAttempt = null;
-    },
-    initializeAuth: (state) => {
-      // Check for stored user data and tokens
-      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-      const storedToken =
-        localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
-
-      if (storedUser && storedToken) {
-        try {
-          const userData = JSON.parse(storedUser);
-          state.user = userData;
-          state.isAuthenticated = true;
-          state.accessToken = storedToken;
-        } catch (error) {
-          console.error('Failed to parse stored auth data:', error);
-          // Clear invalid stored data
-          localStorage.removeItem('user');
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('refresh_token');
-          sessionStorage.removeItem('user');
-          sessionStorage.removeItem('access_token');
-          sessionStorage.removeItem('refresh_token');
-        }
-      }
+    setRefreshing: (state, action: PayloadAction<boolean>) => {
+      state.isRefreshing = action.payload;
     },
   },
   extraReducers: (builder) => {
-    builder
-      // Login cases
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload.user;
-        state.isAuthenticated = true;
-        state.accessToken = action.payload.access;
-        state.error = null;
-        state.loginAttempts = 0;
-        state.lastLoginAttempt = null;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload || 'Login failed';
-        state.loginAttempts += 1;
-        state.lastLoginAttempt = Date.now();
-      })
-      // Logout cases
-      .addCase(logoutUser.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(logoutUser.fulfilled, (state) => {
-        // Always clear state on logout, regardless of API response
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-        state.accessToken = null;
-        state.error = null;
-        state.loginAttempts = 0;
-        state.lastLoginAttempt = null;
-      })
-      .addCase(logoutUser.rejected, (state) => {
-        // Even if logout API fails, clear local state
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-        state.accessToken = null;
-        state.error = null;
-        state.loginAttempts = 0;
-        state.lastLoginAttempt = null;
-      });
+    // Initialize auth
+    builder.addCase(initializeAuth.fulfilled, (state, action) => {
+      state.user = action.payload.user;
+      state.accessToken = action.payload.accessToken;
+      state.refreshToken = action.payload.refreshToken;
+      state.isAuthenticated = action.payload.isAuthenticated;
+      state.isLoading = false;
+    });
+
+    // Login cases
+    builder.addCase(loginUser.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(loginUser.fulfilled, (state, action) => {
+      state.user = action.payload.user || action.payload;
+      state.accessToken = action.payload.access;
+      state.refreshToken = action.payload.refresh;
+      state.isAuthenticated = true;
+      state.isLoading = false;
+      state.error = null;
+      state.loginAttempts = 0;
+      state.lastLoginAttempt = null;
+    });
+    builder.addCase(loginUser.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+      state.isAuthenticated = false;
+      state.loginAttempts += 1;
+      state.lastLoginAttempt = Date.now();
+    });
+
+    // Logout cases
+    builder.addCase(logoutUser.pending, (state) => {
+      state.isLoading = true;
+    });
+    builder.addCase(logoutUser.fulfilled, (state) => {
+      state.user = null;
+      state.accessToken = null;
+      state.refreshToken = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+      state.error = null;
+      state.loginAttempts = 0;
+      state.lastLoginAttempt = null;
+      state.isRefreshing = false;
+    });
+    builder.addCase(logoutUser.rejected, (state) => {
+      // Even if logout fails, clear the state
+      state.user = null;
+      state.accessToken = null;
+      state.refreshToken = null;
+      state.isAuthenticated = false;
+      state.isLoading = false;
+      state.loginAttempts = 0;
+      state.lastLoginAttempt = null;
+      state.isRefreshing = false;
+    });
+
+    // Token refresh cases
+    builder.addCase(refreshAuthToken.pending, (state) => {
+      state.isRefreshing = true;
+    });
+    builder.addCase(refreshAuthToken.fulfilled, (state, action) => {
+      state.accessToken = action.payload.access;
+      if (action.payload.refresh) {
+        state.refreshToken = action.payload.refresh;
+      }
+      state.error = null;
+      state.isRefreshing = false;
+    });
+    builder.addCase(refreshAuthToken.rejected, (state) => {
+      // Clear auth state on refresh failure
+      state.user = null;
+      state.accessToken = null;
+      state.refreshToken = null;
+      state.isAuthenticated = false;
+      state.error = 'Session expired. Please log in again.';
+      state.isRefreshing = false;
+    });
   },
 });
 
-export const { clearError, resetLoginAttempts, setUser, clearAuth, initializeAuth } =
+export const { clearError, clearAuth, updateTokens, resetLoginAttempts, setUser, setRefreshing } =
   authSlice.actions;
+
 export default authSlice.reducer;
