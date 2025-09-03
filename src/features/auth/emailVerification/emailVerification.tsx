@@ -4,7 +4,7 @@ import ImageWithBasePath from '../../../core/common/imageWithBasePath';
 import {
   useResendVerificationCodeMutation,
   useVerifyEmailMutation,
-} from '../../../core/services/authService';
+} from '../../../core/services/authApi';
 import { all_routes } from '../../router/all_routes';
 
 const EmailVerification = () => {

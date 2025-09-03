@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ImageWithBasePath from '../../../core/common/imageWithBasePath';
-import { useRegisterMutation } from '../../../core/services/authService';
+
+import { useRegisterMutation } from '../../../core/services/authApi';
 import { all_routes } from '../../router/all_routes';
 
 type PasswordField = 'password' | 'confirmPassword';

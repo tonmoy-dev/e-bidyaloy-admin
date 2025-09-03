@@ -2,7 +2,7 @@ import type { BaseQueryFn, FetchArgs, FetchBaseQueryError } from '@reduxjs/toolk
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { API_BASE_URL, API_ENDPOINTS } from '../constants/api';
 import type { RootState } from '../store';
-import { clearAuth } from '../store/slices/authSlice';
+import { clearAuth, updateTokens } from '../store/slices/authSlice';
 
 // Helper function to get stored tokens
 const getStoredTokens = () => {
@@ -42,7 +42,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 ) => {
   const baseQuery = fetchBaseQuery({
     baseUrl: API_BASE_URL,
-    credentials: 'include', // Include HTTP-only cookies if your backend uses them
+    credentials: 'include',
     prepareHeaders: (headers, { getState }) => {
       // Get token from Redux state first, fallback to storage
       const state = getState() as RootState;
@@ -69,16 +69,19 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     const requestUrl = typeof args === 'string' ? args : args.url;
 
     // Don't refresh on auth endpoints to avoid infinite loops
-    if (
-      !requestUrl.includes(API_ENDPOINTS.AUTH.LOGIN) &&
-      !requestUrl.includes(API_ENDPOINTS.AUTH.REGISTER) &&
-      !requestUrl.includes(API_ENDPOINTS.AUTH.REFRESH) &&
-      !requestUrl.includes(API_ENDPOINTS.AUTH.LOGOUT)
-    ) {
+    const isAuthEndpoint = [
+      API_ENDPOINTS.AUTH.LOGIN,
+      API_ENDPOINTS.AUTH.REGISTER,
+      API_ENDPOINTS.AUTH.REFRESH,
+      API_ENDPOINTS.AUTH.LOGOUT,
+    ].some((endpoint) => requestUrl.includes(endpoint));
+
+    if (!isAuthEndpoint) {
       console.log('401 detected, attempting token refresh');
 
-      // Get refresh token from storage
-      const { refreshToken } = getStoredTokens();
+      // Get refresh token from storage or Redux state
+      const state = api.getState() as RootState;
+      const refreshToken = state.auth.refreshToken || getStoredTokens().refreshToken;
 
       if (refreshToken) {
         // Attempt to refresh token
@@ -86,7 +89,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
           {
             url: API_ENDPOINTS.AUTH.REFRESH,
             method: 'POST',
-            body: JSON.stringify({ refresh: refreshToken }),
+            body: { refresh: refreshToken },
           },
           api,
           extraOptions,
@@ -101,10 +104,15 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
           // Update stored tokens
           updateStoredTokens(refreshData.access, refreshData.refresh);
 
-          // Update Redux state - you might want to add a refreshToken action to authSlice
-          // For now, we'll let the next request pick up the new token from storage
+          // Update Redux state
+          api.dispatch(
+            updateTokens({
+              access: refreshData.access,
+              refresh: refreshData.refresh,
+            }),
+          );
 
-          // Retry the original query
+          // Retry the original query with new token
           result = await baseQuery(args, api, extraOptions);
         } else {
           console.log('Token refresh failed, clearing auth');
@@ -112,7 +120,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
           clearStoredTokens();
           api.dispatch(clearAuth());
 
-          // Only redirect to login if not already on auth pages
+          // Only redirect if not already on auth pages
           if (
             !window.location.pathname.includes('/login') &&
             !window.location.pathname.includes('/register')
@@ -143,13 +151,11 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
     // Handle 403 Forbidden (insufficient permissions)
     if (status === 403) {
       console.log('403 Forbidden - insufficient permissions');
-      // You might want to redirect to an unauthorized page
     }
 
     // Handle network errors
     if (status === 'FETCH_ERROR' || status === 'PARSING_ERROR') {
       console.log('Network or parsing error:', result.error);
-      // You might want to show a network error message
     }
   }
 
