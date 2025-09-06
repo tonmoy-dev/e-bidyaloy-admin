@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
 import PageHeader from '../../../shared/components/layout/PageHeader';
@@ -16,7 +15,6 @@ import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
 import PageLoader from '../../../shared/components/utils/PageLoader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
-import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
 import SessionForm from './components/SessionForm';
 import { useSessionById } from './hooks/useSessionById';
@@ -25,10 +23,10 @@ import { useSessions } from './hooks/useSessions';
 import type { SessionModel } from './models/session.model';
 const page = 1;
 
-const Sessiones = () => {
+const Sessions = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const authData = useAuth();
+  // const authData = useAuth();
 
   const { sessions, isLoading } = useSessions(page);
   const { sessionDetails } = useSessionById(selectedId ?? -1);
@@ -36,42 +34,35 @@ const Sessiones = () => {
 
   const data = sessions?.results;
   const route = all_routes;
-  console.log('authData', authData);
-  // console.log('sessionesData', sessiones);
-  // console.log('isLoading', isLoading);
-  // console.log('error', error);
-
-  // console.log('sessionDetails', sessionDetails);
-  console.log('selectedId', selectedId);
-  console.log('activeModal', activeModal);
 
   const columns = [
     {
       title: 'SL',
-      dataIndex: 'id',
       align: 'center',
-      render: (record: TableData) => (
-        <>
-          <Link to="#" className="link-primary">
-            {record.id}
-          </Link>
-        </>
-      ),
+      render: (_: TableData, __: TableData, index: number) => (page - 1) * 10 + index + 1,
     },
-
     {
-      title: 'Session',
-      dataIndex: 'session',
+      title: 'Name',
       align: 'center',
-      sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
+      render: (record: TableData) => record?.name,
+    },
+    {
+      title: 'Start Date',
+      align: 'center',
+      render: (record: TableData) => record?.start_date,
+    },
+    {
+      title: 'End Date',
+      align: 'center',
+      render: (record: TableData) => record?.end_date,
     },
     {
       title: 'Status',
-      dataIndex: 'status',
+      dataIndex: 'is_current',
       align: 'center',
       render: (text: string) => (
         <>
-          {text === 'Active' ? (
+          {text ? (
             <span className="badge badge-soft-success d-inline-flex align-items-center">
               <i className="ti ti-circle-filled fs-5 me-1"></i>
               {text}
@@ -84,10 +75,10 @@ const Sessiones = () => {
           )}
         </>
       ),
+      sorter: (a: TableData) => (a.is_current ? 1 : 0),
     },
     {
       title: 'Action',
-      dataIndex: 'action',
       align: 'center',
       render: (record: TableData) => (
         <>
@@ -127,13 +118,12 @@ const Sessiones = () => {
   const sortingOptions = ['Ascending', 'Descending'];
 
   const handleSessionForm = async (data: SessionModel, mode: string) => {
-    console.log('session', data);
     try {
       if (mode === 'add') {
         const response = await createSession(data);
         console.log('response', response);
-      } else if (mode === 'edit' && data?.id) {
-        const response = await updateSession({ id: data?.id, data: data });
+      } else if (mode === 'edit' && sessionDetails?.id) {
+        const response = await updateSession({ id: sessionDetails?.id, data: data });
         console.log('response', response);
       }
     } catch (error) {
@@ -156,11 +146,11 @@ const Sessiones = () => {
         <div className="content">
           {/* Page Header */}
           <PageHeader
-            title="Sessiones"
+            title="Sessions"
             breadcrumb={[
               { label: 'Dashboard', path: `${route.adminDashboard}` },
-              { label: 'Sessiones', path: '#' },
-              { label: 'All Sessiones' },
+              { label: 'Sessions', path: '#' },
+              { label: 'All Sessions' },
             ]}
             addButtonLabel="Add Session"
             onAddClick={() => {
@@ -196,7 +186,7 @@ const Sessiones = () => {
       </div>
 
       <>
-        {/* Add Sessiones */}
+        {/* Add Sessions */}
         <DataModal
           show={activeModal === MODAL_TYPE.ADD}
           onClose={() => setActiveModal(null)}
@@ -208,80 +198,84 @@ const Sessiones = () => {
               onActiveModal={setActiveModal}
               onSubmit={async (data) => {
                 await handleSessionForm(data, 'add');
-                setActiveModal(null); // close only on success
-              }}
-            />
-          }
-        />
-
-        {/* Edit Sessiones */}
-        <DataModal
-          show={activeModal === MODAL_TYPE.EDIT}
-          onClose={() => {
-            setActiveModal(null);
-            setSelectedId(null);
-          }}
-          modalTitle="Edit Session"
-          body={
-            <SessionForm
-              mode="edit"
-              onActiveModal={setActiveModal}
-              onSubmit={async (data) => {
-                await handleSessionForm(data, 'edit');
                 setActiveModal(null);
-                setSelectedId(null);
               }}
             />
           }
         />
 
-        {/* View Sessiones */}
-        <DataModal
-          show={activeModal === MODAL_TYPE.VIEW}
-          onClose={() => {
-            setActiveModal(null);
-            setSelectedId(null);
-          }}
-          modalTitle="Session Details"
-          header={
-            <span className="badge badge-soft-success ms-2">
-              <i className="ti ti-circle-filled me-1 fs-5" />
-              Active
-            </span>
-          }
-          body={
-            <>
-              {sessionDetails && (
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="session-detail-info">
-                      <p>Session Name</p>
-                      <span>III</span>
+        {/* Edit Sessions */}
+        {sessionDetails && (
+          <DataModal
+            show={activeModal === MODAL_TYPE.EDIT}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            modalTitle="Edit Session"
+            body={
+              <SessionForm
+                defaultValues={sessionDetails}
+                mode="edit"
+                onActiveModal={setActiveModal}
+                onSubmit={async (data) => {
+                  await handleSessionForm(data, 'edit');
+                  setActiveModal(null);
+                }}
+              />
+            }
+          />
+        )}
+
+        {/* View Sessions */}
+        {sessionDetails && (
+          <DataModal
+            show={activeModal === MODAL_TYPE.VIEW}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            modalTitle="Session Details"
+            header={
+              <span className="badge badge-soft-success ms-2">
+                <i className="ti ti-circle-filled me-1 fs-5" />
+                Active
+              </span>
+            }
+            body={
+              <>
+                {sessionDetails && (
+                  <div className="row">
+                    <div className="col-md-6">
+                      <div className="session-detail-info mb-3">
+                        <p>Name</p>
+                        <span>{sessionDetails?.name}</span>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="session-detail-info mb-3">
+                        <p>Start Date</p>
+                        <span>{sessionDetails?.start_date}</span>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="session-detail-info mb-3">
+                        <p>End Date</p>
+                        <span>{sessionDetails?.end_date}</span>
+                      </div>
+                    </div>
+                    <div className="col-md-6">
+                      <div className="session-detail-info mb-3">
+                        <p>Status</p>
+                        <span>{sessionDetails?.is_current ? 'Active' : 'Inactive'}</span>
+                      </div>
                     </div>
                   </div>
-                  <div className="col-md-6">
-                    <div className="session-detail-info">
-                      <p>Section</p>
-                      <span>A</span>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="session-detail-info">
-                      <p>No of Subjects</p>
-                      <span>05</span>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="session-detail-info">
-                      <p>No of Students</p>
-                      <span>25</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          }
-        />
+                )}
+              </>
+            }
+          />
+        )}
 
         {/* Delete Modal */}
         <DeleteConfirmationModal
@@ -299,4 +293,4 @@ const Sessiones = () => {
   );
 };
 
-export default Sessiones;
+export default Sessions;

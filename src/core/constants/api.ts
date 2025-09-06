@@ -26,10 +26,10 @@ export const API_ENDPOINTS = {
     DETAILS_BY_ID: '/api/v1/classes/',
   },
   SESSION: {
-    LIST: '/api/v1/sessions/',
-    CREATE: '/api/v1/sessions/',
-    UPDATE_BY_ID: '/api/v1/sessions/',
-    DELETE_BY_ID: '/api/v1/sessions/',
-    DETAILS_BY_ID: '/api/v1/sessions/',
+    LIST: '/api/v1/academic-years/',
+    CREATE: '/api/v1/academic-years/',
+    UPDATE_BY_ID: '/api/v1/academic-years/',
+    DELETE_BY_ID: '/api/v1/academic-years/',
+    DETAILS_BY_ID: '/api/v1/academic-years/',
   }
 };

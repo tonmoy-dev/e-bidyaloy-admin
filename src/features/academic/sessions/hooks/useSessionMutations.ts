@@ -1,4 +1,4 @@
-// src/features/sessiones/hooks/useSessionMutations.ts
+// src/features/sessions/hooks/useSessionMutations.ts
 import {
   useCreateSessionMutation,
   useDeleteSessionMutation,

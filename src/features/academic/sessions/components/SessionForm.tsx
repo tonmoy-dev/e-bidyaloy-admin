@@ -21,6 +21,7 @@ export default function SessionForm({ defaultValues, mode, onSubmit }: SessionFo
       is_current: defaultValues?.is_current ?? true,
       start_date: defaultValues?.start_date ?? '',
       end_date: defaultValues?.end_date ?? '',
+      name: defaultValues?.name ?? '',
     },
   });
 
