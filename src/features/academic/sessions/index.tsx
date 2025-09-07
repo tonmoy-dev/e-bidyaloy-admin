@@ -16,6 +16,7 @@ import DataModal, { type ModalType } from '../../../shared/components/table/Data
 import PageLoader from '../../../shared/components/utils/PageLoader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { all_routes } from '../../router/all_routes';
+import SessionDetailsView from './components/SessionDetailsView';
 import SessionForm from './components/SessionForm';
 import { useSessionById } from './hooks/useSessionById';
 import { useSessionMutations } from './hooks/useSessionMutations';
@@ -237,43 +238,19 @@ const Sessions = () => {
             }}
             modalTitle="Session Details"
             header={
-              <span className="badge badge-soft-success ms-2">
-                <i className="ti ti-circle-filled me-1 fs-5" />
-                Active
-              </span>
+              sessionDetails?.is_current ? (
+                <span className="badge badge-soft-success ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Active
+                </span>
+              ) : (
+                <span className="badge badge-soft-danger ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Inactive
+                </span>
+              )
             }
-            body={
-              <>
-                {sessionDetails && (
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="session-detail-info mb-3">
-                        <p>Name</p>
-                        <span>{sessionDetails?.name}</span>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="session-detail-info mb-3">
-                        <p>Start Date</p>
-                        <span>{sessionDetails?.start_date}</span>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="session-detail-info mb-3">
-                        <p>End Date</p>
-                        <span>{sessionDetails?.end_date}</span>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="session-detail-info mb-3">
-                        <p>Status</p>
-                        <span>{sessionDetails?.is_current ? 'Active' : 'Inactive'}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </>
-            }
+            body={sessionDetails && <SessionDetailsView sessionData={sessionDetails} />}
           />
         )}
 
