@@ -289,6 +289,7 @@ export interface TableData {
   vehicleModel: string;
   key: string;
   is_current: boolean;
+  academic_year_name: string;
 }
 export interface status {
   text: string;

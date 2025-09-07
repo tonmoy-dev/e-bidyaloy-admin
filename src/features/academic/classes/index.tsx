@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
 import PageHeader from '../../../shared/components/layout/PageHeader';
@@ -18,6 +17,7 @@ import PageLoader from '../../../shared/components/utils/PageLoader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
+import ClassDetailsView from './components/ClassDetailsView';
 import ClassForm from './components/ClassForm';
 import { useClassById } from './hooks/useClassById';
 import { useClasses } from './hooks/useClasses';
@@ -25,52 +25,40 @@ import { useClassMutations } from './hooks/useClassMutations';
 import type { ClassModel } from './models/class.model';
 
 const Classes = () => {
+  const page = 1;
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const authData = useAuth();
-  const [page, setPage] = useState(1);
   const { classes, isLoading } = useClasses(page);
   const { classDetails } = useClassById(selectedId ?? -1);
   const { createClass, updateClass, deleteClass } = useClassMutations();
-
   const data = classes?.results;
   const route = all_routes;
   console.log('authData', authData);
-  // console.log('classesData', classes);
-  // console.log('isLoading', isLoading);
-  // console.log('error', error);
-
-  // console.log('classDetails', classDetails);
-  console.log('selectedId', selectedId);
-  console.log('activeModal', activeModal);
 
   const columns = [
     {
       title: 'SL',
-      dataIndex: 'id',
       align: 'center',
-      render: (record: TableData) => (
-        <>
-          <Link to="#" className="link-primary">
-            {record.id}
-          </Link>
-        </>
-      ),
+      render: (_: TableData, __: TableData, index: number) => (page - 1) * 10 + index + 1,
     },
-
     {
       title: 'Class',
-      dataIndex: 'class',
       align: 'center',
-      sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
+      render: (record: TableData) => record?.name,
+    },
+    {
+      title: 'Academic year',
+      align: 'center',
+      render: (record: TableData) => record?.academic_year_name,
     },
     {
       title: 'Status',
-      dataIndex: 'status',
+      dataIndex: 'is_active',
       align: 'center',
       render: (text: string) => (
         <>
-          {text === 'Active' ? (
+          {text ? (
             <span className="badge badge-soft-success d-inline-flex align-items-center">
               <i className="ti ti-circle-filled fs-5 me-1"></i>
               {text}
@@ -86,7 +74,6 @@ const Classes = () => {
     },
     {
       title: 'Action',
-      dataIndex: 'action',
       align: 'center',
       render: (record: TableData) => (
         <>
@@ -131,8 +118,8 @@ const Classes = () => {
       if (mode === 'add') {
         const response = await createClass(data);
         console.log('response', response);
-      } else if (mode === 'edit' && data?.id) {
-        const response = await updateClass({ id: data?.id, data: data });
+      } else if (mode === 'edit' && classDetails?.id) {
+        const response = await updateClass({ id: classDetails?.id, data: data });
         console.log('response', response);
       }
     } catch (error) {
@@ -207,80 +194,60 @@ const Classes = () => {
               onActiveModal={setActiveModal}
               onSubmit={async (data) => {
                 await handleClassForm(data, 'add');
-                setActiveModal(null); // close only on success
+                setActiveModal(null);
               }}
             />
           }
         />
 
         {/* Edit Classes */}
-        <DataModal
-          show={activeModal === MODAL_TYPE.EDIT}
-          onClose={() => {
-            setActiveModal(null);
-            setSelectedId(null);
-          }}
-          modalTitle="Edit Class"
-          body={
-            <ClassForm
-              mode="edit"
-              onActiveModal={setActiveModal}
-              onSubmit={async (data) => {
-                await handleClassForm(data, 'edit');
-                setActiveModal(null);
-                setSelectedId(null);
-              }}
-            />
-          }
-        />
+        {classDetails && (
+          <DataModal
+            show={activeModal === MODAL_TYPE.EDIT}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            modalTitle="Edit Class"
+            body={
+              <ClassForm
+                mode="edit"
+                defaultValues={classDetails}
+                onActiveModal={setActiveModal}
+                onSubmit={async (data) => {
+                  await handleClassForm(data, 'edit');
+                  setActiveModal(null);
+                }}
+              />
+            }
+          />
+        )}
 
         {/* View Classes */}
-        <DataModal
-          show={activeModal === MODAL_TYPE.VIEW}
-          onClose={() => {
-            setActiveModal(null);
-            setSelectedId(null);
-          }}
-          modalTitle="Class Details"
-          header={
-            <span className="badge badge-soft-success ms-2">
-              <i className="ti ti-circle-filled me-1 fs-5" />
-              Active
-            </span>
-          }
-          body={
-            <>
-              {classDetails && (
-                <div className="row">
-                  <div className="col-md-6">
-                    <div className="class-detail-info">
-                      <p>Class Name</p>
-                      <span>III</span>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="class-detail-info">
-                      <p>Section</p>
-                      <span>A</span>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="class-detail-info">
-                      <p>No of Subjects</p>
-                      <span>05</span>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="class-detail-info">
-                      <p>No of Students</p>
-                      <span>25</span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </>
-          }
-        />
+        {classDetails && (
+          <DataModal
+            show={activeModal === MODAL_TYPE.VIEW}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            modalTitle="Class Details"
+            header={
+              classDetails?.is_active ? (
+                <span className="badge badge-soft-success ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Active
+                </span>
+              ) : (
+                <span className="badge badge-soft-danger ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Inactive
+                </span>
+              )
+            }
+            body={<ClassDetailsView classData={classDetails} />}
+          />
+        )}
 
         {/* Delete Modal */}
         <DeleteConfirmationModal
