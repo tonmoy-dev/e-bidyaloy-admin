@@ -1,9 +1,10 @@
+import { useEffect, useState } from 'react';
 import { Button, Modal } from 'react-bootstrap';
 
 interface DeleteConfirmationModalProps {
   show: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: () => Promise<void> | void;
   title?: string;
   message?: string;
   confirmText?: string;
@@ -19,6 +20,21 @@ export default function DeleteConfirmationModal({
   confirmText = 'Yes, Delete',
   cancelText = 'Cancel',
 }: DeleteConfirmationModalProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!show) setIsDeleting(false);
+  }, [show]);
+
+  const handleConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      await onConfirm();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Modal show={show} onHide={onClose} centered>
       <Modal.Body className="text-center">
@@ -28,11 +44,11 @@ export default function DeleteConfirmationModal({
         <h4 className="mb-3">{title}</h4>
         <p>{message}</p>
         <div className="d-flex justify-content-center mt-3">
-          <Button variant="light" className="me-3" onClick={onClose}>
+          <Button variant="light" className="me-3" onClick={onClose} disabled={isDeleting}>
             {cancelText}
           </Button>
-          <Button variant="danger" onClick={onConfirm}>
-            {confirmText}
+          <Button variant="danger" onClick={handleConfirm} disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : confirmText}
           </Button>
         </div>
       </Modal.Body>
