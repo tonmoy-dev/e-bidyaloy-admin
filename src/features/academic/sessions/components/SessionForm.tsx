@@ -44,7 +44,7 @@ export default function SessionForm({ defaultValues, mode, onSubmit }: SessionFo
           <div className="mb-3">
             <label className="form-label">Start Date</label>
             <input
-              type="text"
+              type="date"
               className={`form-control ${errors.start_date ? 'is-invalid' : ''}`}
               {...register('start_date')}
             />
@@ -57,7 +57,7 @@ export default function SessionForm({ defaultValues, mode, onSubmit }: SessionFo
           <div className="mb-3">
             <label className="form-label">End Date</label>
             <input
-              type="text"
+              type="date"
               className={`form-control ${errors.end_date ? 'is-invalid' : ''}`}
               {...register('end_date')}
             />
