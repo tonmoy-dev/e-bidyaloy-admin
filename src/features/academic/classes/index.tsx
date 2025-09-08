@@ -129,7 +129,10 @@ const Classes = () => {
 
   const handleClassDelete = async () => {
     const response = await deleteClass(selectedId ?? -1);
-    console.log('response', response);
+    if (!response?.data) {
+      setActiveModal(null);
+      setSelectedId(null);
+    }
   };
 
   if (isLoading) {

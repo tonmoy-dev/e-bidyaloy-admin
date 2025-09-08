@@ -134,7 +134,10 @@ const Sessions = () => {
 
   const handleSessionDelete = async () => {
     const response = await deleteSession(selectedId ?? -1);
-    console.log('response', response);
+    if (!response?.data) {
+      setActiveModal(null);
+      setSelectedId(null);
+    }
   };
 
   if (isLoading) {
