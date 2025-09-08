@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { toast, ToastContainer } from 'react-toastify';
+import { toast } from 'react-toastify';
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
 import PageHeader from '../../../shared/components/layout/PageHeader';
@@ -268,8 +268,6 @@ const Classes = () => {
           title="Delete Item"
           message="Do you really want to delete? This action cannot be undone."
         />
-
-        <ToastContainer />
       </>
     </div>
   );
