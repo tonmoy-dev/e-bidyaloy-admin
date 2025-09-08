@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
 import PageHeader from '../../../shared/components/layout/PageHeader';
@@ -122,10 +123,14 @@ const Sessions = () => {
     try {
       if (mode === 'add') {
         const response = await createSession(data);
-        console.log('response', response);
+        if (response?.data) {
+          toast.success('Session created successfully');
+        }
       } else if (mode === 'edit' && sessionDetails?.id) {
         const response = await updateSession({ id: sessionDetails?.id, data: data });
-        console.log('response', response);
+        if (response?.data) {
+          toast.success('Session updated successfully');
+        }
       }
     } catch (error) {
       console.log('error', error);
@@ -135,6 +140,7 @@ const Sessions = () => {
   const handleSessionDelete = async () => {
     const response = await deleteSession(selectedId ?? -1);
     if (!response?.data) {
+      toast.success('Session deleted successfully');
       setActiveModal(null);
       setSelectedId(null);
     }
@@ -268,6 +274,8 @@ const Sessions = () => {
           title="Delete Item"
           message="Do you really want to delete? This action cannot be undone."
         />
+
+        <ToastContainer />
       </>
     </div>
   );

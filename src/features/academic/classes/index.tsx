@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { toast, ToastContainer } from 'react-toastify';
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
 import PageHeader from '../../../shared/components/layout/PageHeader';
@@ -113,14 +114,17 @@ const Classes = () => {
   const sortingOptions = ['Ascending', 'Descending'];
 
   const handleClassForm = async (data: ClassModel, mode: string) => {
-    console.log('class', data);
     try {
       if (mode === 'add') {
         const response = await createClass(data);
-        console.log('response', response);
+        if (response?.data) {
+          toast.success('Class created successfully');
+        }
       } else if (mode === 'edit' && classDetails?.id) {
         const response = await updateClass({ id: classDetails?.id, data: data });
-        console.log('response', response);
+        if (response?.data) {
+          toast.success('Class updated successfully');
+        }
       }
     } catch (error) {
       console.log('error', error);
@@ -130,6 +134,7 @@ const Classes = () => {
   const handleClassDelete = async () => {
     const response = await deleteClass(selectedId ?? -1);
     if (!response?.data) {
+      toast.success('Class deleted successfully');
       setActiveModal(null);
       setSelectedId(null);
     }
@@ -263,6 +268,8 @@ const Classes = () => {
           title="Delete Item"
           message="Do you really want to delete? This action cannot be undone."
         />
+
+        <ToastContainer />
       </>
     </div>
   );
