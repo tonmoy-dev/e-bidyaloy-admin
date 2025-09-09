@@ -1571,3 +1571,14 @@ body.app-chat {
     border: 1px solid #1b1632 !important;
   }
 }
+
+
+/* modal-custom.css or global CSS */
+.modal-md .modal-dialog {
+  max-width: 600px;
+  /* your desired width */
+  width: 100%;
+  /* responsive */
+  margin: 1.75rem auto;
+  /* keeps it centered */
+}

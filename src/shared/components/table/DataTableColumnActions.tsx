@@ -4,36 +4,36 @@ export default function DataTableColumnActions({
   showViewAction = true,
   showEditAction = true,
   showDeleteAction = true,
-  viewActionId,
-  editActionId,
+  onViewButtonClick,
+  onEditButtonClick,
+  onDeleteButtonClick,
 }: {
   showViewAction?: boolean;
   showEditAction?: boolean;
   showDeleteAction?: boolean;
-  viewActionId?: string;
-  editActionId?: string;
+  onViewButtonClick?: () => void;
+  onEditButtonClick?: () => void;
+  onDeleteButtonClick?: () => void;
 }) {
   return (
     <div className="d-flex align-items-center justify-content-center gap-2">
-      {showViewAction && viewActionId && (
+      {showViewAction && (
         <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip-top">View</Tooltip>}>
           <button
             type="button"
             className="btn btn-outline-light bg-white btn-icon me-1"
-            data-bs-toggle="modal"
-            data-bs-target={`#${viewActionId}`}
+            onClick={onViewButtonClick}
           >
             <i className="ti ti-eye" />
           </button>
         </OverlayTrigger>
       )}
-      {showEditAction && editActionId && (
+      {showEditAction && (
         <OverlayTrigger placement="top" overlay={<Tooltip id="tooltip-top">Edit</Tooltip>}>
           <button
             type="button"
             className="btn btn-outline-light bg-white btn-icon me-1"
-            data-bs-toggle="modal"
-            data-bs-target={`#${editActionId}`}
+            onClick={onEditButtonClick}
           >
             <i className="ti ti-edit-circle" />
           </button>
@@ -45,8 +45,7 @@ export default function DataTableColumnActions({
           <button
             type="button"
             className="btn btn-outline-light bg-white btn-icon me-1"
-            data-bs-toggle="modal"
-            data-bs-target="#delete-modal"
+            onClick={onDeleteButtonClick}
           >
             <i className="ti ti-trash-x" />
           </button>

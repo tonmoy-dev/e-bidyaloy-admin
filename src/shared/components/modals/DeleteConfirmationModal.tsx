@@ -1,35 +1,57 @@
+import { useEffect, useState } from 'react';
+import { Button, Modal } from 'react-bootstrap';
+
+interface DeleteConfirmationModalProps {
+  show: boolean;
+  onClose: () => void;
+  onConfirm: () => Promise<void> | void;
+  title?: string;
+  message?: string;
+  confirmText?: string;
+  cancelText?: string;
+}
+
 export default function DeleteConfirmationModal({
-  onDeleteConfirm,
-  onDeleteCancel,
-}: {
-  onDeleteConfirm?: () => void;
-  onDeleteCancel?: () => void;
-}) {
+  show,
+  onClose,
+  onConfirm,
+  title = 'Confirm Deletion',
+  message = 'Are you sure you want to delete this item? This action cannot be undone.',
+  confirmText = 'Yes, Delete',
+  cancelText = 'Cancel',
+}: DeleteConfirmationModalProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    if (!show) setIsDeleting(false);
+  }, [show]);
+
+  const handleConfirm = async () => {
+    try {
+      setIsDeleting(true);
+      await onConfirm();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <div className="modal fade" id="delete-modal">
-      <div className="modal-dialog modal-dialog-centered">
-        <div className="modal-content">
-          <div className="modal-body text-center">
-            <span className="delete-icon">
-              <i className="ti ti-trash-x" />
-            </span>
-            <h4>Confirm Deletion</h4>
-            <p>You want to delete all the marked items, this cant be undone once you delete.</p>
-            <div className="d-flex justify-content-center">
-              <button
-                onClick={onDeleteCancel}
-                className="btn btn-light me-3"
-                data-bs-dismiss="modal"
-              >
-                Cancel
-              </button>
-              <button onClick={onDeleteConfirm} className="btn btn-danger" data-bs-dismiss="modal">
-                Yes, Delete
-              </button>
-            </div>
-          </div>
+    <Modal show={show} onHide={onClose} centered>
+      <Modal.Body className="text-center">
+        <span className="delete-icon mb-3 d-block">
+          <i className="ti ti-trash-x fs-1 text-danger" />
+        </span>
+        <h4 className="mb-3">{title}</h4>
+        <p>{message}</p>
+        <div className="d-flex justify-content-center mt-3">
+          <Button variant="light" className="me-3" onClick={onClose} disabled={isDeleting}>
+            {cancelText}
+          </Button>
+          <Button variant="danger" onClick={handleConfirm} disabled={isDeleting}>
+            {isDeleting ? 'Deleting...' : confirmText}
+          </Button>
         </div>
-      </div>
-    </div>
+      </Modal.Body>
+    </Modal>
   );
 }

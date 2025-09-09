@@ -16,26 +16,26 @@ import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
 import PageLoader from '../../../shared/components/utils/PageLoader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
-import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
-import ClassDetailsView from './components/ClassDetailsView';
-import ClassForm from './components/ClassForm';
-import { useClassById } from './hooks/useClassById';
-import { useClasses } from './hooks/useClasses';
-import { useClassMutations } from './hooks/useClassMutations';
-import type { ClassModel } from './models/class.model';
+import SessionDetailsView from './components/SessionDetailsView';
+import SessionForm from './components/SessionForm';
+import { useSessionById } from './hooks/useSessionById';
+import { useSessionMutations } from './hooks/useSessionMutations';
+import { useSessions } from './hooks/useSessions';
+import type { SessionModel } from './models/session.model';
+const page = 1;
 
-const Classes = () => {
-  const page = 1;
+const Sessions = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
-  const authData = useAuth();
-  const { classes, isLoading } = useClasses(page);
-  const { classDetails } = useClassById(selectedId ?? -1);
-  const { createClass, updateClass, deleteClass } = useClassMutations();
-  const data = classes?.results;
+  // const authData = useAuth();
+
+  const { sessions, isLoading } = useSessions(page);
+  const { sessionDetails } = useSessionById(selectedId ?? -1);
+  const { createSession, updateSession, deleteSession } = useSessionMutations();
+
+  const data = sessions?.results;
   const route = all_routes;
-  console.log('authData', authData);
 
   const columns = [
     {
@@ -44,18 +44,23 @@ const Classes = () => {
       render: (_: TableData, __: TableData, index: number) => (page - 1) * 10 + index + 1,
     },
     {
-      title: 'Class',
+      title: 'Name',
       align: 'center',
       render: (record: TableData) => record?.name,
     },
     {
-      title: 'Academic year',
+      title: 'Start Date',
       align: 'center',
-      render: (record: TableData) => record?.academic_year_name,
+      render: (record: TableData) => record?.start_date,
+    },
+    {
+      title: 'End Date',
+      align: 'center',
+      render: (record: TableData) => record?.end_date,
     },
     {
       title: 'Status',
-      dataIndex: 'is_active',
+      dataIndex: 'is_current',
       align: 'center',
       render: (text: string) => (
         <>
@@ -72,6 +77,7 @@ const Classes = () => {
           )}
         </>
       ),
+      sorter: (a: TableData) => (a.is_current ? 1 : 0),
     },
     {
       title: 'Action',
@@ -102,7 +108,7 @@ const Classes = () => {
     { label: 'Inactive', value: 'inactive' },
   ];
 
-  const classFilters: FilterConfig[] = [
+  const sessionFilters: FilterConfig[] = [
     {
       key: 'status',
       label: 'Status',
@@ -113,17 +119,17 @@ const Classes = () => {
 
   const sortingOptions = ['Ascending', 'Descending'];
 
-  const handleClassForm = async (data: ClassModel, mode: string) => {
+  const handleSessionForm = async (data: SessionModel, mode: string) => {
     try {
       if (mode === 'add') {
-        const response = await createClass(data);
+        const response = await createSession(data);
         if (response?.data) {
-          toast.success('Class created successfully');
+          toast.success('Session created successfully');
         }
-      } else if (mode === 'edit' && classDetails?.id) {
-        const response = await updateClass({ id: classDetails?.id, data: data });
+      } else if (mode === 'edit' && sessionDetails?.id) {
+        const response = await updateSession({ id: sessionDetails?.id, data: data });
         if (response?.data) {
-          toast.success('Class updated successfully');
+          toast.success('Session updated successfully');
         }
       }
     } catch (error) {
@@ -131,10 +137,10 @@ const Classes = () => {
     }
   };
 
-  const handleClassDelete = async () => {
-    const response = await deleteClass(selectedId ?? -1);
+  const handleSessionDelete = async () => {
+    const response = await deleteSession(selectedId ?? -1);
     if (!response?.data) {
-      toast.success('Class deleted successfully');
+      toast.success('Session deleted successfully');
       setActiveModal(null);
       setSelectedId(null);
     }
@@ -150,13 +156,13 @@ const Classes = () => {
         <div className="content">
           {/* Page Header */}
           <PageHeader
-            title="Classes"
+            title="Sessions"
             breadcrumb={[
               { label: 'Dashboard', path: `${route.adminDashboard}` },
-              { label: 'Classes', path: '#' },
-              { label: 'All Classes' },
+              { label: 'Sessions', path: '#' },
+              { label: 'All Sessions' },
             ]}
-            addButtonLabel="Add Class"
+            addButtonLabel="Add Session"
             onAddClick={() => {
               setActiveModal('add');
             }}
@@ -170,7 +176,7 @@ const Classes = () => {
               <DataTableHeader
                 filters={
                   <TableFilter
-                    filters={classFilters}
+                    filters={sessionFilters}
                     onApply={(filters) => console.log('Apply:', filters)}
                     onReset={(filters) => console.log('Reset:', filters)}
                   />
@@ -190,40 +196,40 @@ const Classes = () => {
       </div>
 
       <>
-        {/* Add Classes */}
+        {/* Add Sessions */}
         <DataModal
           show={activeModal === MODAL_TYPE.ADD}
           onClose={() => setActiveModal(null)}
           size="md"
-          modalTitle="Add Class"
+          modalTitle="Add Session"
           body={
-            <ClassForm
+            <SessionForm
               mode="add"
               onActiveModal={setActiveModal}
               onSubmit={async (data) => {
-                await handleClassForm(data, 'add');
+                await handleSessionForm(data, 'add');
                 setActiveModal(null);
               }}
             />
           }
         />
 
-        {/* Edit Classes */}
-        {classDetails && (
+        {/* Edit Sessions */}
+        {sessionDetails && (
           <DataModal
             show={activeModal === MODAL_TYPE.EDIT}
             onClose={() => {
               setActiveModal(null);
               setSelectedId(null);
             }}
-            modalTitle="Edit Class"
+            modalTitle="Edit Session"
             body={
-              <ClassForm
+              <SessionForm
+                defaultValues={sessionDetails}
                 mode="edit"
-                defaultValues={classDetails}
                 onActiveModal={setActiveModal}
                 onSubmit={async (data) => {
-                  await handleClassForm(data, 'edit');
+                  await handleSessionForm(data, 'edit');
                   setActiveModal(null);
                 }}
               />
@@ -231,17 +237,17 @@ const Classes = () => {
           />
         )}
 
-        {/* View Classes */}
-        {classDetails && (
+        {/* View Sessions */}
+        {sessionDetails && (
           <DataModal
             show={activeModal === MODAL_TYPE.VIEW}
             onClose={() => {
               setActiveModal(null);
               setSelectedId(null);
             }}
-            modalTitle="Class Details"
+            modalTitle="Session Details"
             header={
-              classDetails?.is_active ? (
+              sessionDetails?.is_current ? (
                 <span className="badge badge-soft-success ms-2">
                   <i className="ti ti-circle-filled me-1 fs-5" />
                   Active
@@ -253,7 +259,7 @@ const Classes = () => {
                 </span>
               )
             }
-            body={<ClassDetailsView classData={classDetails} />}
+            body={sessionDetails && <SessionDetailsView sessionData={sessionDetails} />}
           />
         )}
 
@@ -264,7 +270,7 @@ const Classes = () => {
             setActiveModal(null);
             setSelectedId(null);
           }}
-          onConfirm={handleClassDelete}
+          onConfirm={handleSessionDelete}
           title="Delete Item"
           message="Do you really want to delete? This action cannot be undone."
         />
@@ -273,4 +279,4 @@ const Classes = () => {
   );
 };
 
-export default Classes;
+export default Sessions;

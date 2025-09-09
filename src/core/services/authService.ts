@@ -1,6 +1,4 @@
-import { API_ENDPOINTS } from '../constants/api';
-import type { LoginCredentials, LoginResponse, User } from '../store/types';
-import { baseApi } from './baseApi';
+import type { LoginResponse, User } from '../store/types';
 
 export interface RegistrationData {
   // Backend required fields
@@ -41,164 +39,29 @@ export interface RegistrationResponse {
 }
 
 export interface VerificationData {
-  token: string;
-  code?: string;
+  email: string;
+  code: string;
 }
 
-export const authApi = baseApi.injectEndpoints({
-  endpoints: (builder) => ({
-    register: builder.mutation<RegistrationResponse, RegistrationData>({
-      query: (data) => ({
-        url: API_ENDPOINTS.AUTH.REGISTER,
-        method: 'POST',
-        body: data,
-      }),
-      invalidatesTags: ['Auth', 'User'],
-      async onQueryStarted(_, { queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          console.log('Registration successful:', data);
-        } catch (error) {
-          console.error('Registration failed:', error);
-        }
-      },
-    }),
+export interface VerificationResponse {
+  message: string;
+}
 
-    login: builder.mutation<LoginResponse, LoginCredentials>({
-      query: (credentials) => ({
-        url: API_ENDPOINTS.AUTH.LOGIN,
-        method: 'POST',
-        body: {
-          email: credentials.username,
-          password: credentials.password,
-        },
-      }),
-      invalidatesTags: ['Auth', 'User'],
-      async onQueryStarted(credentials, { queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          // Store user data based on rememberMe preference
-          const storage = credentials.rememberMe ? localStorage : sessionStorage;
-          storage.setItem('user', JSON.stringify(data));
-        } catch (error) {
-          // Handle login error
-          console.error('Login failed:', error);
-        }
-      },
-    }),
+export interface ResendVerificationData {
+  email: string;
+}
 
-    logout: builder.mutation<void, void>({
-      query: () => ({
-        url: API_ENDPOINTS.AUTH.LOGOUT,
-        method: 'POST',
-      }),
-      invalidatesTags: ['Auth', 'User'],
-      async onQueryStarted(_, { queryFulfilled }) {
-        try {
-          await queryFulfilled;
-        } catch (error) {
-          console.error('Logout API failed:', error);
-        } finally {
-          // Clear stored user data regardless of API response
-          localStorage.removeItem('user');
-          sessionStorage.removeItem('user');
-        }
-      },
-    }),
+export interface ResendVerificationResponse {
+  message: string;
+}
 
-    refreshToken: builder.mutation<{ access: string }, void>({
-      query: () => ({
-        url: API_ENDPOINTS.AUTH.REFRESH,
-        method: 'POST',
-      }),
-      invalidatesTags: ['Auth'],
-    }),
-
-    getCurrentUser: builder.query<User, void>({
-      query: () => API_ENDPOINTS.USER.PROFILE,
-      providesTags: ['User'],
-    }),
-
-    updateProfile: builder.mutation<User, Partial<User>>({
-      query: (userData) => ({
-        url: API_ENDPOINTS.USER.PROFILE,
-        method: 'PUT',
-        body: userData,
-      }),
-      invalidatesTags: ['User'],
-    }),
-
-    changePassword: builder.mutation<void, { old_password: string; new_password: string }>({
-      query: (data) => ({
-        url: API_ENDPOINTS.USER.CHANGE_PASSWORD,
-        method: 'POST',
-        body: data,
-      }),
-    }),
-
-    forgotPassword: builder.mutation<void, { email: string }>({
-      query: ({ email }) => ({
-        url: API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
-        method: 'POST',
-        body: { email },
-      }),
-    }),
-
-    resetPassword: builder.mutation<void, { token: string; password: string }>({
-      query: (data) => ({
-        url: API_ENDPOINTS.AUTH.RESET_PASSWORD,
-        method: 'POST',
-        body: data,
-      }),
-    }),
-
-    verifyEmail: builder.mutation<void, VerificationData>({
-      query: (data) => ({
-        url: API_ENDPOINTS.AUTH.VERIFY_EMAIL,
-        method: 'POST',
-        body: data,
-      }),
-    }),
-
-    // Additional verification endpoint if needed for registration
-    verifyRegistration: builder.mutation<void, { code: string; email: string }>({
-      query: (data) => ({
-        url: API_ENDPOINTS.AUTH.VERIFY_EMAIL,
-        method: 'POST',
-        body: data,
-      }),
-    }),
-
-    // Resend verification code
-    resendVerificationCode: builder.mutation<void, { email: string }>({
-      query: ({ email }) => ({
-        url: API_ENDPOINTS.AUTH.RESEND_VERIFICATION,
-        method: 'POST',
-        body: { email },
-      }),
-    }),
-  }),
-});
-
-export const {
-  useRegisterMutation,
-  useLoginMutation,
-  useLogoutMutation,
-  useRefreshTokenMutation,
-  useGetCurrentUserQuery,
-  useUpdateProfileMutation,
-  useChangePasswordMutation,
-  useForgotPasswordMutation,
-  useResetPasswordMutation,
-  useVerifyEmailMutation,
-  useVerifyRegistrationMutation,
-  useResendVerificationCodeMutation,
-} = authApi;
-
+// Auth utilities that don't depend on RTK Query
 export const authUtils = {
   isAuthenticated(): boolean {
     const user = localStorage.getItem('user') || sessionStorage.getItem('user');
-    return !!user;
+    const accessToken =
+      localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    return !!(user && accessToken);
   },
 
   getStoredUser(): User | null {
@@ -210,14 +73,52 @@ export const authUtils = {
       }
     } catch (error) {
       console.error('Failed to parse stored user:', error);
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('user');
+      this.clearStoredAuth();
     }
     return null;
   },
 
+  getStoredTokens(): { accessToken: string | null; refreshToken: string | null } {
+    const accessToken =
+      localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
+    const refreshToken =
+      localStorage.getItem('refresh_token') || sessionStorage.getItem('refresh_token');
+    return { accessToken, refreshToken };
+  },
+
+  storeAuthData(data: LoginResponse, rememberMe: boolean = false): void {
+    const storage = rememberMe ? localStorage : sessionStorage;
+
+    // Store the complete user data
+    storage.setItem('user', JSON.stringify(data));
+
+    // Extract and store tokens separately for baseApi to use
+    if (data.access) {
+      storage.setItem('access_token', data.access);
+    }
+    if (data.refresh) {
+      storage.setItem('refresh_token', data.refresh);
+    }
+  },
+
+  updateStoredTokens(access: string, refresh?: string): void {
+    // Determine which storage was used originally
+    const useLocalStorage = !!localStorage.getItem('access_token');
+    const storage = useLocalStorage ? localStorage : sessionStorage;
+
+    storage.setItem('access_token', access);
+    if (refresh) {
+      storage.setItem('refresh_token', refresh);
+    }
+  },
+
   clearStoredAuth(): void {
+    // Clear from both storages to be safe
     localStorage.removeItem('user');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
     sessionStorage.removeItem('user');
+    sessionStorage.removeItem('access_token');
+    sessionStorage.removeItem('refresh_token');
   },
 };
