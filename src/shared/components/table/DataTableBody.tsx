@@ -28,6 +28,7 @@ const DataTableBody: React.FC<DatatableProps> = ({ columns, dataSource, Selectio
           className="table datanew dataTable no-footer"
           columns={columns}
           rowHoverable={false}
+          rowKey="id"
           dataSource={dataSource}
           pagination={{
             locale: { items_per_page: '' },
@@ -44,6 +45,7 @@ const DataTableBody: React.FC<DatatableProps> = ({ columns, dataSource, Selectio
           rowSelection={rowSelection}
           columns={columns}
           rowHoverable={false}
+          rowKey="id"
           dataSource={dataSource}
           pagination={{
             locale: { items_per_page: '' },
