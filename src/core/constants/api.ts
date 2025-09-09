@@ -31,5 +31,12 @@ export const API_ENDPOINTS = {
     UPDATE_BY_ID: '/api/v1/academic-years/',
     DELETE_BY_ID: '/api/v1/academic-years/',
     DETAILS_BY_ID: '/api/v1/academic-years/',
-  }
+  },
+  TEACHER: {
+    LIST: '/api/v1/teachers/',
+    CREATE: '/api/v1/teachers/',
+    UPDATE_BY_ID: '/api/v1/teachers/',
+    DELETE_BY_ID: '/api/v1/teachers/',
+    DETAILS_BY_ID: '/api/v1/teachers/',
+  },
 };
