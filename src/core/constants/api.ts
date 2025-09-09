@@ -1,7 +1,4 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
-// export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://212.28.189.126:8021';
-
-// VITE_API_BASE_URL = http://212.28.189.126:8021
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://212.28.189.126:8021';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -22,17 +19,17 @@ export const API_ENDPOINTS = {
     LIST: '/pokemon',
   },
   CLASS: {
-    LIST: '/api/v1/classes/',
-    CREATE: '/api/v1/classes/',
-    UPDATE_BY_ID: '/api/v1/classes/',
-    DELETE_BY_ID: '/api/v1/classes/',
-    DETAILS_BY_ID: '/api/v1/classes/',
+    LIST: (params?: Record<string, unknown>) => ({ url: `/api/v1/classes/`, method: 'GET', params }),
+    CREATE: () => ({ url: '/api/v1/classes/', method: 'POST' }),
+    DETAILS: (id: number | string) => ({ url: `/api/v1/classes/${id}`, method: 'GET' }),
+    UPDATE: (id: number | string) => ({ url: `/api/v1/classes/${id}`, method: 'PUT' }),
+    DELETE: (id: number | string) => ({ url: `/api/v1/classes/${id}`, method: 'DELETE' }),
   },
   SESSION: {
-    LIST: '/api/v1/academic-years/',
-    CREATE: '/api/v1/academic-years/',
-    UPDATE_BY_ID: '/api/v1/academic-years/',
-    DELETE_BY_ID: '/api/v1/academic-years/',
-    DETAILS_BY_ID: '/api/v1/academic-years/',
-  }
+    LIST: (params?: Record<string, unknown>) => ({ url: `/api/v1/academic-years/`, method: 'GET', params }),
+    CREATE: () => ({ url: '/api/v1/academic-years/', method: 'POST' }),
+    DETAILS: (id: number | string) => ({ url: `/api/v1/academic-years/${id}`, method: 'GET' }),
+    UPDATE: (id: number | string) => ({ url: `/api/v1/academic-years/${id}`, method: 'PUT' }),
+    DELETE: (id: number | string) => ({ url: `/api/v1/academic-years/${id}`, method: 'DELETE' }),
+  },
 };

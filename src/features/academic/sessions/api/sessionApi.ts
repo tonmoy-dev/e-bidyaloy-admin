@@ -8,7 +8,7 @@ import type { PaginatedResponse, SessionModel } from "../models/session.model";
 export const sessionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSessions: builder.query<PaginatedResponse<SessionModel>, number | void>({
-      query: (page = 1) => `${API_ENDPOINTS.SESSION.LIST}?page=${page}`,
+      query: (page = 1) => API_ENDPOINTS.SESSION.LIST({ page }),
       providesTags: (result) =>
         result
           ? [
@@ -19,14 +19,13 @@ export const sessionApi = baseApi.injectEndpoints({
     }),
 
     getSessionById: builder.query<SessionModel, number>({
-      query: (id) => `${API_ENDPOINTS.SESSION.DETAILS_BY_ID}${id}/`,
+      query: (id) => API_ENDPOINTS.SESSION.DETAILS(id),
       providesTags: (_result, _error, id) => [{ type: 'Session', id }],
     }),
 
     createSession: builder.mutation<SessionModel, Partial<SessionModel>>({
       query: (newSession) => ({
-        url: API_ENDPOINTS.SESSION.CREATE,
-        method: 'POST',
+        ...API_ENDPOINTS.SESSION.CREATE(),
         body: newSession,
       }),
       invalidatesTags: [{ type: 'Session', id: 'LIST' }],
@@ -34,8 +33,7 @@ export const sessionApi = baseApi.injectEndpoints({
 
     updateSession: builder.mutation<SessionModel, { id: number; data: Partial<SessionModel> }>({
       query: ({ id, data }) => ({
-        url: `${API_ENDPOINTS.SESSION.UPDATE_BY_ID}${id}/`,
-        method: 'PUT',
+        ...API_ENDPOINTS.SESSION.UPDATE(id),
         body: data,
       }),
       invalidatesTags: (_result, _error, { id }) => [
@@ -45,10 +43,7 @@ export const sessionApi = baseApi.injectEndpoints({
     }),
 
     deleteSession: builder.mutation<void, number>({
-      query: (id) => ({
-        url: `${API_ENDPOINTS.SESSION.DELETE_BY_ID}${id}/`,
-        method: 'DELETE',
-      }),
+      query: (id) => API_ENDPOINTS.SESSION.DELETE(id),
       invalidatesTags: (_result, _error, id) => [
         { type: 'Session', id },
         { type: 'Session', id: 'LIST' },

@@ -8,7 +8,7 @@ import type { ClassModel, PaginatedResponse } from "../models/class.model";
 export const classApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getClasses: builder.query<PaginatedResponse<ClassModel>, number | void>({
-      query: (page = 1) => `${API_ENDPOINTS.CLASS.LIST}?page=${page}`,
+      query: (page = 1) => API_ENDPOINTS.CLASS.LIST({ page }),
       providesTags: (result) =>
         result
           ? [
@@ -19,14 +19,13 @@ export const classApi = baseApi.injectEndpoints({
     }),
 
     getClassById: builder.query<ClassModel, number>({
-      query: (id) => `${API_ENDPOINTS.CLASS.DETAILS_BY_ID}${id}/`,
+      query: (id) => API_ENDPOINTS.CLASS.DETAILS(id),
       providesTags: (_result, _error, id) => [{ type: 'Class', id }],
     }),
 
     createClass: builder.mutation<ClassModel, Partial<ClassModel>>({
       query: (newClass) => ({
-        url: API_ENDPOINTS.CLASS.CREATE,
-        method: 'POST',
+        ...API_ENDPOINTS.CLASS.CREATE(),
         body: newClass,
       }),
       invalidatesTags: [{ type: 'Class', id: 'LIST' }],
@@ -34,8 +33,7 @@ export const classApi = baseApi.injectEndpoints({
 
     updateClass: builder.mutation<ClassModel, { id: number; data: Partial<ClassModel> }>({
       query: ({ id, data }) => ({
-        url: `${API_ENDPOINTS.CLASS.UPDATE_BY_ID}${id}/`,
-        method: 'PUT',
+        ...API_ENDPOINTS.CLASS.UPDATE(id),
         body: data,
       }),
       invalidatesTags: (_result, _error, { id }) => [
@@ -46,8 +44,7 @@ export const classApi = baseApi.injectEndpoints({
 
     deleteClass: builder.mutation<void, number>({
       query: (id) => ({
-        url: `${API_ENDPOINTS.CLASS.DELETE_BY_ID}${id}/`,
-        method: 'DELETE',
+        ...API_ENDPOINTS.CLASS.DELETE(id),
       }),
       invalidatesTags: (_result, _error, id) => [
         { type: 'Class', id },
