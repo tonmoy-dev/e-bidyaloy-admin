@@ -290,6 +290,10 @@ export interface TableData {
   key: string;
   is_current: boolean;
   academic_year_name: string;
+  sections: any[];
+  class_teacher: string;
+  teacher: string;
+  is_active: boolean;
 }
 export interface status {
   text: string;

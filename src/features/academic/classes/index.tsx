@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
@@ -14,28 +14,39 @@ import TableFilter, {
 import DataTableFooter from '../../../shared/components/table/DataTableFooter';
 import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
-import PageLoader from '../../../shared/components/utils/PageLoader';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
 import ClassDetailsView from './components/ClassDetailsView';
 import ClassForm from './components/ClassForm';
+import { classDataSample } from './data/class';
 import { useClassById } from './hooks/useClassById';
-import { useClasses } from './hooks/useClasses';
 import { useClassMutations } from './hooks/useClassMutations';
-import type { ClassModel } from './models/class.model';
+import { type ClassModel, type SectionModel } from './models/class.model';
 
 const Classes = () => {
   const page = 1;
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const authData = useAuth();
-  const { classes, isLoading } = useClasses(page);
-  const { classDetails } = useClassById(selectedId ?? -1);
+  // const { classes, isLoading } = useClasses(page);
+  const { classDetails, isError: isClassError } = useClassById(selectedId ?? -1);
   const { createClass, updateClass, deleteClass } = useClassMutations();
-  const data = classes?.results;
+  // const data = classes?.results;
+  const data = classDataSample;
   const route = all_routes;
   console.log('authData', authData);
+
+  useEffect(() => {
+    if (isClassError) {
+      toast.error('Class data not found!');
+    }
+
+    return () => {
+      setActiveModal(null);
+      setSelectedId(null);
+    };
+  }, [isClassError]);
 
   const columns = [
     {
@@ -47,11 +58,41 @@ const Classes = () => {
       title: 'Class',
       align: 'center',
       render: (record: TableData) => record?.name,
+      sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
     },
     {
-      title: 'Academic year',
+      title: 'Section',
       align: 'center',
-      render: (record: TableData) => record?.academic_year_name,
+      render: (record: TableData) => {
+        return (
+          <div className="d-flex flex-column g-4">
+            {record?.sections?.map((section: SectionModel) => (
+              <p>{section.name}</p>
+            ))}
+          </div>
+        );
+      },
+      sorter: (a: TableData, b: TableData) => a.sections.length - b.sections.length,
+    },
+    {
+      title: 'Class Teacher',
+      align: 'center',
+      render: (record: TableData) => record?.class_teacher,
+      sorter: (a: TableData, b: TableData) => a.class_teacher.length - b.class_teacher.length,
+    },
+    {
+      title: 'Section Teacher',
+      align: 'center',
+      render: (record: TableData) => {
+        return (
+          <div className="d-flex flex-column g-4">
+            {record?.sections?.map((section: SectionModel) => (
+              <p>{section.teacher}</p>
+            ))}
+          </div>
+        );
+      },
+      sorter: (a: TableData, b: TableData) => a.sections.length - b.sections.length,
     },
     {
       title: 'Status',
@@ -140,9 +181,9 @@ const Classes = () => {
     }
   };
 
-  if (isLoading) {
-    return <PageLoader />;
-  }
+  // if (isLoading) {
+  //   return <PageLoader />;
+  // }
   return (
     <div>
       {/* Page Wrapper */}

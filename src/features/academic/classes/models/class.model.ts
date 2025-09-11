@@ -1,9 +1,9 @@
 export interface ClassModel {
   id?: number;
   name: string;
-  is_active: boolean;
-  academic_year: string;
-  academic_year_name?: string;
+  class_teacher: string;
+  sections?: SectionModel[];
+  is_active?: boolean;
 }
 
 export interface PaginatedResponse<T> {
@@ -12,3 +12,19 @@ export interface PaginatedResponse<T> {
   previous: string | null;
   results: T[];
 }
+
+export interface SectionModel {
+  id?: number;
+  name: string;
+  teacher: string;
+  is_active?: boolean;
+}
+
+
+
+
+
+
+
+
+
