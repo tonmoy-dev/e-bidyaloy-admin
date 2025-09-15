@@ -5,7 +5,11 @@ import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import CommonSelect from '../../../../core/common/commonSelect';
-import { ContractTeacher, gender, status } from '../../../../core/common/selectoption/selectoption';
+import {
+  ContractTeacher,
+  Tgender,
+  status,
+} from '../../../../core/common/selectoption/selectoption';
 import TagInput from '../../../../core/common/Taginput';
 import { all_routes } from '../../../router/all_routes';
 import { useTeacherById } from '../hooks/useTeacherById';
@@ -239,6 +243,26 @@ const TeacherForm = () => {
                         </div>
                       </div>
 
+                      <div className="col-xxl col-xl-3 col-md-6">
+                        <div className="mb-3">
+                          <label className="form-label">User Name *</label>
+                          <Controller
+                            name="username"
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                type="text"
+                                className={`form-control ${errors.username ? 'is-invalid' : ''}`}
+                              />
+                            )}
+                          />
+                          {errors.username && (
+                            <div className="invalid-feedback">{errors.username.message}</div>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Phone */}
                       <div className="col-xxl col-xl-3 col-md-6">
                         <div className="mb-3">
@@ -327,7 +351,7 @@ const TeacherForm = () => {
                               <CommonSelect
                                 {...field}
                                 className={`select ${errors.gender ? 'is-invalid' : ''}`}
-                                options={gender}
+                                options={Tgender}
                               />
                             )}
                           />

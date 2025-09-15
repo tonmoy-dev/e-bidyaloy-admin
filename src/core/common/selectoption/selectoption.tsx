@@ -302,6 +302,10 @@ export const gender = [
   { value: 'Male', label: 'Male' },
   { value: 'Female', label: 'Female' },
 ];
+export const Tgender = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+];
 export const status = [
   { value: 'Active', label: 'Active' },
   { value: 'Inactive', label: 'Inactive' },
