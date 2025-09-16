@@ -19,8 +19,8 @@ import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
 import ClassDetailsView from './components/ClassDetailsView';
 import ClassForm from './components/ClassForm';
-import { classDataSample } from './data/class';
 import { useClassById } from './hooks/useClassById';
+import { useClasses } from './hooks/useClasses';
 import { useClassMutations } from './hooks/useClassMutations';
 import { type ClassModel, type SectionModel } from './models/class.model';
 
@@ -29,13 +29,15 @@ const Classes = () => {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const authData = useAuth();
-  // const { classes, isLoading } = useClasses(page);
+  const { classes, isLoading } = useClasses(page);
   const { classDetails, isError: isClassError } = useClassById(selectedId ?? -1);
   const { createClass, updateClass, deleteClass } = useClassMutations();
-  // const data = classes?.results;
-  const data = classDataSample;
+  const data = classes?.results;
+  // const data = classDataSample;
   const route = all_routes;
   console.log('authData', authData);
+
+  console.log('data', classes, isLoading);
 
   useEffect(() => {
     if (isClassError) {
@@ -77,8 +79,10 @@ const Classes = () => {
     {
       title: 'Class Teacher',
       align: 'center',
-      render: (record: TableData) => record?.class_teacher,
-      sorter: (a: TableData, b: TableData) => a.class_teacher.length - b.class_teacher.length,
+      render: (record: TableData) =>
+        record?.class_teacher
+          ? `${record?.class_teacher?.first_name} ${record?.class_teacher?.last_name}`
+          : '',
     },
     {
       title: 'Section Teacher',
@@ -87,12 +91,15 @@ const Classes = () => {
         return (
           <div className="d-flex flex-column g-4">
             {record?.sections?.map((section: SectionModel) => (
-              <p>{section.teacher}</p>
+              <p>
+                {section?.section_teacher
+                  ? `${section.section_teacher?.first_name} ${section.section_teacher?.last_name}`
+                  : ''}
+              </p>
             ))}
           </div>
         );
       },
-      sorter: (a: TableData, b: TableData) => a.sections.length - b.sections.length,
     },
     {
       title: 'Status',
@@ -235,8 +242,8 @@ const Classes = () => {
         <DataModal
           show={activeModal === MODAL_TYPE.ADD}
           onClose={() => setActiveModal(null)}
-          size="md"
-          modalTitle="Add Class"
+          size="lg"
+          modalTitle="Add Class with Sections"
           body={
             <ClassForm
               mode="add"

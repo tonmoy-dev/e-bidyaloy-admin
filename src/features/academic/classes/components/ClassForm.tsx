@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Controller, useForm } from 'react-hook-form';
+import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
 import { useSessions } from '../../sessions/hooks/useSessions';
 import type { ClassModel } from '../models/class.model';
@@ -14,7 +14,7 @@ interface ClassFormProps {
 
 export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormProps) {
   const { sessions } = useSessions(1);
-  const academicYears = sessions?.results;
+  const teachers = sessions?.results;
   const {
     handleSubmit,
     control,
@@ -22,80 +22,180 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
   } = useForm<ClassModel>({
     resolver: yupResolver(classSchema),
     defaultValues: {
-      is_active: defaultValues?.is_active ?? true,
-      academic_year: defaultValues?.academic_year ?? '',
       name: defaultValues?.name ?? '',
+      class_teacher_id: defaultValues?.class_teacher_id ?? '',
+      is_active: defaultValues?.is_active ?? true,
+      sections: [{ name: '', section_teacher_id: '', is_active: true }],
     },
   });
 
-  const yearOptions =
-    academicYears?.map((session) => ({
-      label: session.name,
-      value: String(session.id),
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'sections',
+  });
+
+  const teacherOptions =
+    teachers?.map((teacher) => ({
+      label: teacher.name,
+      value: String(teacher.id),
     })) || [];
 
   return (
     <form id="class-form" onSubmit={handleSubmit(onSubmit)}>
-      <div className="row">
+      <div className="row g-3">
         <div className="col-md-12">
-          {/* Class Name */}
-          <div className="mb-3">
-            <label className="form-label">Class Name</label>
-            <Controller
-              name="name"
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  className={`form-control ${errors.name ? 'is-invalid' : ''}`}
-                  {...field}
+          <h4 className="mb-2">Class</h4>
+          <div className="border rounded p-3 mb-3">
+            <div className="row align-items-center ">
+              {/* Class Name */}
+              <div className="col-md-4">
+                <label className="form-label">Class Name</label>
+                <Controller
+                  name="name"
+                  control={control}
+                  render={({ field }) => (
+                    <input
+                      type="text"
+                      className={`form-control ${errors.name ? 'is-invalid' : ''}`}
+                      {...field}
+                    />
+                  )}
                 />
-              )}
-            />
-            {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
-          </div>
-
-          {/* Academic Year */}
-          <div className="mb-3">
-            <label className="form-label">Academic Year</label>
-            <Controller
-              name="academic_year"
-              control={control}
-              render={({ field }) => (
-                <SelectDropDown
-                  value={yearOptions.find((o) => o.value === field.value) ?? null}
-                  options={yearOptions}
-                  onChange={(option) => field.onChange(option?.value || '')}
+                {errors.name && <div className="invalid-feedback">{errors.name.message}</div>}
+              </div>
+              {/* Class Teacher */}
+              <div className="col-md-4">
+                <label className="form-label">Class Teacher</label>
+                <Controller
+                  name="class_teacher"
+                  control={control}
+                  render={({ field }) => (
+                    <SelectDropDown
+                      value={teacherOptions.find((o) => o.value === field.value) ?? null}
+                      options={teacherOptions}
+                      onChange={(option) => field.onChange(option?.value || '')}
+                    />
+                  )}
                 />
-              )}
-            />
-            {errors.academic_year && (
-              <div className="invalid-feedback d-block">{errors.academic_year.message}</div>
-            )}
-          </div>
-
-          {/* Status */}
-          <div className="d-flex align-items-center justify-content-start gap-3">
-            <div className="status-title">
-              <h5>Status</h5>
-            </div>
-            <div className="form-check form-switch">
-              <Controller
-                name="is_active"
-                control={control}
-                render={({ field }) => (
-                  <input
-                    type="checkbox"
-                    className="form-check-input"
-                    role="switch"
-                    id="switch-sm"
-                    checked={field.value}
-                    onChange={(e) => field.onChange(e.target.checked)}
-                  />
+                {errors.class_teacher && (
+                  <div className="invalid-feedback d-block">{errors.class_teacher.message}</div>
                 )}
-              />
+              </div>
+              {/* Status */}
+              <div className="col-md-4">
+                <div className="d-flex align-items-center justify-content-start gap-3">
+                  <div className="status-title">
+                    <h5>Status</h5>
+                  </div>
+                  <div className="form-check form-switch">
+                    <Controller
+                      name="is_active"
+                      control={control}
+                      render={({ field }) => (
+                        <input
+                          type="checkbox"
+                          className="form-check-input"
+                          role="switch"
+                          id="switch-sm"
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                        />
+                      )}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="col-md-12">
+          <h4 className="mb-2 d-flex align-items-center gap-2">
+            Sections
+            <button
+              type="button"
+              className="btn btn-sm btn-success"
+              onClick={() => append({ name: '', section_teacher_id: '', is_active: true })}
+            >
+              + Add More Section
+            </button>
+          </h4>
+
+          {fields.map((section, index) => (
+            <div key={section.id} className="border rounded p-3 mb-3">
+              <div className="row align-items-center">
+                {/* Section Name */}
+                <div className="col-md-4">
+                  <label className="form-label">Section Name</label>
+                  <Controller
+                    name={`sections.${index}.name`}
+                    control={control}
+                    render={({ field }) => (
+                      <input
+                        type="text"
+                        className={`form-control ${
+                          errors.sections?.[index]?.name ? 'is-invalid' : ''
+                        }`}
+                        {...field}
+                      />
+                    )}
+                  />
+                  {errors.sections?.[index]?.name && (
+                    <div className="invalid-feedback">{errors.sections[index].name.message}</div>
+                  )}
+                </div>
+                {/* Section Teacher */}
+                <div className="col-md-4">
+                  <label className="form-label">Section Teacher</label>
+                  <Controller
+                    name={`sections.${index}.section_teacher_id`}
+                    control={control}
+                    render={({ field }) => (
+                      <SelectDropDown
+                        value={teacherOptions.find((o) => o.value === field.value) ?? null}
+                        options={teacherOptions}
+                        onChange={(option) => field.onChange(option?.value || '')}
+                      />
+                    )}
+                  />
+                </div>
+                {/* Section Status + Remove */}
+                <div className="col-md-4">
+                  <div className="d-flex align-items-center justify-content-center gap-3">
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="status-title">
+                        <h5>Status</h5>
+                      </div>
+                      <div className="form-check form-switch">
+                        <Controller
+                          name={`sections.${index}.is_active`}
+                          control={control}
+                          render={({ field }) => (
+                            <input
+                              type="checkbox"
+                              className="form-check-input"
+                              role="switch"
+                              id="switch-sm2"
+                              checked={field.value}
+                              onChange={(e) => field.onChange(e.target.checked)}
+                            />
+                          )}
+                        />
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-danger"
+                      onClick={() => remove(index)}
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="col-md-12">
           {/* Submit */}
           <div className="mt-3">
             <button type="submit" className="btn btn-primary" disabled={isSubmitting}>

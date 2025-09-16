@@ -13,6 +13,7 @@ export interface SelectProps {
   styles?: any;
   value?: Option | null;
   onChange?: (option: Option | null) => void;
+  placeholder?: string | null;
 }
 
 const SelectDropDown: React.FC<SelectProps> = ({
@@ -22,6 +23,7 @@ const SelectDropDown: React.FC<SelectProps> = ({
   styles,
   value,
   onChange,
+  placeholder = 'Select',
 }) => {
   const [selectedOption, setSelectedOption] = useState<Option | null>(defaultValue || null);
 
@@ -43,7 +45,7 @@ const SelectDropDown: React.FC<SelectProps> = ({
       options={options}
       value={value ?? selectedOption} // controlled (if provided) OR internal
       onChange={handleChange}
-      placeholder="Select"
+      placeholder={placeholder}
     />
   );
 };

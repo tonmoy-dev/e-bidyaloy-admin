@@ -291,8 +291,8 @@ export interface TableData {
   is_current: boolean;
   academic_year_name: string;
   sections: any[];
-  class_teacher: string;
-  teacher: string;
+  class_teacher: any;
+  section_teacher: any;
   is_active: boolean;
 }
 export interface status {
