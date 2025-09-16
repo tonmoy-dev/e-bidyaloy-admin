@@ -3,7 +3,7 @@ import { DatePicker } from 'antd';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import CommonSelect from '../../../../core/common/commonSelect';
 import {
   ContractTeacher,
@@ -21,13 +21,19 @@ const TeacherForm = () => {
   const routes = all_routes;
   const navigate = useNavigate();
   const location = useLocation();
-  const { id } = useParams<{ id: string }>();
+  const [teacherId, setTeacherId] = useState<string | null>(null);
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [languagesKnown, setLanguagesKnown] = useState<string[]>([]);
 
-  // Hooks
-  const teacherId = id ? parseInt(id) : null;
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const id = searchParams.get('id');
+    if (id) {
+      setTeacherId(id);
+    }
+  }, [location]);
+
   const { teacherDetails, isLoading: isFetching } = useTeacherById(teacherId);
   const {
     createTeacher,
@@ -62,24 +68,48 @@ const TeacherForm = () => {
 
   // Check if it's edit mode and populate form
   useEffect(() => {
-    if (location.pathname === routes.editTeacher || id) {
+    if (location.pathname === routes.editTeacher && teacherId) {
       setIsEdit(true);
-      if (teacherDetails) {
-        // Populate form with teacher details
-        reset({
-          ...teacherDetails,
-          date_of_birth: teacherDetails.date_of_birth
-            ? dayjs(teacherDetails.date_of_birth).format('YYYY-MM-DD')
+      if (teacherDetails && teacherDetails.user) {
+        // Flatten the nested user data with teacher data
+        const flattenedData = {
+          // User fields
+          first_name: teacherDetails.user.first_name || '',
+          last_name: teacherDetails.user.last_name || '',
+          username: teacherDetails.user.username || '',
+          email: teacherDetails.user.email || '',
+          phone: teacherDetails.user.phone || '',
+          date_of_birth: teacherDetails.user.date_of_birth
+            ? dayjs(teacherDetails.user.date_of_birth).format('YYYY-MM-DD')
             : '',
+          gender: teacherDetails.user.gender || '',
+          address: teacherDetails.user.address || '',
+
+          // Teacher fields
+          department: teacherDetails.department || '',
+          designation: teacherDetails.designation || '',
           hire_date: teacherDetails.hire_date
             ? dayjs(teacherDetails.hire_date).format('YYYY-MM-DD')
             : '',
+          employment_type: teacherDetails.employment_type || '',
+          emergency_contact_name: teacherDetails.emergency_contact_name || '',
+          emergency_contact_phone: teacherDetails.emergency_contact_phone || '',
+          qualifications: teacherDetails.qualifications || '',
+          experience_years: teacherDetails.experience_years || 0,
+          is_active: teacherDetails.is_active !== undefined ? teacherDetails.is_active : true,
           termination_date: teacherDetails.termination_date
             ? dayjs(teacherDetails.termination_date).format('YYYY-MM-DD')
             : '',
-        });
-        // Set languages known if it exists in qualifications or create separate field
-        setLanguagesKnown(['English']); // You might need to parse this from qualifications or add separate field
+          termination_reason: teacherDetails.termination_reason || '',
+        };
+
+        // Populate form with flattened data
+        reset(flattenedData);
+
+        // Set languages known - you might need to parse this from qualifications
+        // or add a separate field for languages in your API
+        const defaultLanguages = ['English']; // Default or parse from qualifications
+        setLanguagesKnown(defaultLanguages);
       }
     } else {
       setIsEdit(false);
@@ -87,8 +117,9 @@ const TeacherForm = () => {
         is_active: true,
         experience_years: 0,
       });
+      setLanguagesKnown([]);
     }
-  }, [location.pathname, teacherDetails, reset, id]);
+  }, [location.pathname, teacherDetails, reset, routes.editTeacher]);
 
   // Handle form submission
   const onSubmit = async (data: TeacherModel) => {
@@ -101,6 +132,8 @@ const TeacherForm = () => {
             date_of_birth: data.date_of_birth,
             hire_date: data.hire_date,
             termination_date: data.termination_date || undefined,
+            // Add languages to the data if needed
+            languages_known: languagesKnown,
           },
         });
       } else {
@@ -108,6 +141,7 @@ const TeacherForm = () => {
           ...data,
           date_of_birth: data.date_of_birth,
           hire_date: data.hire_date,
+          languages_known: languagesKnown,
         });
       }
     } catch (error) {
@@ -120,7 +154,7 @@ const TeacherForm = () => {
     if (isCreateSuccess || isUpdateSuccess) {
       navigate(routes.teacherList);
     }
-  }, [isCreateSuccess, isUpdateSuccess, navigate]);
+  }, [isCreateSuccess, isUpdateSuccess, navigate, routes.teacherList]);
 
   if (isFetching && isEdit) {
     return <div>Loading...</div>;

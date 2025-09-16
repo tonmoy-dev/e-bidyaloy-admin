@@ -1,49 +1,94 @@
-import  { useRef } from "react";
-import { Link } from "react-router-dom";
-import { all_routes } from "../../../router/all_routes";
-import CommonSelect from "../../../../core/common/commonSelect";
-import {
-  allClass,
-  names,
-  status,
-} from "../../../../core/common/selectoption/selectoption";
-import TeacherModal from "../teacherModal";
-import PredefinedDateRanges from "../../../../core/common/datePicker";
-import Table from "../../../../core/common/dataTable/index";
-import type { TableData } from "../../../../core/data/interface";
-import { teacherLists } from "../../../../core/data/json/teacherlist";
-import ImageWithBasePath from "../../../../core/common/imageWithBasePath";
-import TooltipOption from "../../../../core/common/tooltipOption";
+import { useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import CommonSelect from '../../../../core/common/commonSelect';
+import Table from '../../../../core/common/dataTable/index';
+import PredefinedDateRanges from '../../../../core/common/datePicker';
+import ImageWithBasePath from '../../../../core/common/imageWithBasePath';
+import TooltipOption from '../../../../core/common/tooltipOption';
+import type { TableData } from '../../../../core/data/interface';
+import { all_routes } from '../../../router/all_routes';
+import { useTeacherMutations } from '../hooks/useTeacherMutations';
+import { useTeachers } from '../hooks/useTeachers';
+import type { TeacherModel } from '../models/teacher.model';
+import TeacherModal from '../teacherModal';
 
 const TeacherList = () => {
   const routes = all_routes;
-  const data = teacherLists;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    name: '',
+    class: '',
+    status: '',
+  });
+
+  // API hooks
+  const { isLoading, teachers, isError, error, refetch } = useTeachers(currentPage);
+
+  const { deleteTeacher, isDeleting, isDeleteSuccess } = useTeacherMutations();
+
+  // Transform API data for table
+  const tableData = useMemo(() => {
+    if (!teachers?.results) return [];
+
+    return teachers.results.map((teacher: TeacherModel) => ({
+      id: `T${teacher.id?.toString().padStart(6, '0') || '000000'}`,
+      name: `${teacher.first_name} ${teacher.last_name}`,
+      class: teacher.department, // Using department as class equivalent
+      subject: teacher.designation, // Using designation as subject
+      email: teacher.email,
+      phone: teacher.phone,
+      dateofJoin: new Date(teacher.hire_date).toLocaleDateString(),
+      status: teacher.is_active ? 'Active' : 'Inactive',
+      img: teacher.profile_picture_url || 'assets/img/teachers/teacher-01.jpg', // Default image
+      teacherId: teacher.id,
+    }));
+  }, [teachers]);
+
+  // Filter data based on current filters
+  const filteredData = useMemo(() => {
+    return tableData.filter((teacher) => {
+      const matchesName =
+        !filters.name || teacher.name.toLowerCase().includes(filters.name.toLowerCase());
+      const matchesClass =
+        !filters.class || teacher.class.toLowerCase().includes(filters.class.toLowerCase());
+      const matchesStatus = !filters.status || teacher.status === filters.status;
+
+      return matchesName && matchesClass && matchesStatus;
+    });
+  }, [tableData, filters]);
+
+  const handleDeleteTeacher = async (teacherId: number) => {
+    try {
+      await deleteTeacher(teacherId).unwrap();
+      // Refetch data after successful delete
+      refetch();
+    } catch (error) {
+      console.error('Failed to delete teacher:', error);
+    }
+  };
+
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      render: (text: string) => (
-        <Link to={routes.teacherDetails} className="link-primary">
+      title: 'ID',
+      dataIndex: 'id',
+      render: (text: string, record: any) => (
+        <Link to={`${routes.teacherDetails}?id=${record.teacherId}`} className="link-primary">
           {text}
         </Link>
       ),
       sorter: (a: TableData, b: TableData) => a.id.length - b.id.length,
     },
     {
-      title: "Name",
-      dataIndex: "name",
+      title: 'Name',
+      dataIndex: 'name',
       render: (text: string, record: any) => (
         <div className="d-flex align-items-center">
-          <Link to="#" className="avatar avatar-md">
-            <ImageWithBasePath
-              src={record.img}
-              className="img-fluid rounded-circle"
-              alt="img"
-            />
+          <Link to={`${routes.teacherDetails}?id=${record.teacherId}`} className="avatar avatar-md">
+            <ImageWithBasePath src={record.img} className="img-fluid rounded-circle" alt="img" />
           </Link>
           <div className="ms-2">
             <p className="text-dark mb-0">
-              <Link to="#">{text}</Link>
+              <Link to={`${routes.teacherDetails}?id=${record.teacherId}`}>{text}</Link>
             </p>
           </div>
         </div>
@@ -51,39 +96,36 @@ const TeacherList = () => {
       sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
     },
     {
-      title: "Class",
-      dataIndex: "class",
+      title: 'Department',
+      dataIndex: 'class',
       sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
     },
     {
-      title: "Subject",
-      dataIndex: "subject",
-      sorter: (a: TableData, b: TableData) =>
-        a.subject.length - b.subject.length,
+      title: 'Designation',
+      dataIndex: 'subject',
+      sorter: (a: TableData, b: TableData) => a.subject.length - b.subject.length,
     },
     {
-      title: "Email",
-      dataIndex: "email",
+      title: 'Email',
+      dataIndex: 'email',
       sorter: (a: TableData, b: TableData) => a.email.length - b.email.length,
     },
     {
-      title: "Phone",
-      dataIndex: "phone",
+      title: 'Phone',
+      dataIndex: 'phone',
       sorter: (a: TableData, b: TableData) => a.phone.length - b.phone.length,
     },
     {
-      title: "Date Of Join",
-      dataIndex: "dateofJoin",
-      sorter: (a: TableData, b: TableData) =>
-        a.dateofJoin.length - b.dateofJoin.length,
+      title: 'Date Of Join',
+      dataIndex: 'dateofJoin',
+      sorter: (a: TableData, b: TableData) => a.dateofJoin.length - b.dateofJoin.length,
     },
-
     {
-      title: "Status",
-      dataIndex: "status",
+      title: 'Status',
+      dataIndex: 'status',
       render: (text: string) => (
         <>
-          {text === "Active" ? (
+          {text === 'Active' ? (
             <span className="badge badge-soft-success d-inline-flex align-items-center">
               <i className="ti ti-circle-filled fs-5 me-1"></i>
               {text}
@@ -98,11 +140,10 @@ const TeacherList = () => {
       ),
       sorter: (a: TableData, b: TableData) => a.status.length - b.status.length,
     },
-
     {
-      title: "Action",
-      dataIndex: "action",
-      render: () => (
+      title: 'Action',
+      dataIndex: 'action',
+      render: (_: any, record: any) => (
         <>
           <div className="d-flex align-items-center">
             <div className="dropdown">
@@ -118,7 +159,7 @@ const TeacherList = () => {
                 <li>
                   <Link
                     className="dropdown-item rounded-1"
-                    to={routes.teacherDetails}
+                    to={`${routes.teacherDetails}?id=${record.teacherId}`}
                   >
                     <i className="ti ti-menu me-2" />
                     View Teacher
@@ -127,7 +168,7 @@ const TeacherList = () => {
                 <li>
                   <Link
                     className="dropdown-item rounded-1"
-                    to={routes.editTeacher}
+                    to={`${routes.editTeacher}?id=${record.teacherId}`}
                   >
                     <i className="ti ti-edit-circle me-2" />
                     Edit
@@ -156,9 +197,11 @@ const TeacherList = () => {
                     to="#"
                     data-bs-toggle="modal"
                     data-bs-target="#delete-modal"
+                    onClick={() => record.teacherId && handleDeleteTeacher(record.teacherId)}
+                    style={{ opacity: isDeleting ? 0.6 : 1 }}
                   >
                     <i className="ti ti-trash-x me-2" />
-                    Delete
+                    {isDeleting ? 'Deleting...' : 'Delete'}
                   </Link>
                 </li>
               </ul>
@@ -168,13 +211,69 @@ const TeacherList = () => {
       ),
     },
   ];
+
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
 
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+      dropdownMenuRef.current.classList.remove('show');
     }
   };
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({
+      name: '',
+      class: '',
+      status: '',
+    });
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="page-wrapper">
+        <div className="content">
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ minHeight: '400px' }}
+          >
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (isError) {
+    return (
+      <div className="page-wrapper">
+        <div className="content">
+          <div className="alert alert-danger" role="alert">
+            <h4 className="alert-heading">Error Loading Teachers</h4>
+            <p>
+              {error && typeof error === 'object' && 'message' in error
+                ? (error as any).message
+                : 'Failed to load teachers. Please try again.'}
+            </p>
+            <button className="btn btn-outline-danger" onClick={() => refetch()}>
+              Retry
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       {/* Page Wrapper */}
@@ -201,10 +300,7 @@ const TeacherList = () => {
             <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
               <TooltipOption />
               <div className="mb-2">
-                <Link
-                  to={routes.addTeacher}
-                  className="btn btn-primary d-flex align-items-center"
-                >
+                <Link to={routes.addTeacher} className="btn btn-primary d-flex align-items-center">
                   <i className="ti ti-square-rounded-plus me-2" />
                   Add Teacher
                 </Link>
@@ -212,10 +308,14 @@ const TeacherList = () => {
             </div>
           </div>
           {/* /Page Header */}
-          {/* Students List */}
+
+          {/* Teachers List */}
           <div className="card">
             <div className="card-header d-flex align-items-center justify-content-between flex-wrap pb-0">
-              <h4 className="mb-3">Teachers List</h4>
+              <h4 className="mb-3">
+                Teachers List
+                {teachers && <span className="text-muted ms-2">({teachers.count} total)</span>}
+              </h4>
               <div className="d-flex align-items-center flex-wrap">
                 <div className="input-icon-start mb-3 me-2 position-relative">
                   <PredefinedDateRanges />
@@ -230,10 +330,7 @@ const TeacherList = () => {
                     <i className="ti ti-filter me-2" />
                     Filter
                   </Link>
-                  <div
-                    className="dropdown-menu drop-width "
-                    ref={dropdownMenuRef}
-                  >
+                  <div className="dropdown-menu drop-width " ref={dropdownMenuRef}>
                     <form>
                       <div className="d-flex align-items-center border-bottom p-3">
                         <h4>Filter</h4>
@@ -243,20 +340,24 @@ const TeacherList = () => {
                           <div className="col-md-12">
                             <div className="mb-3">
                               <label className="form-label">Name</label>
-                              <CommonSelect
-                                className="select"
-                                options={names}
-                                defaultValue={names[0]}
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search by name..."
+                                value={filters.name}
+                                onChange={(e) => handleFilterChange('name', e.target.value)}
                               />
                             </div>
                           </div>
                           <div className="col-md-12">
                             <div className="mb-3">
-                              <label className="form-label">Class</label>
-                              <CommonSelect
-                                className="select"
-                                options={allClass}
-                                defaultValue={allClass[0]}
+                              <label className="form-label">Department</label>
+                              <input
+                                type="text"
+                                className="form-control"
+                                placeholder="Search by department..."
+                                value={filters.class}
+                                onChange={(e) => handleFilterChange('class', e.target.value)}
                               />
                             </div>
                           </div>
@@ -265,33 +366,39 @@ const TeacherList = () => {
                               <label className="form-label">Status</label>
                               <CommonSelect
                                 className="select"
-                                options={status}
-                                defaultValue={status[0]}
+                                options={[
+                                  { value: '', label: 'All Status' },
+                                  { value: 'Active', label: 'Active' },
+                                  { value: 'Inactive', label: 'Inactive' },
+                                ]}
+                                value={filters.status}
+                                onChange={(value) => handleFilterChange('status', value)}
                               />
                             </div>
                           </div>
                         </div>
                       </div>
                       <div className="p-3 d-flex align-items-center justify-content-end">
-                        <Link to="#" className="btn btn-light me-3">
+                        <button
+                          type="button"
+                          className="btn btn-light me-3"
+                          onClick={handleResetFilters}
+                        >
                           Reset
-                        </Link>
-                        <Link
-                          to="#"
+                        </button>
+                        <button
+                          type="button"
                           className="btn btn-primary"
                           onClick={handleApplyClick}
                         >
                           Apply
-                        </Link>
+                        </button>
                       </div>
                     </form>
                   </div>
                 </div>
                 <div className="d-flex align-items-center bg-white border rounded-2 p-1 mb-3 me-2">
-                  <Link
-                    to="#"
-                    className="active btn btn-icon btn-sm me-1 primary-hover"
-                  >
+                  <Link to="#" className="active btn btn-icon btn-sm me-1 primary-hover">
                     <i className="ti ti-list-tree" />
                   </Link>
                   <Link
@@ -336,13 +443,44 @@ const TeacherList = () => {
               </div>
             </div>
             <div className="card-body p-0 py-3">
-              {/* Student List */}
+              {/* Teacher List */}
+              <Table
+                dataSource={filteredData}
+                columns={columns}
+                Selection={true}
+                loading={isLoading}
+              />
+              {/* /Teacher List */}
 
-              <Table dataSource={data} columns={columns} Selection={true} />
-              {/* /Student List */}
+              {/* Pagination Info */}
+              {teachers && (
+                <div className="d-flex justify-content-between align-items-center mt-3 px-3">
+                  <div className="text-muted">
+                    Showing {filteredData.length} of {teachers.count} teachers
+                  </div>
+                  <div className="d-flex gap-2">
+                    {teachers.previous && (
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => setCurrentPage((prev) => prev - 1)}
+                      >
+                        Previous
+                      </button>
+                    )}
+                    {teachers.next && (
+                      <button
+                        className="btn btn-outline-primary btn-sm"
+                        onClick={() => setCurrentPage((prev) => prev + 1)}
+                      >
+                        Next
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          {/* /Students List */}
+          {/* /Teachers List */}
         </div>
       </div>
       {/* /Page Wrapper */}
