@@ -24,19 +24,30 @@ const ClassDetailsView = ({ classData }: { classData: ClassModel }) => {
       <div className="col-md-6">
         <div className="class-detail-info mb-3">
           <p>Class Teacher</p>
-          <span>{classData?.class_teacher}</span>
+          <span>
+            {classData?.class_teacher
+              ? typeof classData.class_teacher === 'string'
+                ? classData.class_teacher
+                : (classData.class_teacher as any)?.user?.username // fallback to 'name' property if not a string
+              : 'N/A'}
+          </span>
         </div>
       </div>
       <div className="col-md-6">
         <div className="class-detail-info mb-3">
           <p>Section Teacher</p>
-          <span>
-            <div className="d-flex flex-column g-4">
-              {classData?.sections?.map((section: SectionModel) => (
-                <p>{section.teacher}</p>
-              ))}
-            </div>
-          </span>
+
+          <div className="d-flex flex-column g-4">
+            {classData?.sections?.map((section: SectionModel, idx: number) => (
+              <p key={idx}>
+                {section.section_teacher
+                  ? typeof section.section_teacher === 'string'
+                    ? section.section_teacher
+                    : (section.section_teacher as any)?.user?.username || 'N/A'
+                  : 'N/A'}
+              </p>
+            ))}
+          </div>
         </div>
       </div>
 

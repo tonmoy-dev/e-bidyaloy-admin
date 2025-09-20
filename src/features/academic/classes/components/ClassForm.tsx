@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
-import { useSessions } from '../../sessions/hooks/useSessions';
+import { useGetTeachersQuery } from '../api/teacherApi';
 import type { ClassModel } from '../models/class.model';
 import { classSchema } from '../models/class.schema';
 
@@ -13,8 +13,9 @@ interface ClassFormProps {
 }
 
 export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormProps) {
-  const { sessions } = useSessions(1);
-  const teachers = sessions?.results;
+  const { data } = useGetTeachersQuery(1);
+
+  const teachers = data?.results;
   const {
     handleSubmit,
     control,
@@ -36,7 +37,7 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
 
   const teacherOptions =
     teachers?.map((teacher) => ({
-      label: teacher.name,
+      label: teacher.user?.username,
       value: String(teacher.id),
     })) || [];
 
@@ -71,7 +72,7 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
                   control={control}
                   render={({ field }) => (
                     <SelectDropDown
-                      value={teacherOptions.find((o) => o.value === field.value) ?? null}
+                      value={teacherOptions.find((o) => o.value === String(field.value)) ?? null}
                       options={teacherOptions}
                       onChange={(option) => field.onChange(option?.value || '')}
                     />

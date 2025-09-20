@@ -162,6 +162,7 @@ const Classes = () => {
   const sortingOptions = ['Ascending', 'Descending'];
 
   const handleClassForm = async (data: ClassModel, mode: string) => {
+    console.log('class data', data);
     try {
       if (mode === 'add') {
         const response = await createClass(data);
