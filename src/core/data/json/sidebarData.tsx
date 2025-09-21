@@ -176,18 +176,18 @@ export const SidebarData = [
         submenuItems: [
           {
             label: 'All Teachers',
-            link: routes.teacherGrid,
+            link: routes.teacherList,
             subLink1: routes.addTeacher,
             subLink2: routes.editTeacher,
           },
-          { label: 'Teacher List', link: routes.teacherList },
-          {
-            label: 'Teacher Details',
-            link: routes.teacherDetails,
-            subLink1: routes.teacherLibrary,
-            subLink2: routes.teacherSalary,
-            subLink3: routes.teacherLeaves,
-          },
+          // { label: 'Teacher List', link: routes.teacherList },
+          // {
+          //   label: 'Teacher Details',
+          //   link: routes.teacherDetails,
+          //   subLink1: routes.teacherLibrary,
+          //   subLink2: routes.teacherSalary,
+          //   subLink3: routes.teacherLeaves,
+          // },
           { label: 'Routine', link: routes.teachersRoutine },
         ],
       },
