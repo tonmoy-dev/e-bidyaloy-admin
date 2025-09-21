@@ -1,7 +1,7 @@
 import { useGetClassByIdQuery } from "../api/classApi";
 
-export const useClassById = (id: number | null) => {
-  const skip = !id || id < 0;
+export const useClassById = (id: string | null, skipQuery: boolean = false) => {
+  const skip = !id || skipQuery;
 
   const { isLoading, isFetching, data, isError, error, refetch } =
     useGetClassByIdQuery(id!, { skip });

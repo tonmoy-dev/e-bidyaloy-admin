@@ -15,7 +15,6 @@ import DataTableFooter from '../../../shared/components/table/DataTableFooter';
 import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
-import { useAuth } from '../../../shared/hooks/useAuth';
 import { all_routes } from '../../router/all_routes';
 import ClassDetailsView from './components/ClassDetailsView';
 import ClassForm from './components/ClassForm';
@@ -27,17 +26,16 @@ import { type ClassModel, type SectionModel } from './models/class.model';
 const Classes = () => {
   const page = 1;
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
-  const authData = useAuth();
-  const { classes, isLoading } = useClasses(page);
-  const { classDetails, isError: isClassError } = useClassById(selectedId ?? -1);
-  const { createClass, updateClass, deleteClass } = useClassMutations();
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  // const authData = useAuth();
+  const { classes } = useClasses(page);
   const data = classes?.results;
+  const skipQuery = activeModal === MODAL_TYPE.DELETE;
+  const { createClass, updateClass, deleteClass } = useClassMutations();
+  const { classDetails, isError: isClassError } = useClassById(selectedId ?? null, skipQuery);
   // const data = classDataSample;
   const route = all_routes;
-  console.log('authData', authData);
-
-  console.log('data', classes, isLoading);
+  console.log('authData', selectedId, classDetails);
 
   useEffect(() => {
     if (isClassError) {
@@ -69,7 +67,7 @@ const Classes = () => {
         return (
           <div className="d-flex flex-column g-4">
             {record?.sections?.map((section: SectionModel) => (
-              <p>{section.name}</p>
+              <p key={section.id}>{section.name}</p>
             ))}
           </div>
         );
@@ -91,7 +89,7 @@ const Classes = () => {
         return (
           <div className="d-flex flex-column g-4">
             {record?.sections?.map((section: SectionModel) => (
-              <p>
+              <p key={section.id}>
                 {section?.section_teacher
                   ? `${section.section_teacher?.first_name} ${section.section_teacher?.last_name}`
                   : ''}
@@ -163,6 +161,7 @@ const Classes = () => {
 
   const handleClassForm = async (data: ClassModel, mode: string) => {
     console.log('class data', data);
+
     try {
       if (mode === 'add') {
         const response = await createClass(data);
@@ -181,7 +180,8 @@ const Classes = () => {
   };
 
   const handleClassDelete = async () => {
-    const response = await deleteClass(selectedId ?? -1);
+    if (!selectedId) return;
+    const response = await deleteClass(selectedId);
     if (!response?.data) {
       toast.success('Class deleted successfully');
       setActiveModal(null);
@@ -244,7 +244,7 @@ const Classes = () => {
           show={activeModal === MODAL_TYPE.ADD}
           onClose={() => setActiveModal(null)}
           size="lg"
-          modalTitle="Add Class with Sections"
+          modalTitle="Add class informations"
           body={
             <ClassForm
               mode="add"
@@ -258,14 +258,15 @@ const Classes = () => {
         />
 
         {/* Edit Classes */}
-        {classDetails && (
+        {classDetails?.id && (
           <DataModal
             show={activeModal === MODAL_TYPE.EDIT}
             onClose={() => {
               setActiveModal(null);
               setSelectedId(null);
             }}
-            modalTitle="Edit Class"
+            size="lg"
+            modalTitle="Update class informations"
             body={
               <ClassForm
                 mode="edit"
@@ -281,7 +282,7 @@ const Classes = () => {
         )}
 
         {/* View Classes */}
-        {classDetails && (
+        {classDetails?.id && (
           <DataModal
             show={activeModal === MODAL_TYPE.VIEW}
             onClose={() => {

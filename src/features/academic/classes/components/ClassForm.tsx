@@ -12,7 +12,7 @@ interface ClassFormProps {
   onActiveModal: (modalType: null) => void;
 }
 
-export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormProps) {
+export default function ClassForm({ mode, defaultValues, onSubmit }: ClassFormProps) {
   const { data } = useGetTeachersQuery(1);
 
   const teachers = data?.results;
@@ -23,10 +23,17 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
   } = useForm<ClassModel>({
     resolver: yupResolver(classSchema),
     defaultValues: {
+      id: defaultValues?.id ?? '',
       name: defaultValues?.name ?? '',
-      class_teacher_id: defaultValues?.class_teacher_id ?? '',
+      class_teacher_id: defaultValues?.class_teacher?.id ?? '',
       is_active: defaultValues?.is_active ?? true,
-      sections: [{ name: '', section_teacher_id: '', is_active: true }],
+      sections: defaultValues?.sections?.length
+        ? defaultValues.sections?.map((section) => {
+            const { section_teacher, ...rest } = section;
+            const section_teacher_id = section_teacher?.id;
+            return { section_teacher_id, ...rest };
+          })
+        : [{ name: '', section_teacher_id: '', is_active: true }],
     },
   });
 
@@ -37,7 +44,7 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
 
   const teacherOptions =
     teachers?.map((teacher) => ({
-      label: teacher.user?.username,
+      label: `${teacher.user?.full_name}`,
       value: String(teacher.id),
     })) || [];
 
@@ -68,7 +75,7 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
               <div className="col-md-4">
                 <label className="form-label">Class Teacher</label>
                 <Controller
-                  name="class_teacher"
+                  name="class_teacher_id"
                   control={control}
                   render={({ field }) => (
                     <SelectDropDown
@@ -78,8 +85,8 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
                     />
                   )}
                 />
-                {errors.class_teacher && (
-                  <div className="invalid-feedback d-block">{errors.class_teacher.message}</div>
+                {errors.class_teacher_id && (
+                  <div className="invalid-feedback d-block">{errors.class_teacher_id.message}</div>
                 )}
               </div>
               {/* Status */}
@@ -175,7 +182,7 @@ export default function ClassForm({ defaultValues, mode, onSubmit }: ClassFormPr
                               type="checkbox"
                               className="form-check-input"
                               role="switch"
-                              id="switch-sm2"
+                              id={`switch-sm-${index}`}
                               checked={field.value}
                               onChange={(e) => field.onChange(e.target.checked)}
                             />

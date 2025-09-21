@@ -1,5 +1,7 @@
+import type { TeacherModel } from "../api/teacherApi";
+
 export interface ClassModel {
-  id?: number;
+  id?: string;
   name: string;
   class_teacher_id?: string;
   class_teacher?: TeacherModel;
@@ -15,20 +17,12 @@ export interface PaginatedResponse<T> {
 }
 
 export interface SectionModel {
-  id?: number;
-  name: string;
+  id?: string;
+  name?: string;
   section_teacher?: TeacherModel;
   section_teacher_id?: string;
   is_active?: boolean;
 }
-
-
-export interface TeacherModel {
-  id?: string;
-  first_name: string;
-  last_name: string;
-}
-
 
 
 

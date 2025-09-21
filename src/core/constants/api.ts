@@ -21,9 +21,9 @@ export const API_ENDPOINTS = {
   CLASS: {
     LIST: (params?: Record<string, unknown>) => ({ url: `/api/v1/classes/`, method: 'GET', params }),
     CREATE: () => ({ url: '/api/v1/classes/', method: 'POST' }),
-    DETAILS: (id: number | string) => ({ url: `/api/v1/classes/${id}`, method: 'GET' }),
-    UPDATE: (id: number | string) => ({ url: `/api/v1/classes/${id}`, method: 'PUT' }),
-    DELETE: (id: number | string) => ({ url: `/api/v1/classes/${id}`, method: 'DELETE' }),
+    DETAILS: (id: number | string) => ({ url: `/api/v1/classes/${id}/`, method: 'GET' }),
+    UPDATE: (id: number | string) => ({ url: `/api/v1/classes/${id}/`, method: 'PUT' }),
+    DELETE: (id: number | string) => ({ url: `/api/v1/classes/${id}/`, method: 'DELETE' }),
   },
   SESSION: {
     LIST: (params?: Record<string, unknown>) => ({ url: `/api/v1/academic-years/`, method: 'GET', params }),
