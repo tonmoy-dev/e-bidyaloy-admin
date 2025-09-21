@@ -50,4 +50,26 @@ export interface TeacherModel {
   specializations: any[];
   created_at: string;
   updated_at: string;
+  date_of_birth: string;
+  languages_known: string[];
+
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  middle_name: string;
+  full_name: string;
+  phone: string;
+
+  gender: string;
+  address: string;
+  profile_picture_url: string;
+  user_type: string;
+
+  email_verified_at: string | null;
+  last_login_at: string | null;
+  preferences: Record<string, any>;
+  roles: any[];
+
+  date_joined: string;
 }

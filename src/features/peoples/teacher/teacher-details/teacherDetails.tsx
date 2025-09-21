@@ -98,6 +98,23 @@ const TeacherDetails = () => {
     }
   };
 
+  const formatEmploymentType = (type: string) => {
+    switch (type) {
+      case 'full_time':
+        return 'Full Time';
+      case 'part_time':
+        return 'Part Time';
+      case 'contract':
+        return 'Contract';
+      default:
+        return type || 'Not specified';
+    }
+  };
+
+  const formatGender = (gender: string) => {
+    return gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : 'Not specified';
+  };
+
   return (
     <>
       {/* Page Wrapper */}
@@ -105,7 +122,13 @@ const TeacherDetails = () => {
         <div className="content">
           <div className="row">
             {/* Page Header */}
-            <TeacherBreadcrumb teacherName={`${teacher.first_name} ${teacher.last_name}`} />
+            <TeacherBreadcrumb
+              teacherName={
+                `${teacher.user?.first_name || ''} ${teacher.user?.last_name || ''}`.trim() ||
+                'Unknown Teacher'
+              }
+              teacherId={teacherId}
+            />
             {/* /Page Header */}
 
             {/* Teacher Information Sidebar */}
@@ -115,6 +138,23 @@ const TeacherDetails = () => {
             <div className="col-xxl-9 col-xl-8">
               <div className="row">
                 <div className="col-md-12">
+                  {/* Action Buttons */}
+                  <div className="d-flex justify-content-end mb-3">
+                    <button
+                      className={`btn ${teacher.is_active ? 'btn-warning' : 'btn-success'}`}
+                      onClick={() => {
+                        // Add your toggle active/inactive logic here
+                        console.log('Toggle teacher status');
+                      }}
+                    >
+                      <i
+                        className={`ti ${teacher.is_active ? 'ti-user-off' : 'ti-user-check'} me-2`}
+                      />
+                      {teacher.is_active ? 'Deactivate' : 'Activate'}
+                    </button>
+                  </div>
+                  {/* /Action Buttons */}
+
                   {/* Navigation Tabs */}
                   <ul className="nav nav-tabs nav-tabs-bottom mb-4">
                     <li>
@@ -165,41 +205,66 @@ const TeacherDetails = () => {
                             <div className="mb-3">
                               <p className="text-dark fw-medium mb-1">Full Name</p>
                               <p>
-                                {teacher.first_name} {teacher.last_name}
+                                {teacher.user?.first_name || ''} {teacher.user?.last_name || ''}{' '}
+                                {teacher.user?.middle_name || ''}
                               </p>
                             </div>
                           </div>
                           <div className="col-sm-6 col-lg-4">
                             <div className="mb-3">
                               <p className="text-dark fw-medium mb-1">Username</p>
-                              <p>{teacher.username}</p>
+                              <p>{teacher.user?.username || 'Not provided'}</p>
                             </div>
                           </div>
                           <div className="col-sm-6 col-lg-4">
                             <div className="mb-3">
                               <p className="text-dark fw-medium mb-1">Date of Birth</p>
                               <p>
-                                {formatDate(teacher.date_of_birth)} (
-                                {calculateAge(teacher.date_of_birth)} years old)
+                                {teacher.user?.date_of_birth ? (
+                                  <>
+                                    {formatDate(teacher.user.date_of_birth)} (
+                                    {calculateAge(teacher.user.date_of_birth)} years old)
+                                  </>
+                                ) : (
+                                  'Not provided'
+                                )}
                               </p>
                             </div>
                           </div>
                           <div className="col-sm-6 col-lg-4">
                             <div className="mb-3">
                               <p className="text-dark fw-medium mb-1">Gender</p>
-                              <p>{teacher.gender}</p>
+                              <p>{formatGender(teacher.user?.gender || '')}</p>
                             </div>
                           </div>
                           <div className="col-sm-6 col-lg-4">
                             <div className="mb-3">
                               <p className="text-dark fw-medium mb-1">Qualifications</p>
-                              <p>{teacher.qualifications}</p>
+                              <p>{teacher.qualifications || 'Not provided'}</p>
                             </div>
                           </div>
                           <div className="col-sm-6 col-lg-4">
                             <div className="mb-3">
                               <p className="text-dark fw-medium mb-1">Experience</p>
-                              <p>{teacher.experience_years} Years</p>
+                              <p>{teacher.experience_years || 0} Years</p>
+                            </div>
+                          </div>
+                          <div className="col-sm-6 col-lg-4">
+                            <div className="mb-3">
+                              <p className="text-dark fw-medium mb-1">Employee ID</p>
+                              <p>{teacher.employee_id || 'Not assigned'}</p>
+                            </div>
+                          </div>
+                          <div className="col-sm-6 col-lg-4">
+                            <div className="mb-3">
+                              <p className="text-dark fw-medium mb-1">Organization</p>
+                              <p>{teacher.organization_name || 'Not specified'}</p>
+                            </div>
+                          </div>
+                          <div className="col-sm-6 col-lg-4">
+                            <div className="mb-3">
+                              <p className="text-dark fw-medium mb-1">Max Classes Per Week</p>
+                              <p>{teacher.max_classes_per_week || 'Not specified'}</p>
                             </div>
                           </div>
                         </div>
@@ -218,18 +283,18 @@ const TeacherDetails = () => {
                     <div className="card-body">
                       <div className="mb-3">
                         <p className="text-dark fw-medium mb-1">Email Address</p>
-                        <p>{teacher.email}</p>
+                        <p>{teacher.user?.email || 'Not provided'}</p>
                       </div>
                       <div className="mb-3">
                         <p className="text-dark fw-medium mb-1">Phone Number</p>
-                        <p>{teacher.phone}</p>
+                        <p>{teacher.user?.phone || 'Not provided'}</p>
                       </div>
                       <div className="mb-3">
-                        <p className="text-dark fw-medium mb-1">Emergency Contact</p>
+                        <p className="text-dark fw-medium mb-1">Emergency Contact Name</p>
                         <p>{teacher.emergency_contact_name || 'Not provided'}</p>
                       </div>
                       <div>
-                        <p className="text-dark fw-medium mb-1">Emergency Phone</p>
+                        <p className="text-dark fw-medium mb-1">Emergency Contact Phone</p>
                         <p>{teacher.emergency_contact_phone || 'Not provided'}</p>
                       </div>
                     </div>
@@ -250,7 +315,7 @@ const TeacherDetails = () => {
                         </span>
                         <div>
                           <p className="text-dark fw-medium mb-1">Current Address</p>
-                          <p>{teacher.address || 'Not provided'}</p>
+                          <p>{teacher.user?.address || 'Not provided'}</p>
                         </div>
                       </div>
                     </div>
@@ -281,7 +346,7 @@ const TeacherDetails = () => {
                         <div className="col-md-3">
                           <div className="mb-3">
                             <p className="mb-1 text-dark fw-medium">Employment Type</p>
-                            <p>{teacher.employment_type || 'Not specified'}</p>
+                            <p>{formatEmploymentType(teacher.employment_type)}</p>
                           </div>
                         </div>
                         <div className="col-md-3">
@@ -289,6 +354,38 @@ const TeacherDetails = () => {
                             <p className="mb-1 text-dark fw-medium">Hire Date</p>
                             <p>
                               {teacher.hire_date ? formatDate(teacher.hire_date) : 'Not provided'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="col-md-3">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Salary</p>
+                            <p>
+                              {teacher.salary
+                                ? `${teacher.salary} ${teacher.salary_currency || 'USD'}`
+                                : 'Not specified'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="col-md-3">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Bank Account</p>
+                            <p>{teacher.bank_account_number || 'Not provided'}</p>
+                          </div>
+                        </div>
+                        <div className="col-md-3">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Teaching License</p>
+                            <p>{teacher.teaching_license || 'Not provided'}</p>
+                          </div>
+                        </div>
+                        <div className="col-md-3">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">License Expiry</p>
+                            <p>
+                              {teacher.license_expiry_date
+                                ? formatDate(teacher.license_expiry_date)
+                                : 'Not provided'}
                             </p>
                           </div>
                         </div>
@@ -314,14 +411,42 @@ const TeacherDetails = () => {
                                 teacher.is_active ? 'badge-soft-success' : 'badge-soft-danger'
                               }`}
                             >
+                              <i className="ti ti-circle-filled fs-5 me-1"></i>
                               {teacher.is_active ? 'Active' : 'Inactive'}
                             </span>
                           </div>
                         </div>
                         <div className="col-md-6">
                           <div className="mb-3">
-                            <p className="mb-1 text-dark fw-medium">Experience</p>
-                            <p>{teacher.experience_years} Years</p>
+                            <p className="mb-1 text-dark fw-medium">User Status</p>
+                            <span
+                              className={`badge ${
+                                teacher.user?.is_active ? 'badge-soft-success' : 'badge-soft-danger'
+                              }`}
+                            >
+                              <i className="ti ti-circle-filled fs-5 me-1"></i>
+                              {teacher.user?.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Date Joined</p>
+                            <p>
+                              {teacher.user?.date_joined
+                                ? formatDate(teacher.user.date_joined)
+                                : 'Not available'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="col-md-6">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Last Login</p>
+                            <p>
+                              {teacher.user?.last_login_at
+                                ? formatDate(teacher.user.last_login_at)
+                                : 'Never logged in'}
+                            </p>
                           </div>
                         </div>
                         {teacher.termination_date && (
@@ -356,18 +481,42 @@ const TeacherDetails = () => {
                       <div className="row">
                         <div className="col-md-12">
                           <div className="mb-3">
-                            <p className="mb-1 text-dark fw-medium">Bio</p>
-                            <p>{teacher.bio || 'No bio provided'}</p>
+                            <p className="mb-1 text-dark fw-medium">Specialization</p>
+                            <p>{teacher.specialization || 'Not provided'}</p>
                           </div>
                         </div>
-                        {teacher.profile_picture_url && (
+                        <div className="col-md-12">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">User Type</p>
+                            <span className="badge badge-soft-info">
+                              {teacher.user?.user_type || 'Not specified'}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="col-md-12">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Email Verified</p>
+                            <span
+                              className={`badge ${
+                                teacher.user?.email_verified_at
+                                  ? 'badge-soft-success'
+                                  : 'badge-soft-warning'
+                              }`}
+                            >
+                              {teacher.user?.email_verified_at ? 'Verified' : 'Not Verified'}
+                            </span>
+                          </div>
+                        </div>
+                        {teacher.user?.profile_picture_url && (
                           <div className="col-md-12">
                             <div className="mb-3">
                               <p className="mb-1 text-dark fw-medium">Profile Picture</p>
                               <div className="avatar avatar-xl">
                                 <img
-                                  src={teacher.profile_picture_url}
-                                  alt={`${teacher.first_name} ${teacher.last_name}`}
+                                  src={teacher.user.profile_picture_url}
+                                  alt={`${teacher.user?.first_name || ''} ${
+                                    teacher.user?.last_name || ''
+                                  }`}
                                   className="rounded"
                                   onError={(e) => {
                                     e.currentTarget.src = '/assets/img/default-avatar.png';
@@ -383,60 +532,105 @@ const TeacherDetails = () => {
                 </div>
                 {/* /Additional Information */}
 
-                {/* Documents Section - if you have documents in your teacher model */}
-                {teacher.documents && teacher.documents.length > 0 && (
+                {/* Specializations Section */}
+                {teacher.specializations && teacher.specializations.length > 0 && (
                   <div className="col-xxl-6 d-flex">
                     <div className="card flex-fill">
                       <div className="card-header">
-                        <h5>Documents</h5>
+                        <h5>Specializations</h5>
                       </div>
                       <div className="card-body">
-                        {teacher.documents.map((doc, index) => (
-                          <div
-                            key={index}
-                            className="bg-light-300 border rounded d-flex align-items-center justify-content-between mb-3 p-2"
-                          >
-                            <div className="d-flex align-items-center overflow-hidden">
-                              <span className="avatar avatar-md bg-white rounded flex-shrink-0 text-default">
-                                <i className="ti ti-pdf fs-15" />
-                              </span>
-                              <div className="ms-2">
-                                <p className="text-truncate fw-medium text-dark">
-                                  {doc.name || `Document ${index + 1}`}
-                                </p>
-                              </div>
-                            </div>
-                            <Link
-                              to={doc.url || '#'}
-                              className="btn btn-dark btn-icon btn-sm"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <i className="ti ti-download" />
-                            </Link>
-                          </div>
-                        ))}
+                        <div className="d-flex flex-wrap gap-2">
+                          {teacher.specializations.map((specialization, index) => (
+                            <span key={index} className="badge badge-soft-primary">
+                              {specialization}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>
                 )}
-                {/* /Documents */}
+                {/* /Specializations */}
 
-                {/* Notes Section */}
+                {/* User Roles Section */}
+                {teacher.user?.roles && teacher.user.roles.length > 0 && (
+                  <div className="col-xxl-6 d-flex">
+                    <div className="card flex-fill">
+                      <div className="card-header">
+                        <h5>User Roles</h5>
+                      </div>
+                      <div className="card-body">
+                        <div className="d-flex flex-wrap gap-2">
+                          {teacher.user.roles.map((role, index) => (
+                            <span key={index} className="badge badge-soft-secondary">
+                              {role}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {/* /User Roles */}
+
+                {/* System Information */}
                 <div className="col-xxl-12">
                   <div className="card">
                     <div className="card-header">
-                      <h5>Additional Notes</h5>
+                      <h5>System Information</h5>
                     </div>
-                    <div className="card-body">
-                      <p>
-                        {teacher.notes ||
-                          'This section contains additional information about the teacher. Any special notes, achievements, or other relevant details can be displayed here.'}
-                      </p>
+                    <div className="card-body pb-1">
+                      <div className="row">
+                        <div className="col-md-4">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Teacher ID</p>
+                            <p className="font-monospace">{teacher.id}</p>
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">User ID</p>
+                            <p className="font-monospace">{teacher.user?.id}</p>
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Organization ID</p>
+                            <p className="font-monospace">{teacher.organization}</p>
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Created At</p>
+                            <p>
+                              {teacher.created_at
+                                ? formatDate(teacher.created_at)
+                                : 'Not available'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Updated At</p>
+                            <p>
+                              {teacher.updated_at
+                                ? formatDate(teacher.updated_at)
+                                : 'Not available'}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="col-md-4">
+                          <div className="mb-3">
+                            <p className="mb-1 text-dark fw-medium">Age (Calculated)</p>
+                            <p>{teacher.age || 'Not calculated'} years</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
-                {/* /Notes Section */}
+                {/* /System Information */}
               </div>
             </div>
           </div>

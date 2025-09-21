@@ -119,7 +119,7 @@ const TeacherForm = () => {
       });
       setLanguagesKnown([]);
     }
-  }, [location.pathname, teacherDetails, reset, routes.editTeacher]);
+  }, [location.pathname, teacherDetails, reset, teacherId, routes.editTeacher]);
 
   // Handle form submission
   const onSubmit = async (data: TeacherModel) => {

@@ -1,4 +1,6 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://192.168.68.129:8010/';
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
+//'http://192.168.68.129:8010/';
 //http://212.28.189.126:8021
 export const API_ENDPOINTS = {
   AUTH: {

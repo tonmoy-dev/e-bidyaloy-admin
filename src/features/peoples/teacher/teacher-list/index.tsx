@@ -21,9 +21,57 @@ const TeacherList = () => {
     status: '',
   });
 
+  // Enhanced CSS for proper dropdown positioning
+  const customStyles = `
+    /* Ensure all parent containers allow overflow to be visible */
+    .page-wrapper,
+    .content,
+    .card,
+    .card-body,
+    .table-responsive,
+    .ant-table,
+    .ant-table-container,
+    .ant-table-body,
+    .ant-table-tbody {
+      overflow: visible !important;
+      position: static !important;
+    }
+    
+    /* Force dropdown to use fixed positioning relative to viewport */
+    .action-dropdown {
+      position: relative !important;
+    }
+    
+    .action-dropdown .dropdown-menu {
+      position: fixed !important;
+      z-index: 99999 !important;
+      transform: none !important;
+      will-change: auto !important;
+      top: auto !important;
+      // left: auto !important;
+      // right: auto !important;
+      margin: 0 !important;
+      box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25) !important;
+      border: 1px solid rgba(0,0,0,.125) !important;
+    }
+    
+    /* Ensure table cells don't clip the dropdown */
+    .ant-table-cell {
+      overflow: visible !important;
+    }
+    
+    /* Custom positioning class for dropdown */
+    .dropdown-positioned {
+      position: fixed !important;
+      z-index: 99999 !important;
+      min-width: 180px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+  `;
+
   // API hooks
   const { isLoading, teachers, isError, error, refetch } = useTeachers(currentPage);
-
   const { deleteTeacher, isDeleting, isDeleteSuccess } = useTeacherMutations();
 
   // Transform API data for table
@@ -31,16 +79,19 @@ const TeacherList = () => {
     if (!teachers?.results) return [];
 
     return teachers.results.map((teacher: TeacherModel) => ({
-      id: `T${teacher.id?.toString().padStart(6, '0') || '000000'}`,
-      name: `${teacher.first_name} ${teacher.last_name}`,
-      class: teacher.department, // Using department as class equivalent
-      subject: teacher.designation, // Using designation as subject
-      email: teacher.email,
-      phone: teacher.phone,
-      dateofJoin: new Date(teacher.hire_date).toLocaleDateString(),
+      id: `T${teacher.id?.toString().slice(0, 8) || '00000000'}`,
+      name: `${teacher.user?.first_name || ''} ${teacher.user?.last_name || ''}`.trim() || 'N/A',
+      class: teacher.department || 'N/A',
+      subject: teacher.designation || 'N/A',
+      email: teacher.user?.email || 'N/A',
+      phone: teacher.user?.phone || 'N/A',
+      dateofJoin: teacher.hire_date ? new Date(teacher.hire_date).toLocaleDateString() : 'N/A',
       status: teacher.is_active ? 'Active' : 'Inactive',
-      img: teacher.profile_picture_url || 'assets/img/teachers/teacher-01.jpg', // Default image
+      img: teacher.user?.profile_picture_url || 'assets/img/teachers/teacher-01.jpg',
       teacherId: teacher.id,
+      experience: teacher.experience_years || 0,
+      qualifications: teacher.qualifications || 'N/A',
+      specialization: teacher.specialization || 'N/A',
     }));
   }, [teachers]);
 
@@ -57,14 +108,38 @@ const TeacherList = () => {
     });
   }, [tableData, filters]);
 
-  const handleDeleteTeacher = async (teacherId: number) => {
-    try {
-      await deleteTeacher(teacherId).unwrap();
-      // Refetch data after successful delete
-      refetch();
-    } catch (error) {
-      console.error('Failed to delete teacher:', error);
+  const handleDeleteTeacher = async (teacherId: string) => {
+    if (window.confirm('Are you sure you want to delete this teacher?')) {
+      try {
+        await deleteTeacher(teacherId).unwrap();
+        refetch();
+      } catch (error) {
+        console.error('Failed to delete teacher:', error);
+        alert('Failed to delete teacher. Please try again.');
+      }
     }
+  };
+
+  // Function to position dropdown relative to trigger button
+  const positionDropdown = (dropdownMenu: HTMLElement, triggerButton: HTMLElement) => {
+    const rect = triggerButton.getBoundingClientRect();
+    const dropdownRect = dropdownMenu.getBoundingClientRect();
+
+    // Calculate position
+    let top = rect.bottom + window.scrollY + 5; // 5px gap
+    let left = rect.left + window.scrollX;
+
+    // Adjust if dropdown would go off-screen
+    if (left + dropdownRect.width > window.innerWidth) {
+      left = rect.right + window.scrollX - dropdownRect.width;
+    }
+
+    if (top + dropdownRect.height > window.innerHeight + window.scrollY) {
+      top = rect.top + window.scrollY - dropdownRect.height - 5;
+    }
+
+    dropdownMenu.style.top = `${top}px`;
+    dropdownMenu.style.left = `${left}px`;
   };
 
   const columns = [
@@ -76,7 +151,7 @@ const TeacherList = () => {
           {text}
         </Link>
       ),
-      sorter: (a: TableData, b: TableData) => a.id.length - b.id.length,
+      sorter: (a: TableData, b: TableData) => a.id.localeCompare(b.id),
     },
     {
       title: 'Name',
@@ -93,32 +168,36 @@ const TeacherList = () => {
           </div>
         </div>
       ),
-      sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
+      sorter: (a: TableData, b: TableData) => a.name.localeCompare(b.name),
     },
     {
       title: 'Department',
       dataIndex: 'class',
-      sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
+      sorter: (a: TableData, b: TableData) => a.class.localeCompare(b.class),
     },
     {
       title: 'Designation',
       dataIndex: 'subject',
-      sorter: (a: TableData, b: TableData) => a.subject.length - b.subject.length,
+      sorter: (a: TableData, b: TableData) => a.subject.localeCompare(b.subject),
     },
     {
       title: 'Email',
       dataIndex: 'email',
-      sorter: (a: TableData, b: TableData) => a.email.length - b.email.length,
+      render: (text: string) => (
+        <span title={text}>{text.length > 25 ? `${text.substring(0, 25)}...` : text}</span>
+      ),
+      sorter: (a: TableData, b: TableData) => a.email.localeCompare(b.email),
     },
     {
       title: 'Phone',
       dataIndex: 'phone',
-      sorter: (a: TableData, b: TableData) => a.phone.length - b.phone.length,
+      sorter: (a: TableData, b: TableData) => a.phone.localeCompare(b.phone),
     },
     {
       title: 'Date Of Join',
       dataIndex: 'dateofJoin',
-      sorter: (a: TableData, b: TableData) => a.dateofJoin.length - b.dateofJoin.length,
+      sorter: (a: TableData, b: TableData) =>
+        new Date(a.dateofJoin).getTime() - new Date(b.dateofJoin).getTime(),
     },
     {
       title: 'Status',
@@ -138,76 +217,82 @@ const TeacherList = () => {
           )}
         </>
       ),
-      sorter: (a: TableData, b: TableData) => a.status.length - b.status.length,
+      sorter: (a: TableData, b: TableData) => a.status.localeCompare(b.status),
     },
     {
       title: 'Action',
       dataIndex: 'action',
       render: (_: any, record: any) => (
-        <>
-          <div className="d-flex align-items-center">
-            <div className="dropdown">
-              <Link
-                to="#"
-                className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i className="ti ti-dots-vertical fs-14" />
-              </Link>
-              <ul className="dropdown-menu dropdown-menu-right p-3">
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to={`${routes.teacherDetails}?id=${record.teacherId}`}
-                  >
-                    <i className="ti ti-menu me-2" />
-                    View Teacher
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to={`${routes.editTeacher}?id=${record.teacherId}`}
-                  >
-                    <i className="ti ti-edit-circle me-2" />
-                    Edit
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#login_detail"
-                  >
-                    <i className="ti ti-lock me-2" />
-                    Login Details
-                  </Link>
-                </li>
-                <li>
-                  <Link className="dropdown-item rounded-1" to="#">
-                    <i className="ti ti-toggle-right me-2" />
-                    Disable
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#delete-modal"
-                    onClick={() => record.teacherId && handleDeleteTeacher(record.teacherId)}
-                    style={{ opacity: isDeleting ? 0.6 : 1 }}
-                  >
-                    <i className="ti ti-trash-x me-2" />
-                    {isDeleting ? 'Deleting...' : 'Delete'}
-                  </Link>
-                </li>
-              </ul>
-            </div>
+        <div className="d-flex align-items-center action-dropdown">
+          <div className="dropdown">
+            <Link
+              to="#"
+              className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+              onClick={(e) => {
+                // Position dropdown after Bootstrap handles the toggle
+                setTimeout(() => {
+                  const dropdownMenu = e.currentTarget.nextElementSibling as HTMLElement;
+                  if (dropdownMenu && dropdownMenu.classList.contains('show')) {
+                    dropdownMenu.classList.add('dropdown-positioned');
+                    positionDropdown(dropdownMenu, e.currentTarget as HTMLElement);
+                  }
+                }, 10);
+              }}
+            >
+              <i className="ti ti-dots-vertical fs-14" />
+            </Link>
+            <ul className="dropdown-menu dropdown-menu-end p-3">
+              <li>
+                <Link
+                  className="dropdown-item rounded-1"
+                  to={`${routes.teacherDetails}?id=${record.teacherId}`}
+                >
+                  <i className="ti ti-menu me-2" />
+                  View Teacher
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="dropdown-item rounded-1"
+                  to={`${routes.editTeacher}?id=${record.teacherId}`}
+                >
+                  <i className="ti ti-edit-circle me-2" />
+                  Edit
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="dropdown-item rounded-1"
+                  to="#"
+                  data-bs-toggle="modal"
+                  data-bs-target="#login_detail"
+                >
+                  <i className="ti ti-lock me-2" />
+                  Login Details
+                </Link>
+              </li>
+              <li>
+                <Link className="dropdown-item rounded-1" to="#">
+                  <i className="ti ti-toggle-right me-2" />
+                  {record.status === 'Active' ? 'Disable' : 'Enable'}
+                </Link>
+              </li>
+              <li>
+                <button
+                  className="dropdown-item rounded-1 border-0 bg-transparent w-100 text-start"
+                  onClick={() => record.teacherId && handleDeleteTeacher(record.teacherId)}
+                  disabled={isDeleting}
+                  style={{ opacity: isDeleting ? 0.6 : 1 }}
+                >
+                  <i className="ti ti-trash-x me-2" />
+                  {isDeleting ? 'Deleting...' : 'Delete'}
+                </button>
+              </li>
+            </ul>
           </div>
-        </>
+        </div>
       ),
     },
   ];
@@ -276,6 +361,7 @@ const TeacherList = () => {
 
   return (
     <>
+      <style dangerouslySetInnerHTML={{ __html: customStyles }} />
       {/* Page Wrapper */}
       <div className="page-wrapper">
         <div className="content">
@@ -330,7 +416,7 @@ const TeacherList = () => {
                     <i className="ti ti-filter me-2" />
                     Filter
                   </Link>
-                  <div className="dropdown-menu drop-width " ref={dropdownMenuRef}>
+                  <div className="dropdown-menu drop-width" ref={dropdownMenuRef}>
                     <form>
                       <div className="d-flex align-items-center border-bottom p-3">
                         <h4>Filter</h4>
