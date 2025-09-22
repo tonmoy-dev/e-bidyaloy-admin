@@ -1,46 +1,49 @@
-import  { useEffect, useState } from "react";
-import Select from "react-select";
+import { useEffect, useState } from 'react';
+import Select from 'react-select';
 
 export type Option = {
   value: string;
   label: string;
 };
 
-export interface SelectProps {
+export interface CommonSelectProps {
   options: Option[];
   defaultValue?: Option;
   className?: string;
-  styles?: any; 
+  styles?: any;
+  value?: string; // ✅ comes from react-hook-form field.value
+  onChange?: (value: string) => void; // ✅ comes from react-hook-form field.onChange
 }
 
-const CommonSelect: React.FC<SelectProps> = ({ options, defaultValue, className }) => {
+const CommonSelect: React.FC<CommonSelectProps> = ({
+  options,
+  defaultValue,
+  className,
+  value,
+  onChange,
+}) => {
   const [selectedOption, setSelectedOption] = useState<Option | undefined>(defaultValue);
-
-  // const customStyles = {
-  //   option: (base: any, state: any) => ({
-  //     ...base,
-  //     color: "#6A7287",
-  //     backgroundColor: state.isSelected ? "#ddd" : "white",
-  //     cursor: "pointer",
-  //     "&:hover": {
-  //       backgroundColor: state.isFocused ? "#3D5EE1" : "blue",
-  //       color: state.isFocused ? "#fff" : "#6A7287",
-  //     },
-  //   }),
-  // };
 
   const handleChange = (option: Option | null) => {
     setSelectedOption(option || undefined);
+    if (onChange) {
+      onChange(option ? option.value : ''); // ✅ propagate value to RHF
+    }
   };
+
   useEffect(() => {
-    setSelectedOption(defaultValue || undefined);
-  }, [defaultValue])
-  
+    if (value) {
+      const matched = options.find((opt) => opt.value === value);
+      setSelectedOption(matched);
+    } else {
+      setSelectedOption(defaultValue || undefined);
+    }
+  }, [value, defaultValue, options]);
+
   return (
     <Select
-     classNamePrefix="react-select"
+      classNamePrefix="react-select"
       className={className}
-      // styles={customStyles}
       options={options}
       value={selectedOption}
       onChange={handleChange}
