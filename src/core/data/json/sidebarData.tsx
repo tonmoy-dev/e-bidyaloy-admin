@@ -208,7 +208,6 @@ export const SidebarData = [
 
         submenuItems: [
           { label: 'All Classes', link: routes.classes },
-          { label: 'All Sessions', link: routes.sessions },
           { label: 'Schedule', link: routes.sheduleClasses },
         ],
       },

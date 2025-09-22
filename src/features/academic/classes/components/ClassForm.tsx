@@ -1,7 +1,8 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
-import { useGetTeachersQuery } from '../api/teacherApi';
+import { useTeachers } from '../../../peoples/teacher/hooks/useTeachers';
+import type { TeacherModel } from '../../../peoples/teacher/models/teacher.model';
 import type { ClassModel } from '../models/class.model';
 import { classSchema } from '../models/class.schema';
 
@@ -13,9 +14,10 @@ interface ClassFormProps {
 }
 
 export default function ClassForm({ mode, defaultValues, onSubmit }: ClassFormProps) {
-  const { data } = useGetTeachersQuery(1);
+  const { teachers: data } = useTeachers(1);
 
   const teachers = data?.results;
+
   const {
     handleSubmit,
     control,
@@ -43,7 +45,7 @@ export default function ClassForm({ mode, defaultValues, onSubmit }: ClassFormPr
   });
 
   const teacherOptions =
-    teachers?.map((teacher) => ({
+    teachers?.map((teacher: TeacherModel) => ({
       label: `${teacher.user?.full_name}`,
       value: String(teacher.id),
     })) || [];
@@ -79,7 +81,11 @@ export default function ClassForm({ mode, defaultValues, onSubmit }: ClassFormPr
                   control={control}
                   render={({ field }) => (
                     <SelectDropDown
-                      value={teacherOptions.find((o) => o.value === String(field.value)) ?? null}
+                      value={
+                        teacherOptions.find(
+                          (o: { value: string }) => o.value === String(field.value),
+                        ) ?? null
+                      }
                       options={teacherOptions}
                       onChange={(option) => field.onChange(option?.value || '')}
                     />
@@ -159,7 +165,10 @@ export default function ClassForm({ mode, defaultValues, onSubmit }: ClassFormPr
                     control={control}
                     render={({ field }) => (
                       <SelectDropDown
-                        value={teacherOptions.find((o) => o.value === field.value) ?? null}
+                        value={
+                          teacherOptions.find((o: { value: string }) => o.value === field.value) ??
+                          null
+                        }
                         options={teacherOptions}
                         onChange={(option) => field.onChange(option?.value || '')}
                       />

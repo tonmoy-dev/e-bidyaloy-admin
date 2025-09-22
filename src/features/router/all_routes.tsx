@@ -251,7 +251,6 @@ export const all_routes = {
   classRoutine: '/academic/class-routine',
   sheduleClasses: '/academic/schedule-classes',
   classes: '/academic/classes',
-  sessions: '/academic/sessions',
   classHomeWork: '/academic/class-home-work',
   exam: '/academic/exam',
   examSchedule: '/academic/exam-schedule',

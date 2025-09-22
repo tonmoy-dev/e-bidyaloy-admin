@@ -67,16 +67,6 @@ import Pages from '../content/pages';
 import Testimonials from '../content/testimonials';
 import StaffAttendance from '../hrm/attendance/staff-attendance';
 import StudentAttendance from '../hrm/attendance/student-attendance';
-import AdminDashboard from '../mainMenu/adminDashboard';
-import Calendar from '../mainMenu/apps/calendar';
-import ParentDashboard from '../mainMenu/parentDashboard';
-import StudentDasboard from '../mainMenu/studentDashboard';
-import TeacherDashboard from '../mainMenu/teacherDashboard';
-import Error404 from '../pages/error/error-404';
-import Error500 from '../pages/error/error-500';
-import { all_routes } from './all_routes.tsx';
-
-import Sessions from '../academic/sessions/index.tsx';
 import TeacherAttendance from '../hrm/attendance/teacher-attendance.tsx';
 import Departments from '../hrm/departments';
 import Designation from '../hrm/designation';
@@ -91,6 +81,11 @@ import StaffDetails from '../hrm/staff-list/staff-details.tsx';
 import StaffLeave from '../hrm/staff-list/staff-leave';
 import StaffPayRoll from '../hrm/staff-list/staff-payroll.tsx';
 import StaffsAttendance from '../hrm/staff-list/staffs-attendance';
+import AdminDashboard from '../mainMenu/adminDashboard';
+import Calendar from '../mainMenu/apps/calendar';
+import ParentDashboard from '../mainMenu/parentDashboard';
+import StudentDasboard from '../mainMenu/studentDashboard';
+import TeacherDashboard from '../mainMenu/teacherDashboard';
 import CollectFees from '../management/feescollection/collectFees';
 import FeesAssign from '../management/feescollection/feesAssign';
 import FeesGroup from '../management/feescollection/feesGroup';
@@ -115,6 +110,8 @@ import Membershipplan from '../membership/membershipplan';
 import MembershipTransaction from '../membership/membershiptrasaction';
 import BlankPage from '../pages/blankPage';
 import ComingSoon from '../pages/comingSoon';
+import Error404 from '../pages/error/error-404';
+import Error500 from '../pages/error/error-500';
 import Profile from '../pages/profile';
 import NotificationActivities from '../pages/profile/activities';
 import UnderMaintenance from '../pages/underMaintenance';
@@ -242,6 +239,7 @@ import DeleteRequest from '../userManagement/deleteRequest';
 import Manageusers from '../userManagement/manageusers';
 import Permission from '../userManagement/permission';
 import RolesPermissions from '../userManagement/rolesPermissions';
+import { all_routes } from './all_routes.tsx';
 
 const routes = all_routes;
 
@@ -855,11 +853,6 @@ export const publicRoutes = [
   {
     path: routes.classes,
     element: <Classes />,
-    route: Route,
-  },
-  {
-    path: routes.sessions,
-    element: <Sessions />,
     route: Route,
   },
   {
