@@ -1,6 +1,5 @@
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
-
-
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -49,5 +48,16 @@ export const API_ENDPOINTS = {
     DELETE_BY_ID: '/api/v1/teachers/',
     DETAILS_BY_ID: '/api/v1/teachers/',
   },
-
+  SUBJECT: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/subjects/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/subjects/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'PATCH' }),
+    DELETE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'DELETE' }),
+  },
 };
