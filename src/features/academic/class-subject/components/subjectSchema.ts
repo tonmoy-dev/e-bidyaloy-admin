@@ -1,4 +1,3 @@
-// subject.schema.ts
 import * as yup from 'yup';
 import { SubjectTypeEnum } from '../models/subject.model';
 
@@ -24,6 +23,7 @@ export const subjectSchema = yup.object({
     .oneOf(Object.values(SubjectTypeEnum))
     .required('Subject type is required'),
   is_active: yup.boolean().default(true),
+  classes: yup.string().required('Class selection is required'),
   organization: yup.string().optional(),
   organization_name: yup.string().optional(),
   teacher_count: yup.number().optional(),

@@ -25,6 +25,7 @@ export const API_ENDPOINTS = {
       method: 'GET',
       params,
     }),
+    LIST_WP: () => ({ url: '/api/v1/classes_wp/', method: 'GET' }),
     CREATE: () => ({ url: '/api/v1/classes/', method: 'POST' }),
     DETAILS: (id: number | string) => ({ url: `/api/v1/classes/${id}/`, method: 'GET' }),
     UPDATE: (id: number | string) => ({ url: `/api/v1/classes/${id}/`, method: 'PUT' }),

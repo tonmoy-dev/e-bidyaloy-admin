@@ -1,5 +1,3 @@
-// src/features/api/endpoints/subjectEndpoints.ts
-
 import { API_ENDPOINTS } from '../../../../core/constants/api';
 import { baseApi } from '../../../../core/services/baseApi';
 import type { PaginatedResponse } from '../models/common.model'; // or wherever it's defined
@@ -18,6 +16,28 @@ export const subjectApi = baseApi.injectEndpoints({
           : [{ type: 'Subject', id: 'LIST' }],
     }),
 
+    getSubjectsWithoutPagination: builder.query<SubjectModel[], void>({
+      query: () => API_ENDPOINTS.SUBJECT.LIST_WP(),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'Subject' as const, id })),
+              { type: 'Subject', id: 'LIST_WP' },
+            ]
+          : [{ type: 'Subject', id: 'LIST_WP' }],
+    }),
+
+    getClassesWithoutPagination: builder.query<SubjectModel[], void>({
+      query: () => API_ENDPOINTS.CLASS.LIST_WP(),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: 'Class' as const, id })),
+              { type: 'Class', id: 'LIST_WP' },
+            ]
+          : [{ type: 'Class', id: 'LIST_WP' }],
+    }),
+
     getSubjectById: builder.query<SubjectModel, string>({
       query: (id) => API_ENDPOINTS.SUBJECT.DETAILS(id),
       providesTags: (_result, _error, id) => [{ type: 'Subject', id }],
@@ -28,7 +48,10 @@ export const subjectApi = baseApi.injectEndpoints({
         ...API_ENDPOINTS.SUBJECT.CREATE(),
         body: newSubject,
       }),
-      invalidatesTags: [{ type: 'Subject', id: 'LIST' }],
+      invalidatesTags: [
+        { type: 'Subject', id: 'LIST' },
+        { type: 'Subject', id: 'LIST_WP' },
+      ],
     }),
 
     updateSubject: builder.mutation<SubjectModel, { id: string; data: Partial<SubjectModel> }>({
@@ -39,6 +62,7 @@ export const subjectApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Subject', id },
         { type: 'Subject', id: 'LIST' },
+        { type: 'Subject', id: 'LIST_WP' },
       ],
     }),
 
@@ -53,6 +77,7 @@ export const subjectApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: 'Subject', id },
         { type: 'Subject', id: 'LIST' },
+        { type: 'Subject', id: 'LIST_WP' },
       ],
     }),
 
@@ -63,6 +88,7 @@ export const subjectApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         { type: 'Subject', id },
         { type: 'Subject', id: 'LIST' },
+        { type: 'Subject', id: 'LIST_WP' },
       ],
     }),
   }),
@@ -71,6 +97,8 @@ export const subjectApi = baseApi.injectEndpoints({
 
 export const {
   useGetSubjectsQuery,
+  useGetSubjectsWithoutPaginationQuery,
+  useGetClassesWithoutPaginationQuery,
   useGetSubjectByIdQuery,
   useCreateSubjectMutation,
   useUpdateSubjectMutation,

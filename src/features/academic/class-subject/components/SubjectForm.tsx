@@ -1,6 +1,8 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
+// Import the CLASSES hook - not subjects!
+import { useClassesWithoutPagination } from '../hooks/useGetClassesQueryWP';
 import type { SubjectModel } from '../models/subject.model';
 import { subjectSchema } from './subjectSchema';
 
@@ -12,15 +14,22 @@ interface SubjectFormProps {
 }
 
 export default function SubjectForm({ mode, defaultValues, onSubmit }: SubjectFormProps) {
-  // Subject type options (you may want to move this to a constants file)
+  // Get CLASSES without pagination - this was the issue!
+  const { classes, isLoading: classesLoading } = useClassesWithoutPagination();
+
+  // Subject type options updated based on your backend choices
   const subjectTypeOptions = [
-    { label: 'CORE', value: 'CORE' },
-    { label: 'ELECTIVE', value: 'ELECTIVE' },
-    { label: 'PRACTICAL', value: 'PRACTICAL' },
-    { label: 'THEORY', value: 'THEORY' },
-    { label: 'LAB', value: 'LAB' },
-    { label: 'EXTRACURRICULAR', value: 'EXTRACURRICULAR' },
+    { label: 'Core', value: 'core' },
+    { label: 'Elective', value: 'elective' },
+    { label: 'Extra Curricular', value: 'extra_curricular' },
   ];
+
+  // Transform classes data for dropdown
+  const classOptions =
+    classes?.map((classItem) => ({
+      label: classItem.name,
+      value: classItem.id,
+    })) || [];
 
   const {
     handleSubmit,
@@ -35,6 +44,7 @@ export default function SubjectForm({ mode, defaultValues, onSubmit }: SubjectFo
       description: defaultValues?.description ?? '',
       subject_type: defaultValues?.subject_type ?? 'core',
       is_active: defaultValues?.is_active ?? true,
+      classes: defaultValues?.classes ?? '',
     },
   });
 
@@ -104,6 +114,29 @@ export default function SubjectForm({ mode, defaultValues, onSubmit }: SubjectFo
                   />
                   {errors.subject_type && (
                     <div className="invalid-feedback d-block">{errors.subject_type.message}</div>
+                  )}
+                </div>
+              </div>
+
+              {/* Classes Dropdown */}
+              <div className="col-md-6">
+                <div className="mb-3">
+                  <label className="form-label">Class *</label>
+                  <Controller
+                    name="classes"
+                    control={control}
+                    render={({ field }) => (
+                      <SelectDropDown
+                        value={classOptions.find((option) => option.value === field.value) || null}
+                        options={classOptions}
+                        onChange={(option) => field.onChange(option?.value || '')}
+                        placeholder={classesLoading ? 'Loading classes...' : 'Select a class'}
+                        isDisabled={classesLoading}
+                      />
+                    )}
+                  />
+                  {errors.classes && (
+                    <div className="invalid-feedback d-block">{errors.classes.message}</div>
                   )}
                 </div>
               </div>

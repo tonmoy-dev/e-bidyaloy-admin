@@ -1,10 +1,7 @@
 export enum SubjectTypeEnum {
-  CORE = 'CORE',
-  ELECTIVE = 'ELECTIVE',
-  PRACTICAL = 'PRACTICAL',
-  THEORY = 'THEORY',
-  LAB = 'LAB',
-  EXTRACURRICULAR = 'EXTRACURRICULAR',
+  CORE = 'core',
+  ELECTIVE = 'elective',
+  EXTRA_CURRICULAR = 'extra_curricular',
 }
 
 export interface SubjectModel {
@@ -17,7 +14,9 @@ export interface SubjectModel {
   organization: string; // UUID string
   organization_name: string;
   teacher_count: number;
-  created_at: string; // ISO date string
+  created_at: string;
+  LIST_WP: string; // ISO date string
+  classes: string;
 }
 
 // For create/update operations where some fields might be optional

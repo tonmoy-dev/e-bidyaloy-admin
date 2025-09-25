@@ -1,4 +1,3 @@
-// src/features/subjects/hooks/useSubjectMutations.ts
 import {
   useCreateSubjectMutation,
   useDeleteSubjectMutation,
