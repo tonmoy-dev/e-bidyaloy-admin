@@ -16,17 +16,6 @@ export const subjectApi = baseApi.injectEndpoints({
           : [{ type: 'Subject', id: 'LIST' }],
     }),
 
-    getSubjectsWithoutPagination: builder.query<SubjectModel[], void>({
-      query: () => API_ENDPOINTS.SUBJECT.LIST_WP(),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ id }) => ({ type: 'Subject' as const, id })),
-              { type: 'Subject', id: 'LIST_WP' },
-            ]
-          : [{ type: 'Subject', id: 'LIST_WP' }],
-    }),
-
     getClassesWithoutPagination: builder.query<SubjectModel[], void>({
       query: () => API_ENDPOINTS.CLASS.LIST_WP(),
       providesTags: (result) =>
@@ -97,7 +86,6 @@ export const subjectApi = baseApi.injectEndpoints({
 
 export const {
   useGetSubjectsQuery,
-  useGetSubjectsWithoutPaginationQuery,
   useGetClassesWithoutPaginationQuery,
   useGetSubjectByIdQuery,
   useCreateSubjectMutation,
