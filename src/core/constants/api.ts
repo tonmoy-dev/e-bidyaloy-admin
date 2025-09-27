@@ -61,4 +61,11 @@ export const API_ENDPOINTS = {
     PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'PATCH' }),
     DELETE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'DELETE' }),
   },
+  STUDENT: {
+    LIST: '/api/v1/students/',
+    CREATE: '/api/v1/students/',
+    UPDATE_BY_ID: '/api/v1/students/',
+    DELETE_BY_ID: '/api/v1/students/',
+    DETAILS_BY_ID: '/api/v1/students/',
+},
 };

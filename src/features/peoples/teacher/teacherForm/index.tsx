@@ -9,7 +9,8 @@ import {
   ContractTeacher,
   Tgender,
   status,
-} from '../../../../core/common/selectoption/selectoption';
+} 
+from '../../../../core/common/selectoption/selectoption';
 import TagInput from '../../../../core/common/Taginput';
 import { all_routes } from '../../../router/all_routes';
 import { useTeacherById } from '../hooks/useTeacherById';
@@ -51,7 +52,6 @@ const TeacherForm = () => {
     control,
     handleSubmit,
     reset,
-    setValue,
     watch,
     formState: { errors },
   } = useForm<TeacherModel>({
