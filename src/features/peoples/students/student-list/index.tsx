@@ -1,11 +1,12 @@
-import  { useRef } from "react";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useRef, useMemo, useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { all_routes } from "../../../router/all_routes";
-import { Studentlist } from "../../../../core/data/json/studentList";
 import type { TableData } from "../../../../core/data/interface";
-import ImageWithBasePath from "../../../../core/common/imageWithBasePath";
 import StudentModals from "../studentModals";
 import Table from "../../../../core/common/dataTable/index";
+import { useStudents } from "../hooks/useStudents";
+import { useStudentMutations } from "../hooks/useStudentMutations";
 import PredefinedDateRanges from "../../../../core/common/datePicker";
 import {
   allClass,
@@ -19,75 +20,249 @@ import TooltipOption from "../../../../core/common/tooltipOption";
 
 const StudentList = () => {
   const routes = all_routes;
-  const data = Studentlist;
+  const [currentPage, setCurrentPage] = useState(1);
+  const [filters, setFilters] = useState({
+    name: "",
+    class: "",
+    section: "",
+    gender: "",
+    status: "",
+  });
+
+  // API hooks
+  const { isLoading, students, isError, refetch } = useStudents(currentPage);
+  const { deleteStudent, isDeleteSuccess } = useStudentMutations();
+
   const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
+
+  // Transform API data for table
+  const tableData = useMemo(() => {
+    if (!students?.results) return [];
+    return students.results.map((s: any) => ({
+      key:
+        s.id ?? s.student_id ?? s.admission_number ?? Math.random().toString(36).slice(2),
+      student_id: s.student_id ?? s.admission_number ?? "",
+      RollNo: s.roll_number ?? "",
+      name:
+        s.user?.full_name ||
+        `${s.user?.first_name ?? ""} ${s.user?.last_name ?? ""}`.trim(),
+      class: s.class_name || s.class_assigned?.name || "",
+      section: s.section_name || s.section?.name || "",
+      gender: s.user?.gender || "",
+      status: s.status || "",
+      raw: s,
+    }));
+  }, [students]);
+
+  // Filter data based on current filters
+  const filteredData = useMemo(() => {
+    return tableData.filter((student) => {
+      const matchesName =
+        !filters.name ||
+        student.name.toLowerCase().includes(filters.name.toLowerCase());
+      const matchesClass =
+        !filters.class ||
+        student.class.toLowerCase().includes(filters.class.toLowerCase());
+      const matchesSection =
+        !filters.section ||
+        student.section.toLowerCase().includes(filters.section.toLowerCase());
+      const matchesGender =
+        !filters.gender || student.gender === filters.gender;
+      const matchesStatus =
+        !filters.status || student.status === filters.status;
+
+      return (
+        matchesName &&
+        matchesClass &&
+        matchesSection &&
+        matchesGender &&
+        matchesStatus
+      );
+    });
+  }, [tableData, filters]);
+
+  const handleDeleteStudent = async (studentId: string) => {
+    if (window.confirm("Are you sure you want to delete this student?")) {
+      try {
+        await deleteStudent(studentId).unwrap();
+        refetch();
+      } catch (error) {
+        console.error("Failed to delete student:", error);
+        alert("Failed to delete student. Please try again.");
+      }
+    }
+  };
 
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
       dropdownMenuRef.current.classList.remove("show");
     }
   };
+
+  const handleFilterChange = (field: string, value: any) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: value?.value || value || "",
+    }));
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleResetFilters = () => {
+    setFilters({
+      name: "",
+      class: "",
+      section: "",
+      gender: "",
+      status: "",
+    });
+  };
+
+  // Ensure refetch on successful deletion
+  useEffect(() => {
+    if (isDeleteSuccess) {
+      refetch();
+    }
+  }, [isDeleteSuccess, refetch]);
+
+  // Utility to extract a stable student id from either the static fixture or transformed row
+  const getStudentId = (record: any) => record?.student_id ?? record?.AdmissionNo ?? record?.admNo ?? "";
+
+  // Populate student modals with the selected student's info so when Bootstrap opens them they show correct data
+  const populateStudentModals = (record: any) => {
+    try {
+      const studentId = getStudentId(record);
+      const name = record?.name ?? `${record?.first_name ?? ""} ${record?.last_name ?? ""}`.trim();
+      const imgSrc = record?.imgSrc ?? record?.avatar ?? "assets/img/students/student-01.jpg";
+
+      // Add Fees modal badge (admission no)
+      const addFeesBadge = document.querySelector('#add_fees_collect .badge-sm');
+      if (addFeesBadge) addFeesBadge.textContent = studentId;
+
+      // Add Fees modal avatar img
+      const addFeesImg = document.querySelector('#add_fees_collect img');
+      if (addFeesImg && imgSrc) (addFeesImg as HTMLImageElement).src = imgSrc;
+
+      // Login Details modal: name and avatar
+      const loginName = document.querySelector('#login_detail .name-info h6');
+      if (loginName && name) loginName.textContent = name;
+      const loginImg = document.querySelector('#login_detail img');
+      if (loginImg && imgSrc) (loginImg as HTMLImageElement).src = imgSrc;
+
+      // Delete modal: make message a bit specific
+      const deleteMsg = document.querySelector('#delete-modal .modal-body p');
+      if (deleteMsg && name) deleteMsg.textContent = `You want to delete ${name} (${studentId}), this can't be undone once you delete.`;
+    } catch {
+      // ignore DOM errors
+    }
+  };
   const columns = [
     {
-      title: "Admission No",
-      dataIndex: "AdmissionNo",
-      render: (text: string) => (
-        <Link to={routes.studentDetail} className="link-primary">
+      title: "Student ID",
+      dataIndex: "student_id",
+      render: (text: string, record: any) => (
+        <Link
+          to="#"
+          className="link-primary"
+          data-bs-toggle="modal"
+          data-bs-target="#login_detail"
+          onClick={() => populateStudentModals(record)}
+        >
           {text}
         </Link>
       ),
-      sorter: (a: TableData, b: TableData) =>
-        a.AdmissionNo.length - b.AdmissionNo.length,
+      sorter: (a: any, b: any) =>
+        (a.student_id || "").localeCompare(b.student_id || ""),
     },
     {
       title: "Roll No",
       dataIndex: "RollNo",
+      render: (text: string, record: any) => (
+        <Link
+          to="#"
+          className="text-dark"
+          data-bs-toggle="modal"
+          data-bs-target="#login_detail"
+          onClick={() => populateStudentModals(record)}
+        >
+          {text}
+        </Link>
+      ),
       sorter: (a: TableData, b: TableData) => a.RollNo.length - b.RollNo.length,
     },
     {
       title: "Name",
       dataIndex: "name",
       render: (text: string, record: any) => (
-        <div className="d-flex align-items-center">
-          <Link to="#" className="avatar avatar-md">
-            <ImageWithBasePath
-              src={record.imgSrc}
-              className="img-fluid rounded-circle"
-              alt="img"
-            />
-          </Link>
-          <div className="ms-2">
-            <p className="text-dark mb-0">
-              <Link to="#">{text}</Link>
-            </p>
-          </div>
-        </div>
+        <Link
+          to="#"
+          className="text-dark"
+          data-bs-toggle="modal"
+          data-bs-target="#login_detail"
+          onClick={() => populateStudentModals(record)}
+        >
+          {text}
+        </Link>
       ),
       sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
     },
     {
       title: "Class",
       dataIndex: "class",
+      render: (text: string, record: any) => (
+        <Link
+          to="#"
+          data-bs-toggle="modal"
+          data-bs-target="#login_detail"
+          onClick={() => populateStudentModals(record)}
+        >
+          {text}
+        </Link>
+      ),
       sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
     },
     {
       title: "Section",
       dataIndex: "section",
+      render: (text: string, record: any) => (
+        <Link
+          to="#"
+          data-bs-toggle="modal"
+          data-bs-target="#login_detail"
+          onClick={() => populateStudentModals(record)}
+        >
+          {text}
+        </Link>
+      ),
       sorter: (a: TableData, b: TableData) =>
         a.section.length - b.section.length,
     },
     {
       title: "Gender",
       dataIndex: "gender",
+      render: (text: string, record: any) => (
+        <Link
+          to="#"
+          data-bs-toggle="modal"
+          data-bs-target="#login_detail"
+          onClick={() => populateStudentModals(record)}
+        >
+          {text}
+        </Link>
+      ),
       sorter: (a: TableData, b: TableData) => a.gender.length - b.gender.length,
     },
 
     {
       title: "Status",
       dataIndex: "status",
-      render: (text: string) => (
-        <>
-          {text === "Active" ? (
+      render: (text: string, record: any) => (
+        <Link
+          to="#"
+          data-bs-toggle="modal"
+          data-bs-target="#login_detail"
+          onClick={() => populateStudentModals(record)}
+        >
+          {text === "active" ? (
             <span className="badge badge-soft-success d-inline-flex align-items-center">
               <i className="ti ti-circle-filled fs-5 me-1"></i>
               {text}
@@ -98,25 +273,14 @@ const StudentList = () => {
               {text}
             </span>
           )}
-        </>
+        </Link>
       ),
       sorter: (a: TableData, b: TableData) => a.status.length - b.status.length,
     },
     {
-      title: "Date of Join",
-      dataIndex: "DateofJoin",
-      sorter: (a: TableData, b: TableData) =>
-        a.DateofJoin.length - b.DateofJoin.length,
-    },
-    {
-      title: "DOB",
-      dataIndex: "DOB",
-      sorter: (a: TableData, b: TableData) => a.DOB.length - b.DOB.length,
-    },
-    {
       title: "Action",
       dataIndex: "action",
-      render: () => (
+      render: (_: any, record: any) => (
         <>
           <div className="d-flex align-items-center">
             <Link
@@ -141,6 +305,7 @@ const StudentList = () => {
               to="#"
               data-bs-toggle="modal"
               data-bs-target="#add_fees_collect"
+              onClick={() => populateStudentModals(record)}
               className="btn btn-light fs-12 fw-semibold me-3"
             >
               Collect Fees
@@ -150,7 +315,7 @@ const StudentList = () => {
                 to="#"
                 className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
                 data-bs-toggle="dropdown"
-                aria-expanded="false"
+                aria-expanded={false}
               >
                 <i className="ti ti-dots-vertical fs-14" />
               </Link>
@@ -158,7 +323,10 @@ const StudentList = () => {
                 <li>
                   <Link
                     className="dropdown-item rounded-1"
-                    to="student-details"
+                    to="#"
+                    data-bs-toggle="modal"
+                    data-bs-target="#login_detail"
+                    onClick={() => populateStudentModals(record)}
                   >
                     <i className="ti ti-menu me-2" />
                     View Student
@@ -179,6 +347,7 @@ const StudentList = () => {
                     to="#"
                     data-bs-toggle="modal"
                     data-bs-target="#login_detail"
+                    onClick={() => populateStudentModals(record)}
                   >
                     <i className="ti ti-lock me-2" />
                     Login Details
@@ -200,15 +369,13 @@ const StudentList = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#delete-modal"
+                  <button
+                    className="dropdown-item rounded-1 border-0 bg-transparent text-danger"
+                    onClick={() => handleDeleteStudent(record.studentId)}
                   >
                     <i className="ti ti-trash-x me-2" />
                     Delete
-                  </Link>
+                  </button>
                 </li>
               </ul>
             </div>
@@ -288,6 +455,7 @@ const StudentList = () => {
                                 className="select"
                                 options={allClass}
                                 defaultValue={allClass[0]}
+                                onChange={(value) => handleFilterChange("class", value)}
                               />
                             </div>
                           </div>
@@ -298,6 +466,7 @@ const StudentList = () => {
                                 className="select"
                                 options={allSection}
                                 defaultValue={allSection[0]}
+                                onChange={(value) => handleFilterChange("section", value)}
                               />
                             </div>
                           </div>
@@ -308,6 +477,7 @@ const StudentList = () => {
                                 className="select"
                                 options={names}
                                 defaultValue={names[0]}
+                                onChange={(value) => handleFilterChange("name", value)}
                               />
                             </div>
                           </div>
@@ -398,7 +568,21 @@ const StudentList = () => {
             </div>
             <div className="card-body p-0 py-3">
               {/* Student List */}
-              <Table dataSource={data} columns={columns} Selection={true} />
+              {isLoading ? (
+                <div className="text-center p-4">
+                  <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : isError ? (
+                <div className="text-center p-4">
+                  <div className="alert alert-danger">
+                    Error loading students. Please try again.
+                  </div>
+                </div>
+              ) : (
+                <Table dataSource={filteredData} columns={columns} Selection={true} />
+              )}
               {/* /Student List */}
             </div>
           </div>

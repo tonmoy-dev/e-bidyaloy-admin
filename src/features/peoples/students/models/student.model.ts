@@ -23,11 +23,10 @@ export interface StudentModel {
 // Keep the old interface for backward compatibility
 export type studentModel = StudentModel;
 export interface PaginatedResponse<T> {
-    data: T[];
-    page: number;
-    pageSize: number;
-    total: number;
-    totalPages: number;
+    count: number;
+    next: string | null;
+    previous: string | null;
+    results: T[];
 }
 export type StudentPaginatedResponse = PaginatedResponse<studentModel>;
 

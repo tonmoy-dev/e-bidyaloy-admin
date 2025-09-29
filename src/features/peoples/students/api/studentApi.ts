@@ -9,7 +9,7 @@ export const studentApi = baseApi.injectEndpoints({
         providesTags: (result) =>   
         result
           ? [
-              ...result.data.map(({ id }) => ({ type: 'Student' as const, id })),
+              ...result.results.map(({ id }) => ({ type: 'Student' as const, id })),
               { type: 'Student', id: 'LIST' },
             ]
             : [{ type: 'Student', id: 'LIST' }],
