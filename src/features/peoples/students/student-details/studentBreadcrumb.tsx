@@ -2,13 +2,20 @@
 import { all_routes } from '../../../router/all_routes'
 import { Link } from 'react-router-dom'
 
-const StudentBreadcrumb = () => {
+interface StudentBreadcrumbProps {
+   studentName?: string;
+   studentId?: string | null;
+} 
+
+const StudentBreadcrumb = ({ studentName, studentId }: StudentBreadcrumbProps) => {
     const routes = all_routes
   return (
     <div className="col-md-12">
           <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
             <div className="my-auto mb-2">
-              <h3 className="page-title mb-1">Student Details</h3>
+              <h3 className="page-title mb-1">
+                {studentName ? `${studentName} - Details` : 'Student Details'}
+              </h3>
               <nav>
                 <ol className="breadcrumb mb-0">
                   <li className="breadcrumb-item">
@@ -18,7 +25,7 @@ const StudentBreadcrumb = () => {
                     <Link to={routes.studentList}>Student</Link>
                   </li>
                   <li className="breadcrumb-item active" aria-current="page">
-                    Student Details
+                    {studentName || 'Student Details'}
                   </li>
                 </ol>
               </nav>
@@ -34,7 +41,7 @@ const StudentBreadcrumb = () => {
                 Login Details
               </Link>
               <Link
-                to={routes.editStudent}
+                to={studentId ? `${routes.editStudent}?id=${studentId}` : routes.editStudent}
                 className="btn btn-primary d-flex align-items-center mb-2"
               >
                 <i className="ti ti-edit-circle me-2" />

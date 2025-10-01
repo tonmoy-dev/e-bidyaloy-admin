@@ -483,7 +483,7 @@ const AddStudent = () => {
                 {/* /Personal Information */}
 
                 {/* Guardian Information */}
-                <div className="card">
+                {/* <div className="card">
                   <div className="card-header bg-light">
                     <div className="d-flex align-items-center">
                       <span className="bg-white avatar avatar-sm me-2 text-gray-7 flex-shrink-0">
@@ -649,7 +649,7 @@ const AddStudent = () => {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
                 {/* /Guardian Information */}
 
                 {/* Action Buttons */}

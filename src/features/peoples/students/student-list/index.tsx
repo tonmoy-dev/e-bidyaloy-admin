@@ -40,7 +40,7 @@ const StudentList = () => {
     if (!students?.results) return [];
     return students.results.map((s: any) => ({
       key:
-        s.id ?? s.student_id ?? s.admission_number ?? Math.random().toString(36).slice(2),
+        s.id ?? s.id ?? s.admission_number ?? Math.random().toString(36).slice(2),
       student_id: s.student_id ?? s.admission_number ?? "",
       RollNo: s.roll_number ?? "",
       name:
@@ -51,6 +51,7 @@ const StudentList = () => {
       gender: s.user?.gender || "",
       status: s.status || "",
       raw: s,
+      studentId: s.id
     }));
   }, [students]);
 
@@ -133,6 +134,9 @@ const StudentList = () => {
       const studentId = getStudentId(record);
       const name = record?.name ?? `${record?.first_name ?? ""} ${record?.last_name ?? ""}`.trim();
       const imgSrc = record?.imgSrc ?? record?.avatar ?? "assets/img/students/student-01.jpg";
+ 
+      // console.log('Populating modals for student ID:', studentId, 'Name:', name);
+
 
       // Add Fees modal badge (admission no)
       const addFeesBadge = document.querySelector('#add_fees_collect .badge-sm');
@@ -194,11 +198,7 @@ const StudentList = () => {
       dataIndex: "name",
       render: (text: string, record: any) => (
         <Link
-          to="#"
-          className="text-dark"
-          data-bs-toggle="modal"
-          data-bs-target="#login_detail"
-          onClick={() => populateStudentModals(record)}
+          to={`${routes.studentDetail}?id=${record.studentId}`} className="avatar avatar-md"
         >
           {text}
         </Link>
