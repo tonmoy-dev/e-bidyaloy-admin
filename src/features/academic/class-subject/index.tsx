@@ -29,9 +29,13 @@ const ClassSubject = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { subjects } = useSubjects(page);
   const data = subjects?.results;
-  const skipQuery = activeModal === MODAL_TYPE.DELETE;
+  const skipQuery = !selectedId || activeModal === MODAL_TYPE.DELETE;
   const { createSubject, updateSubject, deleteSubject } = useSubjectMutations();
-  const { subjectDetails, isError: isSubjectError } = useSubjectById(selectedId ?? null, skipQuery);
+  const {
+    subjectDetails,
+    isError: isSubjectError,
+    isLoading: isSubjectLoading,
+  } = useSubjectById(selectedId ?? null, skipQuery);
   const route = all_routes;
 
   useEffect(() => {
@@ -70,6 +74,12 @@ const ClassSubject = () => {
         <span className="text-capitalize">{record?.subject_type}</span>
       ),
       sorter: (a: TableData, b: TableData) => a.subject_type.length - b.subject_type.length,
+    },
+    {
+      title: 'Class',
+      align: 'center',
+      render: (record: TableData) => record?.classes || 'N/A',
+      sorter: (a: TableData, b: TableData) => (a.classes || '').localeCompare(b.classes || ''),
     },
     {
       title: 'Teacher Count',
@@ -250,9 +260,9 @@ const ClassSubject = () => {
         />
 
         {/* Edit Subject */}
-        {subjectDetails?.id && (
+        {activeModal === MODAL_TYPE.EDIT && (
           <DataModal
-            show={activeModal === MODAL_TYPE.EDIT}
+            show={true}
             onClose={() => {
               setActiveModal(null);
               setSelectedId(null);
@@ -260,23 +270,37 @@ const ClassSubject = () => {
             size="lg"
             modalTitle="Update Subject Information"
             body={
-              <SubjectForm
-                mode="edit"
-                defaultValues={subjectDetails}
-                onActiveModal={setActiveModal}
-                onSubmit={async (data) => {
-                  await handleSubjectForm(data, 'edit');
-                  setActiveModal(null);
-                }}
-              />
+              isSubjectLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading subject details...</p>
+                </div>
+              ) : subjectDetails?.id ? (
+                <SubjectForm
+                  mode="edit"
+                  defaultValues={subjectDetails}
+                  onActiveModal={setActiveModal}
+                  onSubmit={async (data) => {
+                    await handleSubjectForm(data, 'edit');
+                    setActiveModal(null);
+                    setSelectedId(null);
+                  }}
+                />
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load subject details.</p>
+                </div>
+              )
             }
           />
         )}
 
         {/* View Subject */}
-        {subjectDetails?.id && (
+        {activeModal === MODAL_TYPE.VIEW && (
           <DataModal
-            show={activeModal === MODAL_TYPE.VIEW}
+            show={true}
             onClose={() => {
               setActiveModal(null);
               setSelectedId(null);
@@ -295,7 +319,22 @@ const ClassSubject = () => {
                 </span>
               )
             }
-            body={<SubjectDetailsView subjectData={subjectDetails} />}
+            body={
+              isSubjectLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading subject details...</p>
+                </div>
+              ) : subjectDetails?.id ? (
+                <SubjectDetailsView subjectData={subjectDetails} />
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load subject details.</p>
+                </div>
+              )
+            }
           />
         )}
 

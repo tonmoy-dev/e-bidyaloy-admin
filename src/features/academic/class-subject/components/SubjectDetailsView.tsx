@@ -5,43 +5,49 @@ const SubjectDetailsView = ({ subjectData }: { subjectData: SubjectModel }) => {
     <div className="row">
       <div className="col-md-6">
         <div className="subject-detail-info mb-3">
-          <p>Subject Name</p>
+          <p className="fw-bold">Subject Name</p>
           <span>{subjectData?.name}</span>
         </div>
       </div>
       <div className="col-md-6">
         <div className="subject-detail-info mb-3">
-          <p>Subject Code</p>
+          <p className="fw-bold">Subject Code</p>
           <span>{subjectData?.code}</span>
         </div>
       </div>
       <div className="col-md-6">
         <div className="subject-detail-info mb-3">
-          <p>Subject Type</p>
-          <span>{subjectData?.subject_type}</span>
+          <p className="fw-bold">Subject Type</p>
+          <span className="text-capitalize">{subjectData?.subject_type}</span>
         </div>
       </div>
       <div className="col-md-6">
         <div className="subject-detail-info mb-3">
-          <p>Description</p>
+          <p className="fw-bold">Class</p>
+          <span>{subjectData?.classes || 'N/A'}</span>
+        </div>
+      </div>
+      <div className="col-md-12">
+        <div className="subject-detail-info mb-3">
+          <p className="fw-bold">Description</p>
           <span>{subjectData?.description || 'N/A'}</span>
         </div>
       </div>
       <div className="col-md-6">
         <div className="subject-detail-info mb-3">
-          <p>Organization</p>
+          <p className="fw-bold">Organization</p>
           <span>{subjectData?.organization_name || 'N/A'}</span>
         </div>
       </div>
       <div className="col-md-6">
         <div className="subject-detail-info mb-3">
-          <p>Teacher Count</p>
+          <p className="fw-bold">Teacher Count</p>
           <span>{subjectData?.teacher_count || 0}</span>
         </div>
       </div>
       <div className="col-md-6">
         <div className="subject-detail-info mb-3">
-          <p>Created At</p>
+          <p className="fw-bold">Created At</p>
           <span>
             {subjectData?.created_at
               ? new Date(subjectData.created_at).toLocaleDateString()

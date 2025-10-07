@@ -1,7 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
-// Import the CLASSES hook - not subjects!
 import { useClassesWithoutPagination } from '../hooks/useGetClassesQueryWP';
 import type { SubjectModel } from '../models/subject.model';
 import { subjectSchema } from './subjectSchema';
@@ -14,10 +13,8 @@ interface SubjectFormProps {
 }
 
 export default function SubjectForm({ mode, defaultValues, onSubmit }: SubjectFormProps) {
-  // Get CLASSES without pagination - this was the issue!
   const { classes, isLoading: classesLoading } = useClassesWithoutPagination();
 
-  // Subject type options updated based on your backend choices
   const subjectTypeOptions = [
     { label: 'Core', value: 'core' },
     { label: 'Elective', value: 'elective' },
@@ -30,6 +27,13 @@ export default function SubjectForm({ mode, defaultValues, onSubmit }: SubjectFo
       label: classItem.name,
       value: classItem.id,
     })) || [];
+
+  // Helper function to find the class ID from class name (for edit mode)
+  const getClassIdFromName = (className: string | undefined) => {
+    if (!className || !classes) return '';
+    const foundClass = classes.find((c) => c.name.toLowerCase() === className.toLowerCase());
+    return foundClass?.id || className; // Return ID if found, otherwise return the original value
+  };
 
   const {
     handleSubmit,
@@ -44,7 +48,8 @@ export default function SubjectForm({ mode, defaultValues, onSubmit }: SubjectFo
       description: defaultValues?.description ?? '',
       subject_type: defaultValues?.subject_type ?? 'core',
       is_active: defaultValues?.is_active ?? true,
-      classes: defaultValues?.classes ?? '',
+      // Try to match class ID from name if in edit mode
+      classes: defaultValues?.classes ? getClassIdFromName(defaultValues.classes) : '',
     },
   });
 
@@ -125,15 +130,25 @@ export default function SubjectForm({ mode, defaultValues, onSubmit }: SubjectFo
                   <Controller
                     name="classes"
                     control={control}
-                    render={({ field }) => (
-                      <SelectDropDown
-                        value={classOptions.find((option) => option.value === field.value) || null}
-                        options={classOptions}
-                        onChange={(option) => field.onChange(option?.value || '')}
-                        placeholder={classesLoading ? 'Loading classes...' : 'Select a class'}
-                        isDisabled={classesLoading}
-                      />
-                    )}
+                    render={({ field }) => {
+                      // Find the selected option - handle both ID and name matching
+                      const selectedOption =
+                        classOptions.find(
+                          (option) =>
+                            option.value === field.value ||
+                            option.label.toLowerCase() === field.value?.toLowerCase(),
+                        ) || null;
+
+                      return (
+                        <SelectDropDown
+                          value={selectedOption}
+                          options={classOptions}
+                          onChange={(option) => field.onChange(option?.value || '')}
+                          placeholder={classesLoading ? 'Loading classes...' : 'Select a class'}
+                          isDisabled={classesLoading}
+                        />
+                      );
+                    }}
                   />
                   {errors.classes && (
                     <div className="invalid-feedback d-block">{errors.classes.message}</div>
