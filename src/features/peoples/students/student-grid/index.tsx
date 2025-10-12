@@ -1,4 +1,5 @@
-import  { useRef } from 'react'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useRef, useMemo, useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { all_routes } from '../../../router/all_routes'
 import ImageWithBasePath from '../../../../core/common/imageWithBasePath'
@@ -7,14 +8,111 @@ import StudentModals from '../studentModals'
 import CommonSelect from '../../../../core/common/commonSelect'
 import TooltipOption from '../../../../core/common/tooltipOption'
 import PredefinedDateRanges from '../../../../core/common/datePicker'
+import { useStudents } from "../hooks/useStudents";
+import { useStudentMutations } from "../hooks/useStudentMutations";
 
 const StudentGrid = () => {
     const routes = all_routes
     const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
+    const [currentPage] = useState(1);
+    const [filters] = useState({
+      name: "",
+      class: "",
+      section: "",
+      gender: "",
+      status: "",
+    });
+
+    // API hooks
+    const { isLoading, students, isError, refetch } = useStudents(currentPage);
+    const { deleteStudent, isDeleteSuccess } = useStudentMutations();
+
+    // Transform API data for grid
+    const gridData = useMemo(() => {
+      if (!students?.results) return [];
+      return students.results.map((s: any) => ({
+        key: s.id ?? s.student_id ?? s.admission_number ?? Math.random().toString(36).slice(2),
+        student_id: s.student_id ?? s.admission_number ?? "",
+        admission_number: s.admission_number ?? s.student_id ?? "",
+        roll_number: s.roll_number ?? "",
+        name: s.user?.full_name || `${s.user?.first_name ?? ""} ${s.user?.last_name ?? ""}`.trim(),
+        class: s.class_name || s.grade_name || "",
+        section: s.section_name || "",
+        gender: s.user?.gender || "",
+        status: s.status || "active",
+        admission_date: s.admission_date || s.user?.date_joined || "",
+        profile_picture_url: s.user?.profile_picture_url || "assets/img/students/student-01.jpg",
+        raw: s,
+        studentId: s.id
+      }));
+    }, [students]);
+
+    // Filter data based on current filters
+    const filteredData = useMemo(() => {
+      return gridData.filter((student) => {
+        const matchesName = !filters.name || student.name.toLowerCase().includes(filters.name.toLowerCase());
+        const matchesClass = !filters.class || student.class.toLowerCase().includes(filters.class.toLowerCase());
+        const matchesSection = !filters.section || student.section.toLowerCase().includes(filters.section.toLowerCase());
+        const matchesGender = !filters.gender || student.gender === filters.gender;
+        const matchesStatus = !filters.status || student.status === filters.status;
+
+        return matchesName && matchesClass && matchesSection && matchesGender && matchesStatus;
+      });
+    }, [gridData, filters]);
+
+    const handleDeleteStudent = async (studentId: string) => {
+      if (window.confirm("Are you sure you want to delete this student?")) {
+        try {
+          await deleteStudent(studentId).unwrap();
+          refetch();
+        } catch (error) {
+          console.error("Failed to delete student:", error);
+          alert("Failed to delete student. Please try again.");
+        }
+      }
+    };
 
     const handleApplyClick = () => {
       if (dropdownMenuRef.current) {
         dropdownMenuRef.current.classList.remove('show');
+      }
+    };
+
+    // TODO: Implement filtering functionality
+    // const handleFilterChange = (field: string, value: any) => {
+    //   setFilters((prev) => ({
+    //     ...prev,
+    //     [field]: value?.value || value || "",
+    //   }));
+    // };
+
+    // const handleResetFilters = () => {
+    //   setFilters({
+    //     name: "",
+    //     class: "",
+    //     section: "",
+    //     gender: "",
+    //     status: "",
+    //   });
+    // };
+
+    // Ensure refetch on successful deletion
+    useEffect(() => {
+      if (isDeleteSuccess) {
+        refetch();
+      }
+    }, [isDeleteSuccess, refetch]);
+
+    const formatDate = (dateStr: string) => {
+      if (!dateStr) return 'N/A';
+      try {
+        return new Date(dateStr).toLocaleDateString('en-US', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        });
+      } catch {
+        return dateStr;
       }
     };
   return (
@@ -201,1610 +299,181 @@ const StudentGrid = () => {
         </div>
       </div>
       {/* /Filter */}
-      <div className="row">
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892434
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
+      {/* Loading State */}
+      {isLoading && (
+        <div className="d-flex justify-content-center align-items-center py-5">
+          <div className="spinner-border text-primary" role="status">
+            <span className="visually-hidden">Loading students...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Error State */}
+      {isError && (
+        <div className="alert alert-danger" role="alert">
+          <h4 className="alert-heading">Error Loading Students</h4>
+          <p>Failed to load students. Please try again.</p>
+          <button className="btn btn-outline-danger" onClick={() => refetch()}>
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Students Grid */}
+      {!isLoading && !isError && (
+        <div className="row">
+          {filteredData.length === 0 ? (
+            <div className="col-12">
+              <div className="text-center py-5">
+                <h5>No students found</h5>
+                <p className="text-muted">Try adjusting your filters or add some students.</p>
+                <Link to={routes.addStudent} className="btn btn-primary">
+                  Add Student
+                </Link>
               </div>
             </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-01.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h5 className="mb-0">
-                      <Link to={routes.studentDetail}>Janet Daniel</Link>
-                    </h5>
-                    <p>III, A</p>
+          ) : (
+            filteredData.map((student: any) => (
+              <div key={student.key} className="col-xxl-3 col-xl-4 col-md-6 d-flex">
+                <div className="card flex-fill">
+                  <div className="card-header d-flex align-items-center justify-content-between">
+                    <Link 
+                      to={`${routes.studentDetail}?id=${student.studentId}`} 
+                      className="link-primary"
+                    >
+                      {student.admission_number || student.studentId || 'N/A'}
+                    </Link>
+                    <div className="d-flex align-items-center">
+                      <span className={`badge ${student.status === 'active' ? 'badge-soft-success' : 'badge-soft-danger'} d-inline-flex align-items-center me-1`}>
+                        <i className="ti ti-circle-filled fs-5 me-1" />
+                        {student.status || 'Active'}
+                      </span>
+                      <div className="dropdown">
+                        <Link
+                          to="#"
+                          className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
+                          data-bs-toggle="dropdown"
+                          aria-expanded="false"
+                        >
+                          <i className="ti ti-dots-vertical fs-14" />
+                        </Link>
+                        <ul className="dropdown-menu dropdown-menu-right p-3">
+                          <li>
+                            <Link
+                              className="dropdown-item rounded-1"
+                              to={`${routes.studentDetail}?id=${student.studentId}`}
+                            >
+                              <i className="ti ti-menu me-2" />
+                              View Student
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              className="dropdown-item rounded-1"
+                              to={routes.editStudent}
+                            >
+                              <i className="ti ti-edit-circle me-2" />
+                              Edit
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              className="dropdown-item rounded-1"
+                              to={routes.studentPromotion}
+                            >
+                              <i className="ti ti-arrow-ramp-right-2 me-2" />
+                              Promote Student
+                            </Link>
+                          </li>
+                          <li>
+                            <Link
+                              className="dropdown-item rounded-1"
+                              to="#"
+                              onClick={() => handleDeleteStudent(student.studentId)}
+                            >
+                              <i className="ti ti-trash-x me-2" />
+                              Delete
+                            </Link>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card-body">
+                    <div className="bg-light-300 rounded-2 p-3 mb-3">
+                      <div className="d-flex align-items-center">
+                        <Link
+                          to={`${routes.studentDetail}?id=${student.studentId}`}
+                          className="avatar avatar-lg flex-shrink-0"
+                        >
+                          <ImageWithBasePath
+                            src={student.profile_picture_url}
+                            className="img-fluid rounded-circle"
+                            alt="img"
+                          />
+                        </Link>
+                        <div className="ms-2">
+                          <h5 className="mb-0">
+                            <Link to={`${routes.studentDetail}?id=${student.studentId}`}>
+                              {student.name || 'Unknown Student'}
+                            </Link>
+                          </h5>
+                          <p>{student.class}{student.section ? `, ${student.section}` : ''}</p>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-between gx-2">
+                      <div>
+                        <p className="mb-0">Roll No</p>
+                        <p className="text-dark">{student.roll_number || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="mb-0">Gender</p>
+                        <p className="text-dark">{student.gender ? student.gender.charAt(0).toUpperCase() + student.gender.slice(1) : 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="mb-0">Admitted on</p>
+                        <p className="text-dark">{formatDate(student.admission_date)}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="card-footer d-flex align-items-center justify-content-between">
+                    <div className="d-flex align-items-center">
+                      <Link
+                        to="#"
+                        className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
+                      >
+                        <i className="ti ti-brand-hipchat" />
+                      </Link>
+                      <Link
+                        to="#"
+                        className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
+                      >
+                        <i className="ti ti-phone" />
+                      </Link>
+                      <Link
+                        to="#"
+                        className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
+                      >
+                        <i className="ti ti-mail" />
+                      </Link>
+                    </div>
+                    <Link
+                      to="#"
+                      data-bs-toggle="modal"
+                      data-bs-target="#add_fees_collect"
+                      className="btn btn-light btn-sm fw-semibold"
+                    >
+                      Add Fees
+                    </Link>
                   </div>
                 </div>
               </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35013</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Female</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">10 Jan 2015</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
+            ))
+          )}
         </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892433
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-02.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Joann Michael</Link>
-                    </h6>
-                    <p>IV, B</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35012</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Male</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">19 Aug 2014</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892432
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-03.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Kathleen Dison</Link>
-                    </h6>
-                    <p>III, A</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35011</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Female</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">5 Dec 2017</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className=" col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892431
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-danger d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Inactive
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-04.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Lisa Gourley </Link>
-                    </h6>
-                    <p>II, B</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35010</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Female</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">13 May 2017</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892430
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-05.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Ralph Claudia</Link>
-                    </h6>
-                    <p>II, B</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35009</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Male</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">20 Jun 20215</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892429
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-06.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Ralph Claudia</Link>
-                    </h6>
-                    <p>II, B</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35008</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Male</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">20 Jun 20215</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892428
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-06.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Julie Scott</Link>
-                    </h6>
-                    <p>V, A</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35007</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Female</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">18 Jan 2023</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892427
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-09.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Susan Boswell</Link>
-                    </h6>
-                    <p>VIII, B</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35006</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Female</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">26 May 2020</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892426
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-08.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Richard Mayes</Link>
-                    </h6>
-                    <p>V, A</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35005</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Male</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">6 Oct 2022</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892425
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-12.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Richard Mayes</Link>
-                    </h6>
-                    <p>VII, B</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35004</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Male</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">6 Oct 2022</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892424
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-11.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Veronica Randle</Link>
-                    </h6>
-                    <p>IX, A</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35003</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Female</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">27 Dec 2009</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        {/* Student Grid */}
-        <div className="col-xxl-3 col-xl-4 col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header d-flex align-items-center justify-content-between">
-              <Link to={routes.studentDetail} className="link-primary">
-                AD9892423
-              </Link>
-              <div className="d-flex align-items-center">
-                <span className="badge badge-soft-success d-inline-flex align-items-center me-1">
-                  <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
-                </span>
-                <div className="dropdown">
-                  <Link
-                    to="#"
-                    className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                    data-bs-toggle="dropdown"
-                    aria-expanded="false"
-                  >
-                    <i className="ti ti-dots-vertical fs-14" />
-                  </Link>
-                  <ul className="dropdown-menu dropdown-menu-right p-3">
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentDetail}
-                      >
-                        <i className="ti ti-menu me-2" />
-                        View Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.editStudent}
-                      >
-                        <i className="ti ti-edit-circle me-2" />
-                        Edit
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to={routes.studentPromotion}
-                      >
-                        <i className="ti ti-arrow-ramp-right-2 me-2" />
-                        Promote Student
-                      </Link>
-                    </li>
-                    <li>
-                      <Link
-                        className="dropdown-item rounded-1"
-                        to="#"
-                        data-bs-toggle="modal"
-                        data-bs-target="#delete-modal"
-                      >
-                        <i className="ti ti-trash-x me-2" />
-                        Delete
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div className="bg-light-300 rounded-2 p-3 mb-3">
-                <div className="d-flex align-items-center">
-                  <Link
-                    to={routes.studentDetail}
-                    className="avatar avatar-lg flex-shrink-0"
-                  >
-                    <ImageWithBasePath
-                      src="assets/img/students/student-10.jpg"
-                      className="img-fluid rounded-circle"
-                      alt="img"
-                    />
-                  </Link>
-                  <div className="ms-2">
-                    <h6 className="mb-0">
-                      <Link to={routes.studentDetail}>Thomas Hunt</Link>
-                    </h6>
-                    <p>X, A</p>
-                  </div>
-                </div>
-              </div>
-              <div className="d-flex align-items-center justify-content-between gx-2">
-                <div>
-                  <p className="mb-0">Roll No</p>
-                  <p className="text-dark">35002</p>
-                </div>
-                <div>
-                  <p className="mb-0">Gender</p>
-                  <p className="text-dark">Male</p>
-                </div>
-                <div>
-                  <p className="mb-0">Joined On</p>
-                  <p className="text-dark">11 Aug 2008</p>
-                </div>
-              </div>
-            </div>
-            <div className="card-footer d-flex align-items-center justify-content-between">
-              <div className="d-flex align-items-center">
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-brand-hipchat" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle  p-0 me-2"
-                >
-                  <i className="ti ti-phone" />
-                </Link>
-                <Link
-                  to="#"
-                  className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                >
-                  <i className="ti ti-mail" />
-                </Link>
-              </div>
-              <Link
-                to="#"
-                data-bs-toggle="modal"
-                data-bs-target="#add_fees_collect"
-                className="btn btn-light btn-sm fw-semibold"
-              >
-                Add Fees
-              </Link>
-            </div>
-          </div>
-        </div>
-        {/* /Student Grid */}
-        <div className="col-md-12 text-center">
-          <Link to="#" className="btn btn-primary">
-            <i className="ti ti-loader-3 me-2" />
-            Load More
-          </Link>
-        </div>
-      </div>
+      )}
+
     </div>
   </div>
   {/* /Page Wrapper */}

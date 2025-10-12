@@ -12,6 +12,7 @@ import { useTeachers } from '../hooks/useTeachers';
 import type { TeacherModel } from '../models/teacher.model';
 import TeacherModal from '../teacherModal';
 
+
 const TeacherList = () => {
   const routes = all_routes;
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,6 +70,7 @@ const TeacherList = () => {
       overflow-y: auto;
     }
   `;
+   
 
   // API hooks
   const { isLoading, teachers, isError, error, refetch } = useTeachers(currentPage);

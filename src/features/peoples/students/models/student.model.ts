@@ -36,7 +36,7 @@ export interface StudentModel {
     admission_number?: string;
     admission_date?: string; // ISO date (YYYY-MM-DD)
     roll_number?: string;
-    status?: StudentStatus;
+    status?: StudentStatus; 
 
     // guardian info (from payload)
     guardian_name?: string;

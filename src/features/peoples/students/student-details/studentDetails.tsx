@@ -112,7 +112,7 @@ const StudentDetails = () => {
             `${student.user?.first_name || ''} ${student.user?.last_name || ''}`.trim() ||
             'Unknown Student'
           }
-          studentId={student.student_id || 'N/A'}
+          studentId={student.id || 'N/A'}
         />
         {/* /Page Header */}
       </div>

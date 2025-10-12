@@ -71,12 +71,15 @@ const AddStudent = () => {
     if (location.pathname === routes.editStudent && studentId) {
       setIsEdit(true);
       if (studentDetails) {
+  // Some APIs return personal fields nested under `user` (user.first_name, user.last_name, user.email).
+  // Prefer top-level fields when present, otherwise fallback to nested user object.
+  const user = (studentDetails as unknown as { user?: { first_name?: string; last_name?: string; email?: string; gender?: string } }).user || {};
         reset({
-          first_name: studentDetails.first_name || '',
-          last_name: studentDetails.last_name || '',
-          gender: studentDetails.gender || 'male',
+          first_name: studentDetails.first_name || user.first_name || '',
+          last_name: studentDetails.last_name || user.last_name || '',
+          gender: studentDetails.gender || user.gender || 'male',
           student_id: studentDetails.student_id || '',
-          email: studentDetails.email || '',
+          email: studentDetails.email || user.email || '',
           admission_number: studentDetails.admission_number || '',
           admission_date: studentDetails.admission_date
             ? dayjs(studentDetails.admission_date).format('YYYY-MM-DD')

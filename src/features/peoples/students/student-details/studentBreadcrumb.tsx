@@ -2,9 +2,11 @@
 import { all_routes } from '../../../router/all_routes'
 import { Link } from 'react-router-dom'
 
+
 interface StudentBreadcrumbProps {
    studentName?: string;
    studentId?: string | null;
+
 } 
 
 const StudentBreadcrumb = ({ studentName, studentId }: StudentBreadcrumbProps) => {
