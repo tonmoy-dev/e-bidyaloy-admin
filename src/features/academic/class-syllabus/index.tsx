@@ -1,435 +1,380 @@
-import  { useRef } from "react";
-import Table from "../../../core/common/dataTable/index";
-import { classSyllabus } from "../../../core/data/json/class-syllabus";
-import {
-  activeList,
-  classSection,
-  classSylabus,
-} from "../../../core/common/selectoption/selectoption";
-import PredefinedDateRanges from "../../../core/common/datePicker";
-import CommonSelect from "../../../core/common/commonSelect";
-import type { TableData } from "../../../core/data/interface";
-import { Link } from "react-router-dom";
-import { all_routes } from "../../router/all_routes";
-import TooltipOption from "../../../core/common/tooltipOption";
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { MODAL_TYPE } from '../../../core/constants/modal';
+import type { TableData } from '../../../core/data/interface';
+import PageHeader from '../../../shared/components/layout/PageHeader';
+import DeleteConfirmationModal from '../../../shared/components/modals/DeleteConfirmationModal';
+import DataTable from '../../../shared/components/table/DataTable';
+import DataTableBody from '../../../shared/components/table/DataTableBody';
+import DataTableColumnActions from '../../../shared/components/table/DataTableColumnActions';
+import TableFilter, {
+  type FilterConfig,
+  type FilterOption,
+} from '../../../shared/components/table/DataTableFilter';
+import DataTableFooter from '../../../shared/components/table/DataTableFooter';
+import DataTableHeader from '../../../shared/components/table/DataTableHeader';
+import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
+import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
+import { all_routes } from '../../router/all_routes';
+import { useClassesWithoutPagination } from '../class-subject/hooks/useGetClassesQueryWP';
+import SyllabusDetailsView from './components/SyllabusDetailsView';
+import SyllabusForm from './components/SyllabusForm';
+import { useSyllabusById } from './hooks/useGetSyllabusById';
+import { useSyllabusList } from './hooks/useGetSyllabusList';
+import { useSyllabusMutations } from './hooks/useSyllabusMutations';
+import { useSubjectsWithoutPagination } from './hooks/useSubjectsWP';
+import { type SyllabusModel } from './models/syllabus.model';
 
 const ClassSyllabus = () => {
-  const routes = all_routes;
+  const page = 1;
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { syllabuses } = useSyllabusList(page);
+  const data = syllabuses?.results;
+  const skipQuery = !selectedId || activeModal === MODAL_TYPE.DELETE;
+  const { createSyllabus, updateSyllabus, deleteSyllabus } = useSyllabusMutations();
+  const {
+    syllabusDetails,
+    isError: isSyllabusError,
+    isLoading: isSyllabusLoading,
+  } = useSyllabusById(selectedId ?? null, skipQuery);
+  const route = all_routes;
 
-  const data = classSyllabus;
+  // Fetch classes and subjects for ID to name mapping
+  const { classes } = useClassesWithoutPagination();
+  const { subjects } = useSubjectsWithoutPagination();
+
+  // Helper functions to get names from IDs
+  const getClassName = (classId: string) => {
+    const classItem = classes?.find((c) => c.id === classId);
+    return classItem?.name || 'N/A';
+  };
+
+  const getSubjectName = (subjectId: string) => {
+    const subject = subjects?.find((s) => s.id === subjectId);
+    return subject?.name || 'N/A';
+  };
+
+  useEffect(() => {
+    if (isSyllabusError) {
+      toast.error('Syllabus data not found!');
+    }
+
+    return () => {
+      setActiveModal(null);
+      setSelectedId(null);
+    };
+  }, [isSyllabusError]);
+
   const columns = [
     {
-      title: "Class",
-      dataIndex: "class",
-      sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
-    },
-
-    {
-      title: "Section",
-      dataIndex: "section",
-      sorter: (a: TableData, b: TableData) => a.section.length - b.section.length,
+      title: 'ID',
+      align: 'center',
+      render: (_: TableData, __: TableData, index: number) => (page - 1) * 10 + index + 1,
     },
     {
-      title: "Subject Group",
-      dataIndex: "subjectGroup",
-      sorter: (a: TableData, b: TableData) => a.subjectGroup.length - b.subjectGroup.length,
+      title: 'Title',
+      align: 'center',
+      render: (record: TableData) => record?.title,
+      sorter: (a: TableData, b: TableData) => a.title.length - b.title.length,
     },
     {
-      title: "CreatedDate",
-      dataIndex: "createdDate",
-      sorter: (a: TableData, b: TableData) => a.createdDate.length - b.createdDate.length,
+      title: 'Subject',
+      align: 'center',
+      render: (record: TableData) => getSubjectName(record?.subject),
+      sorter: (a: TableData, b: TableData) =>
+        getSubjectName(a.subject).localeCompare(getSubjectName(b.subject)),
     },
     {
-      title: "Status",
-      dataIndex: "status",
-      render: () => (
+      title: 'Class',
+      align: 'center',
+      render: (record: TableData) => getClassName(record?.classes),
+      sorter: (a: TableData, b: TableData) =>
+        getClassName(a.classes).localeCompare(getClassName(b.classes)),
+    },
+    {
+      title: 'Status',
+      dataIndex: 'status',
+      align: 'center',
+      render: (text: string) => {
+        switch (text) {
+          case 'published':
+            return (
+              <span className="badge badge-soft-success d-inline-flex align-items-center">
+                <i className="ti ti-circle-filled fs-5 me-1"></i>
+                Published
+              </span>
+            );
+          case 'draft':
+            return (
+              <span className="badge badge-soft-warning d-inline-flex align-items-center">
+                <i className="ti ti-circle-filled fs-5 me-1"></i>
+                Draft
+              </span>
+            );
+          case 'archived':
+            return (
+              <span className="badge badge-soft-secondary d-inline-flex align-items-center">
+                <i className="ti ti-circle-filled fs-5 me-1"></i>
+                Archived
+              </span>
+            );
+          default:
+            return (
+              <span className="badge badge-soft-secondary d-inline-flex align-items-center">
+                <i className="ti ti-circle-filled fs-5 me-1"></i>
+                {text}
+              </span>
+            );
+        }
+      },
+    },
+    {
+      title: 'Created Date',
+      align: 'center',
+      render: (record: TableData) =>
+        record?.created_at ? new Date(record.created_at).toLocaleDateString() : 'N/A',
+      sorter: (a: TableData, b: TableData) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    },
+    {
+      title: 'Action',
+      align: 'center',
+      render: (record: TableData) => (
         <>
-         <span className="badge badge-soft-success d-inline-flex align-items-center"><i
-					className="ti ti-circle-filled fs-5 me-1"></i>Active</span>
-        </>
-      ),
-    },
-    {
-      title: "Action",
-      dataIndex: "action",
-      render: () => (
-        <>
-          <div className="d-flex align-items-center">
-            <div className="dropdown">
-              <Link
-                to="#"
-                className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i className="ti ti-dots-vertical fs-14" />
-              </Link>
-              <ul className="dropdown-menu dropdown-menu-right p-3">
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#edit_syllabus"
-                  >
-                    <i className="ti ti-edit-circle me-2" />
-                    Edit
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#delete-modal"
-                  >
-                    <i className="ti ti-trash-x me-2" />
-                    Delete
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <DataTableColumnActions
+            onEditButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('edit');
+            }}
+            onViewButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('view');
+            }}
+            onDeleteButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('delete');
+            }}
+          />
         </>
       ),
     },
   ];
-  const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
-  const handleApplyClick = () => {
-    if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+
+  const statusOptions: FilterOption[] = [
+    { label: 'Published', value: 'published' },
+    { label: 'Draft', value: 'draft' },
+    { label: 'Archived', value: 'archived' },
+  ];
+
+  const syllabusFilters: FilterConfig[] = [
+    {
+      key: 'status',
+      label: 'Status',
+      options: statusOptions,
+      defaultValue: statusOptions[0],
+    },
+  ];
+
+  const sortingOptions = ['Ascending', 'Descending', 'Recently Added', 'Recently Viewed'];
+
+  const handleSyllabusForm = async (data: SyllabusModel, mode: string) => {
+    console.log('syllabus data', data);
+
+    try {
+      if (mode === 'add') {
+        const response = await createSyllabus(data);
+        if (response?.data) {
+          toast.success('Syllabus created successfully');
+        }
+      } else if (mode === 'edit' && syllabusDetails?.id) {
+        const response = await updateSyllabus({ id: syllabusDetails?.id, data: data });
+        if (response?.data) {
+          toast.success('Syllabus updated successfully');
+        }
+      }
+    } catch (error) {
+      console.log('error', error);
+      toast.error('An error occurred. Please try again.');
     }
   };
+
+  const handleSyllabusDelete = async () => {
+    if (!selectedId) return;
+    try {
+      const response = await deleteSyllabus(selectedId);
+      if (response) {
+        toast.success('Syllabus deleted successfully');
+        setActiveModal(null);
+        setSelectedId(null);
+      }
+    } catch (error) {
+      console.log('error', error);
+      toast.error('Failed to delete syllabus. Please try again.');
+    }
+  };
+
   return (
     <div>
-      <>
-        {/* Page Wrapper */}
-        <div className="page-wrapper">
-          <div className="content">
-            {/* Page Header */}
-            <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
-              <div className="my-auto mb-2">
-                <h3 className="page-title mb-1">Books</h3>
-                <nav>
-                  <ol className="breadcrumb mb-0">
-                    <li className="breadcrumb-item">
-                      <Link to={routes.adminDashboard}>Dashboard</Link>
-                    </li>
-                    <li className="breadcrumb-item">
-                      <Link to="#">Syllabus </Link>
-                    </li>
-                    <li className="breadcrumb-item active" aria-current="page">
-                      Subject Group
-                    </li>
-                  </ol>
-                </nav>
-              </div>
-              <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
-              <TooltipOption />
-                <div className="mb-2">
-                  <Link
-                    to="#"
-                    className="btn btn-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#add_syllabus"
-                  >
-                    <i className="ti ti-square-rounded-plus-filled me-2" />
-                    Add Subject Group
-                  </Link>
-                </div>
-              </div>
-            </div>
-            {/* /Page Header */}
-            {/* Guardians List */}
-            <div className="card">
-              <div className="card-header d-flex align-items-center justify-content-between flex-wrap pb-0">
-                <h4 className="mb-3">Class Syllabus</h4>
-                <div className="d-flex align-items-center flex-wrap">
-                  <div className="input-icon-start mb-3 me-2 position-relative">
-                  <PredefinedDateRanges />
-                  </div>
-                  <div className="dropdown mb-3 me-2">
-                    <Link
-                      to="#"
-                      className="btn btn-outline-light bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                      data-bs-auto-close="outside"
-                    >
-                      <i className="ti ti-filter me-2" />
-                      Filter
-                    </Link>
-                    <div className="dropdown-menu drop-width"  ref={dropdownMenuRef}>
-                      <form >
-                        <div className="d-flex align-items-center border-bottom p-3">
-                          <h4>Filter</h4>
-                        </div>
-                        <div className="p-3 border-bottom pb-0">
-                          <div className="row">
-                            <div className="col-md-12">
-                              <div className="mb-3">
-                                <label className="form-label">Class</label>
-                                <CommonSelect
-                                  className="select"
-                                  options={classSylabus}
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-12">
-                              <div className="mb-3">
-                                <label className="form-label">Section</label>
-                                <CommonSelect
-                                  className="select"
-                                  options={classSection}
-                                  defaultValue={classSylabus[0]}
-                                  
-                                />
-                              </div>
-                            </div>
-                            <div className="col-md-12">
-                              <div className="mb-3">
-                                <label className="form-label">Status</label>
-                                <CommonSelect
-                                  className="select"
-                                  options={activeList}
-                                  defaultValue={activeList[0]}
-                                   
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-3 d-flex align-items-center justify-content-end">
-                          <Link to="#" className="btn btn-light me-3">
-                            Reset
-                          </Link>
-                          <Link
-                            to="#"
-                            className="btn btn-primary"
-                            onClick={handleApplyClick}
-                          >
-                            Apply
-                          </Link>
-                        </div>
-                      </form>
-                    </div>
-                  </div>
-                  <div className="dropdown mb-3">
-                    <Link
-                      to="#"
-                      className="btn btn-outline-light bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
-                      <i className="ti ti-sort-ascending-2 me-2" />
-                      Sort by A-Z
-                    </Link>
-                    <ul className="dropdown-menu p-3">
-                      <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1 active"
-                        >
-                          Ascending
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1"
-                        >
-                          Descending
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1"
-                        >
-                          Recently Viewed
-                        </Link>
-                      </li>
-                      <li>
-                        <Link
-                          to="#"
-                          className="dropdown-item rounded-1"
-                        >
-                          Recently Added
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-              <div className="card-body p-0 py-3">
-                {/* Guardians List */}
-                <Table columns={columns} dataSource={data} Selection={true} />
-              
-                {/* /Guardians List */}
-              </div>
-            </div>
-            {/* /Guardians List */}
-          </div>
+      {/* Page Wrapper */}
+      <div className="page-wrapper">
+        <div className="content">
+          {/* Page Header */}
+          <PageHeader
+            title="Class Syllabus"
+            breadcrumb={[
+              { label: 'Dashboard', path: `${route.adminDashboard}` },
+              { label: 'Academic', path: '#' },
+              { label: 'Class Syllabus' },
+            ]}
+            addButtonLabel="Add Syllabus"
+            onAddClick={() => {
+              setActiveModal('add');
+            }}
+          >
+            <TooltipOptions showPrint={true} showExport={true} />
+          </PageHeader>
+
+          {/* Page Table */}
+          <DataTable
+            header={
+              <DataTableHeader
+                filters={
+                  <TableFilter
+                    filters={syllabusFilters}
+                    onApply={(filters) => console.log('Apply:', filters)}
+                    onReset={(filters) => console.log('Reset:', filters)}
+                  />
+                }
+                sortingOptions={sortingOptions}
+                onApply={() => console.log('Apply clicked')}
+                onReset={() => console.log('Reset clicked')}
+                onSortChange={(sort) => console.log('Sort:', sort)}
+                defaultSort="Ascending"
+              />
+            }
+            footer={<DataTableFooter />}
+          >
+            <DataTableBody columns={columns} dataSource={data ?? []} Selection={true} />
+          </DataTable>
         </div>
-        {/* /Page Wrapper */}
-      </>
-      <div>
-        {/* Add Syllabus */}
-        <div className="modal fade" id="add_syllabus">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h4 className="modal-title">Add Subject Group</h4>
-                <button
-                  type="button"
-                  className="btn-close custom-btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <i className="ti ti-x" />
-                </button>
-              </div>
-              <form >
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="mb-3">
-                        <label className="form-label">Class</label>
-                        <CommonSelect
-                                  className="select"
-                                  options={classSylabus}
-                                  defaultValue={classSylabus[0]}
-                                   
-                                />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Section</label>
-                        <CommonSelect
-                                  className="select"
-                                  options={classSection}
-                                  defaultValue={classSection[0]}
-                                   
-                                />
-                      </div>
-                      <div className="mb-0">
-                        <label className="form-label">Subject Group</label>
-                        <input type="text" className="form-control" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
-                    Cancel
-                  </Link>
-                  <Link to="#" className="btn btn-primary" data-bs-dismiss="modal">
-                    Add Subject Group
-                  </Link>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        {/* /Add Syllabus */}
-        {/* Edit Syllabus */}
-        <div className="modal fade" id="edit_syllabus">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h4 className="modal-title">Edit Subject Group</h4>
-                <button
-                  type="button"
-                  className="btn-close custom-btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <i className="ti ti-x" />
-                </button>
-              </div>
-              <form >
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="mb-3">
-                        <label className="form-label">Class</label>
-                        <CommonSelect
-                                  className="select"
-                                  options={classSylabus}
-                                  defaultValue={classSylabus[1]}
-                                />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Section</label>
-                        <CommonSelect
-                                  className="select"
-                                  options={classSection}
-                                  defaultValue={classSection[1]}
-                                />
-                      </div>
-                      <div className="mb-0">
-                        <label className="form-label">Save Changes</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Enter Subject Group"
-                          defaultValue="I, C English"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
-                    Cancel
-                  </Link>
-                  <Link to="#" className="btn btn-primary" data-bs-dismiss="modal">
-                    Save Changes
-                  </Link>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        {/* /Edit Syllabus	*/}
-        {/* Delete Modal */}
-        <div className="modal fade" id="delete-modal">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <form >
-                <div className="modal-body text-center">
-                  <span className="delete-icon">
-                    <i className="ti ti-trash-x" />
-                  </span>
-                  <h4>Confirm Deletion</h4>
-                  <p>
-                    You want to delete all the marked items, this cant be undone
-                    once you delete.
-                  </p>
-                  <div className="d-flex justify-content-center">
-                    <Link
-                      to="#"
-                      className="btn btn-light me-3"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </Link>
-                    <Link to="#" className="btn btn-danger" data-bs-dismiss="modal">
-                      Yes, Delete
-                    </Link>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        {/* /Delete Modal */}
       </div>
+
+      <>
+        {/* Add Syllabus */}
+        <DataModal
+          show={activeModal === MODAL_TYPE.ADD}
+          onClose={() => setActiveModal(null)}
+          size="lg"
+          modalTitle="Add Syllabus Information"
+          body={
+            <SyllabusForm
+              mode="add"
+              onActiveModal={setActiveModal}
+              onSubmit={async (data) => {
+                await handleSyllabusForm(data, 'add');
+                setActiveModal(null);
+              }}
+            />
+          }
+        />
+
+        {/* Edit Syllabus */}
+        {activeModal === MODAL_TYPE.EDIT && (
+          <DataModal
+            show={true}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            size="lg"
+            modalTitle="Update Syllabus Information"
+            body={
+              isSyllabusLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading syllabus details...</p>
+                </div>
+              ) : syllabusDetails?.id ? (
+                <SyllabusForm
+                  mode="edit"
+                  defaultValues={syllabusDetails}
+                  onActiveModal={setActiveModal}
+                  onSubmit={async (data) => {
+                    await handleSyllabusForm(data, 'edit');
+                    setActiveModal(null);
+                    setSelectedId(null);
+                  }}
+                />
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load syllabus details.</p>
+                </div>
+              )
+            }
+          />
+        )}
+
+        {/* View Syllabus */}
+        {activeModal === MODAL_TYPE.VIEW && (
+          <DataModal
+            show={true}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            modalTitle="Syllabus Details"
+            header={
+              syllabusDetails?.status === 'published' ? (
+                <span className="badge badge-soft-success ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Published
+                </span>
+              ) : syllabusDetails?.status === 'draft' ? (
+                <span className="badge badge-soft-warning ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Draft
+                </span>
+              ) : (
+                <span className="badge badge-soft-secondary ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Archived
+                </span>
+              )
+            }
+            body={
+              isSyllabusLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading syllabus details...</p>
+                </div>
+              ) : syllabusDetails?.id ? (
+                <SyllabusDetailsView syllabusData={syllabusDetails} />
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load syllabus details.</p>
+                </div>
+              )
+            }
+          />
+        )}
+
+        {/* Delete Modal */}
+        <DeleteConfirmationModal
+          show={activeModal === MODAL_TYPE.DELETE}
+          onClose={() => {
+            setActiveModal(null);
+            setSelectedId(null);
+          }}
+          onConfirm={handleSyllabusDelete}
+          title="Delete Syllabus"
+          message="Do you really want to delete this syllabus? This action cannot be undone."
+        />
+      </>
     </div>
   );
 };
