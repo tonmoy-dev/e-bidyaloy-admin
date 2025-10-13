@@ -56,9 +56,23 @@ export const API_ENDPOINTS = {
       params,
     }),
     CREATE: () => ({ url: '/api/v1/subjects/', method: 'POST' }),
+    LIST_WP: () => ({ url: '/api/v1/subjects_wp/', method: 'GET' }),
     DETAILS: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'GET' }),
     UPDATE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'PUT' }),
     PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'PATCH' }),
     DELETE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'DELETE' }),
+  },
+
+  SYLLABUS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/syllabus/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/syllabus/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'PATCH' }),
+    DELETE: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'DELETE' }),
   },
 };
