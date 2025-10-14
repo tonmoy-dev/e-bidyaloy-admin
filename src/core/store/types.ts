@@ -1,29 +1,32 @@
 // User and Auth related types
 export interface User {
-  id: number;
+  id: string;
   email: string;
   first_name: string;
   last_name: string;
+  full_name: string;
   username: string;
-  role: string | null;
-  thana: string | null;
-  city: string | null;
-  country: string | null;
-  created_by: string | null;
-  updated_by: string | null;
-  last_login: string | null;
-  gender: string;
-  primary_phone: string | null;
-  secondary_phone: string | null;
-  date_of_birth: string | null;
-  street_address_one: string | null;
-  postal_code: string | null;
-  image: string | null;
-  nid: string | null;
-  created_at: string;
-  updated_at: string;
-  email_otp: string | null;
-  is_email_verified: boolean;
+  user_type: string;
+  date_joined: string;
+  role?: string | null;
+  thana?: string | null;
+  city?: string | null;
+  country?: string | null;
+  created_by?: string | null;
+  updated_by?: string | null;
+  last_login?: string | null;
+  gender?: string;
+  primary_phone?: string | null;
+  secondary_phone?: string | null;
+  date_of_birth?: string | null;
+  street_address_one?: string | null;
+  postal_code?: string | null;
+  image?: string | null;
+  nid?: string | null;
+  created_at?: string;
+  updated_at?: string;
+  email_otp?: string | null;
+  is_email_verified?: boolean;
 }
 
 export interface AuthState {

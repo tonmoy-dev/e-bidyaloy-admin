@@ -21,7 +21,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false,
+    rememberMe: true,
   });
   const [formErrors, setFormErrors] = useState({
     email: '',

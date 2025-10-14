@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import ImageWithBasePath from '../../../core/common/imageWithBasePath';
+import { authUtils } from '../../../core/services/authService';
 import {
   useResendVerificationCodeMutation,
   useVerifyEmailMutation,
 } from '../../../core/services/authApi';
+import { useAppDispatch } from '../../../core/store';
+import { setUser, updateTokens } from '../../../core/store/slices/authSlice';
 import { all_routes } from '../../router/all_routes';
 
 const EmailVerification = () => {
   const routes = all_routes;
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   // RTK Query hooks
   const [verifyEmail, { isLoading: isVerifying }] = useVerifyEmailMutation();
@@ -72,20 +76,47 @@ const EmailVerification = () => {
     setSuccessMessage(null);
 
     try {
-      await verifyEmail({
+      const response = await verifyEmail({
         email: email,
         code: code.trim(),
       }).unwrap();
 
-      setSuccessMessage('Email verified successfully! Redirecting to login...');
-
       // Clear the stored email
       sessionStorage.removeItem('principalEmail');
 
-      // Navigate to login page after successful verification
-      setTimeout(() => {
-        navigate(routes.login);
-      }, 2000);
+      // Check if backend returned tokens (auto-login)
+      if (response.access && response.user) {
+        setSuccessMessage('Email verified successfully! Logging you in...');
+
+        // Store tokens in localStorage for persistent login
+        const loginResponse = {
+          access: response.access,
+          refresh: response.refresh || '',
+          user: response.user,
+          message: response.message,
+        };
+
+        authUtils.storeAuthData(loginResponse, true);
+
+        // Update Redux state
+        dispatch(updateTokens({
+          access: response.access,
+          refresh: response.refresh
+        }));
+        dispatch(setUser(response.user));
+
+        // Navigate to dashboard after successful auto-login
+        setTimeout(() => {
+          navigate(routes.adminDashboard);
+        }, 1500);
+      } else {
+        // No tokens returned, redirect to login
+        setSuccessMessage('Email verified successfully! Please log in to continue.');
+
+        setTimeout(() => {
+          navigate(routes.login);
+        }, 2000);
+      }
     } catch (err: unknown) {
       console.error('Email verification error:', err);
 

@@ -45,6 +45,18 @@ export interface VerificationData {
 
 export interface VerificationResponse {
   message: string;
+  access?: string;
+  refresh?: string;
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+    user_type: string;
+    date_joined: string;
+  };
 }
 
 export interface ResendVerificationData {
