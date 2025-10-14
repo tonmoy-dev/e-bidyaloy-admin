@@ -14,6 +14,7 @@ import ExamAttendance from '../academic/examinations/exam-attendance';
 import ExamResult from '../academic/examinations/exam-results';
 import ExamSchedule from '../academic/examinations/exam-schedule';
 import Grade from '../academic/examinations/grade';
+import Grades from '../academic/grades/index.tsx';
 import ScheduleClasses from '../academic/schedule-classes';
 import AccountsIncome from '../accounts/accounts-income';
 import AccountsInvoices from '../accounts/accounts-invoices';
@@ -797,6 +798,11 @@ export const publicRoutes = [
   {
     path: routes.classSyllabus,
     element: <ClassSyllabus />,
+    route: Route,
+  },
+  {
+    path: routes.classGrades,
+    element: <Grades />,
     route: Route,
   },
   {

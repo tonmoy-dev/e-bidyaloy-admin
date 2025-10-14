@@ -75,4 +75,16 @@ export const API_ENDPOINTS = {
     PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'PATCH' }),
     DELETE: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'DELETE' }),
   },
+  GRADES: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/grades/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/grades/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'PATCH' }),
+    DELETE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'DELETE' }),
+  },
 };

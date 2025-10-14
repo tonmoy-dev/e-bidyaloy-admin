@@ -247,6 +247,13 @@ export const SidebarData = [
         submenu: false,
       },
       {
+        label: 'Grades',
+        link: routes.classGrades,
+        icon: 'ti ti-certificate',
+        showSubRoute: false,
+        submenu: false,
+      },
+      {
         label: 'Time Table',
         link: routes.classTimetable,
         icon: 'ti ti-table',

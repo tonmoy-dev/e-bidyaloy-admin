@@ -245,6 +245,7 @@ export const all_routes = {
   //Academic module
   AcademicReason: '/academic/academic-reason',
   classSyllabus: '/academic/class-syllabus',
+  classGrades: '/academic/grades',
   classSubject: '/academic/class-subject',
   classSection: '/academic/class-section',
   classRoom: '/academic/class-room',
