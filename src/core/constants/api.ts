@@ -68,4 +68,11 @@ export const API_ENDPOINTS = {
     DELETE_BY_ID: '/api/v1/students/',
     DETAILS_BY_ID: '/api/v1/students/',
 },
+  EXAM_TYPES: {
+    LIST: '/api/v1/exam-types/',
+    CREATE: '/api/v1/exam-types/',  
+    UPDATE_BY_ID: '/api/v1/exam-types/',
+    DELETE_BY_ID: '/api/v1/exam-types/',
+    DETAILS_BY_ID: '/api/v1/exam-types/',
+  }
 };
