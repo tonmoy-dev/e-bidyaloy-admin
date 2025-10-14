@@ -62,7 +62,7 @@ export const API_ENDPOINTS = {
     PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'PATCH' }),
     DELETE: (id: string) => ({ url: `/api/v1/subjects/${id}/`, method: 'DELETE' }),
   },
-
+  // Syllabus endpoints
   SYLLABUS: {
     LIST: (params?: Record<string, unknown>) => ({
       url: `/api/v1/syllabus/`,
@@ -75,6 +75,8 @@ export const API_ENDPOINTS = {
     PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'PATCH' }),
     DELETE: (id: string) => ({ url: `/api/v1/syllabus/${id}/`, method: 'DELETE' }),
   },
+
+  // Grades endpoints
   GRADES: {
     LIST: (params?: Record<string, unknown>) => ({
       url: `/api/v1/grades/`,
@@ -87,4 +89,23 @@ export const API_ENDPOINTS = {
     PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'PATCH' }),
     DELETE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'DELETE' }),
   },
+
+  // Student endpoints
+  STUDENT: {
+    LIST: '/api/v1/students/',
+    CREATE: '/api/v1/students/',
+    UPDATE_BY_ID: '/api/v1/students/',
+    DELETE_BY_ID: '/api/v1/students/',
+    DETAILS_BY_ID: '/api/v1/students/',
+  },
+
+  // Exam Types endpoints
+  EXAM_TYPES: {
+    LIST: '/api/v1/exam-types/',
+    CREATE: '/api/v1/exam-types/',
+    UPDATE_BY_ID: '/api/v1/exam-types/',
+    DELETE_BY_ID: '/api/v1/exam-types/',
+    DETAILS_BY_ID: '/api/v1/exam-types/',
+  },
 };
+

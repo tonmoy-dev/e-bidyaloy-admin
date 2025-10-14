@@ -1,13 +1,104 @@
-
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import ImageWithBasePath from '../../../../core/common/imageWithBasePath'
 import { all_routes } from '../../../router/all_routes'
 import StudentModals from '../studentModals'
 import StudentSidebar from './studentSidebar'
 import StudentBreadcrumb from './studentBreadcrumb'
+import { useStudentById } from '../hooks/useStudentById'
+import type { studentModel } from '../models/student.model'
+
+
 
 const StudentDetails = () => {
     const routes = all_routes
+    const location = useLocation()
+    const [studentId, setStudentId] = useState<string | null>(null);
+    useEffect(() => {
+      const searchParams = new URLSearchParams(location.search);
+      const id = searchParams.get('id');
+      setStudentId(id);
+    }, [location]);
+    const { studentDetails, isLoading, isError, error, refetch } = useStudentById(studentId);
+
+    if (isLoading) {
+    return (
+      <div className="page-wrapper">
+        <div className="content">
+          <div
+            className="d-flex justify-content-center align-items-center"
+            style={{ minHeight: '400px' }}
+          >
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading Student details...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+   
+   // Error state
+    if (isError || !studentDetails) {
+      return (
+        <div className="page-wrapper">
+          <div className="content">
+            <div className="alert alert-danger" role="alert">
+              <h4 className="alert-heading">Error Loading Student Details</h4>
+              <p>
+                {error && typeof error === 'object' && 'message' in error
+                  ? (error as any).message
+                  : 'Failed to load student details. Please try again.'}
+              </p>
+              <div className="d-flex gap-2">
+                <button className="btn btn-outline-danger" onClick={() => refetch()}>
+                  Retry
+                </button>
+                <Link to={routes.studentList} className="btn btn-outline-secondary">
+                  Back to Students
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const student: studentModel = studentDetails;
+
+     const formatDate = (dateString: string) => {
+    try {
+      return new Date(dateString).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
+    } catch {
+      return dateString;
+    }
+  };
+   
+   const calculateAge = (dateString: string) => {
+    try {
+      const birthDate = new Date(dateString);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+      }
+      return age;
+    } catch {
+      return 'N/A';
+    }
+  };
+
+   const formatGender = (gender: string) => {
+    return gender ? gender.charAt(0).toUpperCase() + gender.slice(1) : 'Not specified';
+  };
+
+
+
   return (
     <>
   {/* Page Wrapper */}
@@ -15,12 +106,19 @@ const StudentDetails = () => {
     <div className="content">
       <div className="row">
         {/* Page Header */}
-        <StudentBreadcrumb />
+        <StudentBreadcrumb
+          studentName={
+            student.user?.full_name || 
+            `${student.user?.first_name || ''} ${student.user?.last_name || ''}`.trim() ||
+            'Unknown Student'
+          }
+          studentId={student.id || 'N/A'}
+        />
         {/* /Page Header */}
       </div>
       <div className="row">
         {/* Student Information */}
-        <StudentSidebar />
+        <StudentSidebar student={student} />
         {/* /Student Information */}
         <div className="col-xxl-9 col-xl-8">
           <div className="row">
@@ -28,7 +126,10 @@ const StudentDetails = () => {
               {/* List */}
               <ul className="nav nav-tabs nav-tabs-bottom mb-4">
                 <li>
-                  <Link to={routes.studentDetail} className="nav-link active">
+                  <Link
+                    to={`${routes.studentDetail}?id=${student.student_id}`}
+                    className="nav-link active"
+                  >
                     <i className="ti ti-school me-2" />
                     Student Details
                   </Link>
@@ -68,7 +169,7 @@ const StudentDetails = () => {
               {/* Parents Information */}
               <div className="card">
                 <div className="card-header">
-                  <h5>Parents Information</h5>
+                  <h5>Gaurdian Information</h5>
                 </div>
                 <div className="card-body">
                   <div className="border rounded p-3 pb-0 mb-3">
@@ -83,108 +184,22 @@ const StudentDetails = () => {
                             />
                           </span>
                           <div className="ms-2 overflow-hidden">
-                            <h6 className="text-truncate">Jerald Vicinius</h6>
-                            <p className="text-primary">Father</p>
+                            <h6 className="text-truncate">{student?.guardian_name || 'Unknown'}</h6>
+                            <p className="text-primary">{student?.guardian_relationship || 'Unknown'}</p>
                           </div>
                         </div>
                       </div>
                       <div className="col-sm-6 col-lg-4">
                         <div className="mb-3">
                           <p className="text-dark fw-medium mb-1">Phone</p>
-                          <p>+1 45545 46464</p>
+                          <p>{student?.guardian_phone || 'Unknown'}</p>
                         </div>
                       </div>
                       <div className="col-sm-6 col-lg-4">
                         <div className="d-flex align-items-center justify-content-between">
                           <div className="mb-3 overflow-hidden me-3">
                             <p className="text-dark fw-medium mb-1">Email</p>
-                            <p className="text-truncate">jera@example.com</p>
-                          </div>
-                          <Link
-                            to="#"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            aria-label="Print"
-                            data-bs-original-title="Reset Password"
-                            className="btn btn-dark btn-icon btn-sm mb-3"
-                          >
-                            <i className="ti ti-lock-x" />
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="border rounded p-3 pb-0 mb-3">
-                    <div className="row">
-                      <div className="col-lg-4 col-sm-6 ">
-                        <div className="d-flex align-items-center mb-3">
-                          <span className="avatar avatar-lg flex-shrink-0">
-                            <ImageWithBasePath
-                              src="assets/img/parents/parent-14.jpg"
-                              className="img-fluid rounded"
-                              alt="img"
-                            />
-                          </span>
-                          <div className="ms-2 overflow-hidden">
-                            <h6 className="text-truncate">Roberta Webber</h6>
-                            <p className="text-primary">Mother</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-lg-4 col-sm-6 ">
-                        <div className="mb-3">
-                          <p className="text-dark fw-medium mb-1">Phone</p>
-                          <p>+1 46499 24357</p>
-                        </div>
-                      </div>
-                      <div className="col-lg-4 col-sm-6">
-                        <div className="d-flex align-items-center justify-content-between">
-                          <div className="mb-3 overflow-hidden me-3">
-                            <p className="text-dark fw-medium mb-1">Email</p>
-                            <p className="text-truncate">robe@example.com</p>
-                          </div>
-                          <Link
-                            to="#"
-                            data-bs-toggle="tooltip"
-                            data-bs-placement="top"
-                            aria-label="Print"
-                            data-bs-original-title="Reset Password"
-                            className="btn btn-dark btn-icon btn-sm mb-3"
-                          >
-                            <i className="ti ti-lock-x" />
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="border rounded p-3 pb-0">
-                    <div className="row">
-                      <div className="col-lg-4 col-sm-6">
-                        <div className="d-flex align-items-center mb-3">
-                          <span className="avatar avatar-lg flex-shrink-0">
-                            <ImageWithBasePath
-                              src="assets/img/parents/parent-13.jpg"
-                              className="img-fluid rounded"
-                              alt="img"
-                            />
-                          </span>
-                          <div className="ms-2 overflow-hidden">
-                            <h6 className="text-truncate">Jerald Vicinius</h6>
-                            <p className="text-primary">Gaurdian (Father)</p>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-lg-4 col-sm-6">
-                        <div className="mb-3">
-                          <p className="text-dark fw-medium mb-1">Phone</p>
-                          <p>+1 45545 46464</p>
-                        </div>
-                      </div>
-                      <div className="col-lg-4 col-sm-6">
-                        <div className="d-flex align-items-center justify-content-between">
-                          <div className="mb-3 overflow-hidden me-3">
-                            <p className="text-dark fw-medium mb-1">Email</p>
-                            <p className="text-truncate">jera@example.com</p>
+                            <p className="text-truncate">{student?.guardian_email || 'Unknown'}</p>
                           </div>
                           <Link
                             to="#"
@@ -257,87 +272,13 @@ const StudentDetails = () => {
                       <i className="ti ti-map-pin-up" />
                     </span>
                     <div>
-                      <p className="text-dark fw-medium mb-1">
-                        Current Address
-                      </p>
-                      <p>3495 Red Hawk Road, Buffalo Lake, MN 55314</p>
-                    </div>
-                  </div>
-                  <div className="d-flex align-items-center">
-                    <span className="avatar avatar-md bg-light-300 rounded me-2 flex-shrink-0 text-default">
-                      <i className="ti ti-map-pins" />
-                    </span>
-                    <div>
-                      <p className="text-dark fw-medium mb-1">
-                        Permanent Address
-                      </p>
-                      <p>3495 Red Hawk Road, Buffalo Lake, MN 55314</p>
+                      <p>{student.user?.address ? "Address" : "No Address Available"}</p>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
             {/* /Address */}
-            {/* Previous School Details */}
-            <div className="col-xxl-12">
-              <div className="card">
-                <div className="card-header">
-                  <h5>Previous School Details</h5>
-                </div>
-                <div className="card-body pb-1">
-                  <div className="row">
-                    <div className="col-md-6">
-                      <div className="mb-3">
-                        <p className="text-dark fw-medium mb-1">
-                          Previous School Name
-                        </p>
-                        <p>Oxford Matriculation, USA</p>
-                      </div>
-                    </div>
-                    <div className="col-md-6">
-                      <div className="mb-3">
-                        <p className="text-dark fw-medium mb-1">
-                          School Address
-                        </p>
-                        <p>1852 Barnes Avenue, Cincinnati, OH 45202</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* /Previous School Details */}
-            {/* Bank Details */}
-            <div className="col-xxl-6 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header">
-                  <h5>Bank Details</h5>
-                </div>
-                <div className="card-body pb-1">
-                  <div className="row">
-                    <div className="col-md-4">
-                      <div className="mb-3">
-                        <p className="text-dark fw-medium mb-1">Bank Name</p>
-                        <p>Bank of America</p>
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="mb-3">
-                        <p className="text-dark fw-medium mb-1">Branch</p>
-                        <p>Cincinnati</p>
-                      </div>
-                    </div>
-                    <div className="col-md-4">
-                      <div className="mb-3">
-                        <p className="text-dark fw-medium mb-1">IFSC</p>
-                        <p>BOA83209832</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* /Bank Details */}
             {/* Medical History */}
             <div className="col-xxl-6 d-flex">
               <div className="card flex-fill">

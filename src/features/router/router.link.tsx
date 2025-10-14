@@ -13,6 +13,7 @@ import Exam from '../academic/examinations/exam';
 import ExamAttendance from '../academic/examinations/exam-attendance';
 import ExamResult from '../academic/examinations/exam-results';
 import ExamSchedule from '../academic/examinations/exam-schedule';
+import ExamTypes from '../academic/examinations/exam-type';
 import Grade from '../academic/examinations/grade';
 import Grades from '../academic/examinations/grade';
 import ScheduleClasses from '../academic/schedule-classes';
@@ -874,6 +875,11 @@ export const publicRoutes = [
   {
     path: routes.examAttendance,
     element: <ExamAttendance />,
+    route: Route,
+  },
+  {
+    path: routes.examTypes,
+    element: <ExamTypes />,
     route: Route,
   },
   {
