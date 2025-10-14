@@ -1,4 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import type { GradeModel } from '../models/grade.model';
 import { gradeSchema } from './gradeSchema';
@@ -14,6 +15,7 @@ export default function GradeForm({ mode, defaultValues, onSubmit }: GradeFormPr
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<GradeModel>({
     resolver: yupResolver(gradeSchema),
@@ -25,6 +27,19 @@ export default function GradeForm({ mode, defaultValues, onSubmit }: GradeFormPr
       is_active: defaultValues?.is_active ?? true,
     },
   });
+
+  // Reset form when defaultValues change (important for edit mode)
+  useEffect(() => {
+    if (defaultValues) {
+      reset({
+        id: defaultValues.id ?? '',
+        name: defaultValues.name ?? '',
+        level: defaultValues.level ?? 1,
+        description: defaultValues.description ?? '',
+        is_active: defaultValues.is_active ?? true,
+      });
+    }
+  }, [defaultValues, reset]);
 
   return (
     <form id="grade-form" onSubmit={handleSubmit(onSubmit)}>

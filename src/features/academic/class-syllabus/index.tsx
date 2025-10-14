@@ -299,6 +299,7 @@ const ClassSyllabus = () => {
                 </div>
               ) : syllabusDetails?.id ? (
                 <SyllabusForm
+                  key={syllabusDetails.id}
                   mode="edit"
                   defaultValues={syllabusDetails}
                   onActiveModal={setActiveModal}

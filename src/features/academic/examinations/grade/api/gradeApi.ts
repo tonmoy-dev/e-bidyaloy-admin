@@ -1,5 +1,6 @@
-import { API_ENDPOINTS } from '../../../../core/constants/api';
-import { baseApi } from '../../../../core/services/baseApi';
+import { API_ENDPOINTS } from '../../../../../core/constants/api';
+import { baseApi } from '../../../../../core/services/baseApi';
+
 import type { PaginatedResponse } from '../models/common.model';
 import type { GradeModel } from '../models/grade.model';
 
@@ -45,10 +46,7 @@ export const gradeApi = baseApi.injectEndpoints({
     }),
 
     // Partially update grade
-    partialUpdateGrade: builder.mutation<
-      GradeModel,
-      { id: string; data: Partial<GradeModel> }
-    >({
+    partialUpdateGrade: builder.mutation<GradeModel, { id: string; data: Partial<GradeModel> }>({
       query: ({ id, data }) => ({
         ...API_ENDPOINTS.GRADES.PARTIAL_UPDATE(id),
         body: data,

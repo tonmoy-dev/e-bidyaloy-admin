@@ -1,4 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
 import { useClassesWithoutPagination } from '../../class-subject/hooks/useGetClassesQueryWP';
@@ -40,6 +41,7 @@ export default function SyllabusForm({ mode, defaultValues, onSubmit }: Syllabus
   const {
     handleSubmit,
     control,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<SyllabusModel>({
     resolver: yupResolver(syllabusSchema),
@@ -55,6 +57,23 @@ export default function SyllabusForm({ mode, defaultValues, onSubmit }: Syllabus
       classes: defaultValues?.classes ?? '',
     },
   });
+
+  // Reset form when defaultValues change (important for edit mode)
+  useEffect(() => {
+    if (defaultValues) {
+      reset({
+        id: defaultValues.id ?? '',
+        title: defaultValues.title ?? '',
+        description: defaultValues.description ?? '',
+        content: defaultValues.content ?? '',
+        file_url: defaultValues.file_url ?? '',
+        pdf_file: defaultValues.pdf_file ?? null,
+        status: defaultValues.status ?? SyllabusStatusEnum.DRAFT,
+        subject: defaultValues.subject ?? '',
+        classes: defaultValues.classes ?? '',
+      });
+    }
+  }, [defaultValues, reset]);
 
   return (
     <form id="syllabus-form" onSubmit={handleSubmit(onSubmit)}>

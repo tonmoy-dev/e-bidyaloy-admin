@@ -1,502 +1,336 @@
-import { useRef } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { MODAL_TYPE } from '../../../../core/constants/modal';
+import type { TableData } from '../../../../core/data/interface';
+import PageHeader from '../../../../shared/components/layout/PageHeader';
+import DeleteConfirmationModal from '../../../../shared/components/modals/DeleteConfirmationModal';
+import DataTable from '../../../../shared/components/table/DataTable';
+import DataTableBody from '../../../../shared/components/table/DataTableBody';
+import DataTableColumnActions from '../../../../shared/components/table/DataTableColumnActions';
+import TableFilter, {
+  type FilterConfig,
+  type FilterOption,
+} from '../../../../shared/components/table/DataTableFilter';
+import DataTableFooter from '../../../../shared/components/table/DataTableFooter';
+import DataTableHeader from '../../../../shared/components/table/DataTableHeader';
+import DataModal, { type ModalType } from '../../../../shared/components/table/DataTableModal';
+import TooltipOptions from '../../../../shared/components/utils/TooltipOptions';
+import { all_routes } from '../../../router/all_routes';
+import GradeDetailsView from './components/GradeDetailsView';
+import GradeForm from './components/GradeForm';
+import { useGradeById } from './hooks/useGetGradeById';
+import { useGradesList } from './hooks/useGetGradesList';
+import { useGradeMutations } from './hooks/useGradeMutations';
+import { type GradeModel } from './models/grade.model';
 
-import {
-  activeList,
-  gradeOne,
-  gradePercentage,
-  gradePoints,
-  marksFrom,
-  marksUpto,
-} from "../../../../core/common/selectoption/selectoption";
-import Table from "../../../../core/common/dataTable/index";
-import { gradetable } from "../../../../core/data/json/grade";
-import type { TableData } from "../../../../core/data/interface";
-import CommonSelect from "../../../../core/common/commonSelect";
-import PredefinedDateRanges from "../../../../core/common/datePicker";
-import { all_routes } from "../../../router/all_routes";
-import TooltipOption from "../../../../core/common/tooltipOption";
-const Grade = () => {
-  const routes = all_routes;
-  const data = gradetable;
-  const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
-  const handleApplyClick = () => {
-    if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+const Grades = () => {
+  const page = 1;
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { grades } = useGradesList(page);
+  const data = grades?.results;
+  const skipQuery = !selectedId || activeModal === MODAL_TYPE.DELETE;
+  const { createGrade, updateGrade, deleteGrade } = useGradeMutations();
+  const {
+    gradeDetails,
+    isError: isGradeError,
+    isLoading: isGradeLoading,
+  } = useGradeById(selectedId ?? null, skipQuery);
+  const route = all_routes;
+
+  useEffect(() => {
+    if (isGradeError) {
+      toast.error('Grade data not found!');
     }
-  };
+
+    return () => {
+      setActiveModal(null);
+      setSelectedId(null);
+    };
+  }, [isGradeError]);
+
   const columns = [
     {
-      title: "ID",
-      dataIndex: "id",
-      render: ( record: any) => (
-        <>
-          <Link to="#" className="link-primary">
-            {record.id}
-          </Link>
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) => a.id.length - b.id.length,
+      title: 'ID',
+      align: 'center',
+      render: (_: TableData, __: TableData, index: number) => (page - 1) * 10 + index + 1,
     },
     {
-      title: "Grade",
-      dataIndex: "grade",
-      sorter: (a: TableData, b: TableData) => a.grade.length - b.grade.length,
+      title: 'Name',
+      align: 'center',
+      render: (record: TableData) => record?.name,
+      sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
     },
     {
-      title: "Percentage",
-      dataIndex: "percentage",
-      sorter: (a: TableData, b: TableData) =>
-        a.percentage.length - b.percentage.length,
+      title: 'Level',
+      align: 'center',
+      render: (record: TableData) => record?.level,
+      sorter: (a: TableData, b: TableData) => a.level - b.level,
     },
     {
-      title: "Grade Points",
-      dataIndex: "gradePoints",
-      sorter: (a: TableData, b: TableData) =>
-        a.gradePoints.length - b.gradePoints.length,
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      render: () => (
-        <>
-          <span className="badge badge-soft-success d-inline-flex align-items-center">
-            <i className="ti ti-circle-filled fs-5 me-1"></i>Active
+      title: 'Status',
+      dataIndex: 'is_active',
+      align: 'center',
+      render: (isActive: boolean) => {
+        if (isActive) {
+          return (
+            <span className="badge badge-soft-success d-inline-flex align-items-center">
+              <i className="ti ti-circle-filled fs-5 me-1"></i>
+              Active
+            </span>
+          );
+        }
+        return (
+          <span className="badge badge-soft-secondary d-inline-flex align-items-center">
+            <i className="ti ti-circle-filled fs-5 me-1"></i>
+            Inactive
           </span>
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) => a.status.length - b.status.length,
+        );
+      },
     },
     {
-      title: "Action",
-      dataIndex: "action",
-      render: () => (
+      title: 'Created Date',
+      align: 'center',
+      render: (record: TableData) =>
+        record?.created_at ? new Date(record.created_at).toLocaleDateString() : 'N/A',
+      sorter: (a: TableData, b: TableData) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+    },
+    {
+      title: 'Action',
+      align: 'center',
+      render: (record: TableData) => (
         <>
-          <div className="d-flex align-items-center">
-            <div className="dropdown">
-              <Link
-                to="#"
-                className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-                data-bs-toggle="dropdown"
-                aria-expanded="false"
-              >
-                <i className="ti ti-dots-vertical fs-14" />
-              </Link>
-              <ul className="dropdown-menu dropdown-menu-right p-3">
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#edit_grade"
-                  >
-                    <i className="ti ti-edit-circle me-2" />
-                    Edit
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="#"
-                    data-bs-toggle="modal"
-                    data-bs-target="#delete-modal"
-                  >
-                    <i className="ti ti-trash-x me-2" />
-                    Delete
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
+          <DataTableColumnActions
+            onEditButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('edit');
+            }}
+            onViewButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('view');
+            }}
+            onDeleteButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('delete');
+            }}
+          />
         </>
       ),
     },
   ];
+
+  const statusOptions: FilterOption[] = [
+    { label: 'Active', value: 'true' },
+    { label: 'Inactive', value: 'false' },
+  ];
+
+  const gradeFilters: FilterConfig[] = [
+    {
+      key: 'is_active',
+      label: 'Status',
+      options: statusOptions,
+      defaultValue: statusOptions[0],
+    },
+  ];
+
+  const sortingOptions = ['Ascending', 'Descending', 'Recently Added', 'Recently Viewed'];
+
+  const handleGradeForm = async (data: GradeModel, mode: string) => {
+    console.log('grade data', data);
+
+    try {
+      if (mode === 'add') {
+        const response = await createGrade(data);
+        if (response?.data) {
+          toast.success('Grade created successfully');
+        }
+      } else if (mode === 'edit' && gradeDetails?.id) {
+        const response = await updateGrade({ id: gradeDetails?.id, data: data });
+        if (response?.data) {
+          toast.success('Grade updated successfully');
+        }
+      }
+    } catch (error) {
+      console.log('error', error);
+      toast.error('An error occurred. Please try again.');
+    }
+  };
+
+  const handleGradeDelete = async () => {
+    if (!selectedId) return;
+    try {
+      const response = await deleteGrade(selectedId);
+      if (response) {
+        toast.success('Grade deleted successfully');
+        setActiveModal(null);
+        setSelectedId(null);
+      }
+    } catch (error) {
+      console.log('error', error);
+      toast.error('Failed to delete grade. Please try again.');
+    }
+  };
+
   return (
     <div>
+      {/* Page Wrapper */}
       <div className="page-wrapper">
         <div className="content">
           {/* Page Header */}
-          <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
-            <div className="my-auto mb-2">
-              <h3 className="page-title mb-1">Grade</h3>
-              <nav>
-                <ol className="breadcrumb mb-0">
-                  <li className="breadcrumb-item">
-                    <Link to={routes.adminDashboard}>Dashboard</Link>
-                  </li>
-                  <li className="breadcrumb-item">
-                    <Link to="#">Academic </Link>
-                  </li>
-                  <li className="breadcrumb-item active" aria-current="page">
-                    Grade
-                  </li>
-                </ol>
-              </nav>
-            </div>
-            <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
-            <TooltipOption />
-              <div className="mb-2">
-                <Link
-                  to="#"
-                  className="btn btn-primary"
-                  data-bs-toggle="modal"
-                  data-bs-target="#add_grade"
-                >
-                  <i className="ti ti-square-rounded-plus-filled me-2" />
-                  Add Grade
-                </Link>
-              </div>
-            </div>
-          </div>
-          {/* /Page Header */}
-          {/* Guardians List */}
-          <div className="card">
-            <div className="card-header d-flex align-items-center justify-content-between flex-wrap pb-0">
-              <h4 className="mb-3">Grade List</h4>
-              <div className="d-flex align-items-center flex-wrap">
-                <div className="input-icon-start mb-3 me-2 position-relative">
-                <PredefinedDateRanges />
-                </div>
-                <div className="dropdown mb-3 me-2">
-                  <Link
-                    to="#"
-                    className="btn btn-outline-light bg-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    data-bs-auto-close="outside"
-                  >
-                    <i className="ti ti-filter me-2" />
-                    Filter
-                  </Link>
-                  <div className="dropdown-menu drop-width"  ref={dropdownMenuRef}>
-                    <form >
-                      <div className="d-flex align-items-center border-bottom p-3">
-                        <h4>Filter</h4>
-                      </div>
-                      <div className="p-3 border-bottom pb-0">
-                        <div className="row">
-                          <div className="col-md-12">
-                            <div className="mb-3">
-                              <label className="form-label">Grade</label>
-                              <CommonSelect
-                                className="select"
-                                options={gradeOne}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-md-12">
-                            <div className="mb-3">
-                              <label className="form-label">Percentage</label>
-                              <CommonSelect
-                                className="select"
-                                options={gradePercentage}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-3 d-flex align-items-center justify-content-end">
-                        <Link to="#" className="btn btn-light me-3">
-                          Reset
-                        </Link>
-                        <Link
-                            to="#"
-                            className="btn btn-primary"
-                            onClick={handleApplyClick}
-                          >
-                            Apply
-                          </Link>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-                <div className="dropdown mb-3">
-                  <Link
-                    to="#"
-                    className="btn btn-outline-light bg-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    <i className="ti ti-sort-ascending-2 me-2" />
-                    Sort by A-Z
-                  </Link>
-                  <ul className="dropdown-menu p-3">
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1 active">
-                        Ascending
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Descending
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Recently Viewed
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Recently Added
-                      </Link>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body p-0 py-3">
-              {/* Guardians List */}
-              <Table columns={columns} dataSource={data} Selection={true} />
+          <PageHeader
+            title="Grades"
+            breadcrumb={[
+              { label: 'Dashboard', path: `${route.adminDashboard}` },
+              { label: 'Academic', path: '#' },
+              { label: 'Grades' },
+            ]}
+            addButtonLabel="Add Grade"
+            onAddClick={() => {
+              setActiveModal('add');
+            }}
+          >
+            <TooltipOptions showPrint={true} showExport={true} />
+          </PageHeader>
 
-              {/* /Guardians List */}
-            </div>
-          </div>
-          {/* /Guardians List */}
+          {/* Page Table */}
+          <DataTable
+            header={
+              <DataTableHeader
+                filters={
+                  <TableFilter
+                    filters={gradeFilters}
+                    onApply={(filters) => console.log('Apply:', filters)}
+                    onReset={(filters) => console.log('Reset:', filters)}
+                  />
+                }
+                sortingOptions={sortingOptions}
+                onApply={() => console.log('Apply clicked')}
+                onReset={() => console.log('Reset clicked')}
+                onSortChange={(sort) => console.log('Sort:', sort)}
+                defaultSort="Ascending"
+              />
+            }
+            footer={<DataTableFooter />}
+          >
+            <DataTableBody columns={columns} dataSource={data ?? []} Selection={true} />
+          </DataTable>
         </div>
       </div>
+
       <>
-        <div className="d-flex align-items-center">
-          <div className="dropdown">
-            <Link
-              to="#"
-              className="btn btn-white btn-icon btn-sm d-flex align-items-center justify-content-center rounded-circle p-0"
-              data-bs-toggle="dropdown"
-              aria-expanded="false"
-            >
-              <i className="ti ti-dots-vertical fs-14" />
-            </Link>
-            <ul className="dropdown-menu dropdown-menu-right p-3">
-              <li>
-                <Link
-                  className="dropdown-item rounded-1"
-                  to="#"
-                  data-bs-toggle="modal"
-                  data-bs-target="#edit_grade"
-                >
-                  <i className="ti ti-edit-circle me-2" />
-                  Edit
-                </Link>
-              </li>
-              <li>
-                <Link
-                  className="dropdown-item rounded-1"
-                  to="#"
-                  data-bs-toggle="modal"
-                  data-bs-target="#delete-modal"
-                >
-                  <i className="ti ti-trash-x me-2" />
-                  Delete
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
         {/* Add Grade */}
-        <div className="modal fade" id="add_grade">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h4 className="modal-title">Add Grade</h4>
-                <button
-                  type="button"
-                  className="btn-close custom-btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <i className="ti ti-x" />
-                </button>
-              </div>
-              <form>
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="mb-3">
-                        <label className="form-label">Grade</label>
-                        <input type="text" className="form-control" />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Marks From(%)</label>
-                        <CommonSelect className="select" options={marksFrom} />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Marks Upto(%)</label>
-                        <CommonSelect className="select" options={marksUpto} />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Grade Points</label>
-                        <CommonSelect
-                          className="select"
-                          options={gradePoints}
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Status</label>
-                        <CommonSelect className="select" options={activeList} />
-                      </div>
-                      <div className="mb-0">
-                        <label className="form-label">Description</label>
-                        <textarea
-                          className="form-control"
-                          rows={4}
-                          defaultValue={""}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
-                    Cancel
-                  </Link>
-                  <Link
-                    to="#"
-                    className="btn btn-primary"
-                    data-bs-dismiss="modal"
-                  >
-                    Add Grade
-                  </Link>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        {/* Add Grade */}
+        <DataModal
+          show={activeModal === MODAL_TYPE.ADD}
+          onClose={() => setActiveModal(null)}
+          size="lg"
+          modalTitle="Add Grade Information"
+          body={
+            <GradeForm
+              mode="add"
+              onActiveModal={setActiveModal}
+              onSubmit={async (data) => {
+                await handleGradeForm(data, 'add');
+                setActiveModal(null);
+              }}
+            />
+          }
+        />
+
         {/* Edit Grade */}
-        <div className="modal fade" id="edit_grade">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h4 className="modal-title">Edit Grade</h4>
-                <button
-                  type="button"
-                  className="btn-close custom-btn-close"
-                  data-bs-dismiss="modal"
-                  aria-label="Close"
-                >
-                  <i className="ti ti-x" />
-                </button>
-              </div>
-              <form>
-                <div className="modal-body">
-                  <div className="row">
-                    <div className="col-md-12">
-                      <div className="mb-3">
-                        <label className="form-label">Grade</label>
-                        <input
-                          type="text"
-                          className="form-control"
-                          placeholder="Enter Grade"
-                          defaultValue="O"
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Marks From(%)</label>
-                        <CommonSelect
-                          className="select"
-                          options={marksFrom}
-                          defaultValue={marksFrom[1]}
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Marks Upto(%)</label>
-                        <CommonSelect
-                          className="select"
-                          options={marksUpto}
-                          defaultValue={marksUpto[1]}
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Grade Points</label>
-                        <CommonSelect
-                          className="select"
-                          options={gradePoints}
-                          defaultValue={gradePoints[1]}
-                        />
-                      </div>
-                      <div className="mb-3">
-                        <label className="form-label">Status</label>
-                        <CommonSelect
-                          className="select"
-                          options={activeList}
-                          defaultValue={activeList[1]}
-                        />
-                      </div>
-                      <div className="mb-0">
-                        <label className="form-label">Description</label>
-                        <textarea
-                          className="form-control"
-                          rows={4}
-                          placeholder="Add Comment"
-                          defaultValue={""}
-                        />
-                      </div>
-                    </div>
+        {activeModal === MODAL_TYPE.EDIT && (
+          <DataModal
+            show={true}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            size="lg"
+            modalTitle="Update Grade Information"
+            body={
+              isGradeLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
                   </div>
+                  <p className="mt-2">Loading grade details...</p>
                 </div>
-                <div className="modal-footer">
-                  <Link
-                    to="#"
-                    className="btn btn-light me-2"
-                    data-bs-dismiss="modal"
-                  >
-                    Cancel
-                  </Link>
-                  <Link
-                    to="#"
-                    className="btn btn-primary"
-                    data-bs-dismiss="modal"
-                  >
-                    Save Changes
-                  </Link>
+              ) : gradeDetails?.id ? (
+                <GradeForm
+                  key={gradeDetails.id}
+                  mode="edit"
+                  defaultValues={gradeDetails}
+                  onActiveModal={setActiveModal}
+                  onSubmit={async (data) => {
+                    await handleGradeForm(data, 'edit');
+                    setActiveModal(null);
+                    setSelectedId(null);
+                  }}
+                />
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load grade details.</p>
                 </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        {/* Edit Grade */}
+              )
+            }
+          />
+        )}
+
+        {/* View Grade */}
+        {activeModal === MODAL_TYPE.VIEW && (
+          <DataModal
+            show={true}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            modalTitle="Grade Details"
+            header={
+              gradeDetails?.is_active ? (
+                <span className="badge badge-soft-success ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Active
+                </span>
+              ) : (
+                <span className="badge badge-soft-secondary ms-2">
+                  <i className="ti ti-circle-filled me-1 fs-5" />
+                  Inactive
+                </span>
+              )
+            }
+            body={
+              isGradeLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading grade details...</p>
+                </div>
+              ) : gradeDetails?.id ? (
+                <GradeDetailsView gradeData={gradeDetails} />
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load grade details.</p>
+                </div>
+              )
+            }
+          />
+        )}
+
         {/* Delete Modal */}
-        <div className="modal fade" id="delete-modal">
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content">
-              <form>
-                <div className="modal-body text-center">
-                  <span className="delete-icon">
-                    <i className="ti ti-trash-x" />
-                  </span>
-                  <h4>Confirm Deletion</h4>
-                  <p>
-                    You want to delete all the marked items, this cant be undone
-                    once you delete.
-                  </p>
-                  <div className="d-flex justify-content-center">
-                    <Link
-                      to="#"
-                      className="btn btn-light me-3"
-                      data-bs-dismiss="modal"
-                    >
-                      Cancel
-                    </Link>
-                    <Link
-                      to="#"
-                      className="btn btn-danger"
-                      data-bs-dismiss="modal"
-                    >
-                      Yes, Delete
-                    </Link>
-                  </div>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-        {/* /Delete Modal */}
+        <DeleteConfirmationModal
+          show={activeModal === MODAL_TYPE.DELETE}
+          onClose={() => {
+            setActiveModal(null);
+            setSelectedId(null);
+          }}
+          onConfirm={handleGradeDelete}
+          title="Delete Grade"
+          message="Do you really want to delete this grade? This action cannot be undone."
+        />
       </>
     </div>
   );
 };
 
-export default Grade;
+export default Grades;
