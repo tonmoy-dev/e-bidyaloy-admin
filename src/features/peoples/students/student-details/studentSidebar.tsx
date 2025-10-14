@@ -1,8 +1,60 @@
-
 import { Link } from "react-router-dom";
 import ImageWithBasePath from "../../../../core/common/imageWithBasePath";
+import type { StudentModel } from "../models/student.model";
 
-const StudentSidebar = () => {
+interface StudentSidebarProps {
+  student?: StudentModel;
+}
+
+const studentSidebar = ({ student }: StudentSidebarProps) => {
+  const formatDate = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });     
+}
+
+  const calculateAge = (birthDate: string | null) => {
+    if (!birthDate) return 0;
+    const today = new Date();
+    const birth = new Date(birthDate);
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const getStudentIdDisplay = (id: string | undefined) => {
+    if (!id) return 'T00000000';
+    return `T${id.slice(0, 8)}`;
+  };
+
+  // new: public data variables read from student model (only API-provided fields)
+  const avatarSrc = student?.user?.profile_picture_url || "assets/img/students/student-01.jpg";
+  const status = student?.status ?? (student?.user?.is_active ? 'active' : 'inactive');
+  const statusBadgeClass = status === 'active' ? 'badge-soft-success' : 'badge-soft-danger';
+  const displayName = student
+    ? (student.user.full_name || `${student.user.first_name || ''} ${student.user.last_name || ''}`.trim() || 'Student Name')
+    : 'Student Name';
+  const displayStudentId = getStudentIdDisplay(student?.student_id);
+  const displayRoll = student?.roll_number ?? '-';
+  const displayGender = (student?.gender || student?.user?.gender) ?? '-';
+  const dobSource = student?.date_of_birth || student?.user?.date_of_birth;
+  const displayDob = dobSource ? formatDate(dobSource) : '-';
+  const displayAge = dobSource ? calculateAge(dobSource) : (student?.age ?? '-');
+  const displayBloodGroup = student?.blood_group ?? '-';
+  const displayPhone = student?.user?.phone ?? student?.phone ?? '-';
+  const displayEmail = student?.user?.email ?? student?.email ?? '-';
+  const displayClassSection = (student?.class_name || student?.grade_name || student?.section_name) ?? '-';
+  // ...you can add more derived vars here when needed...
+
+  const studentName = displayName;
+  const studentId = displayStudentId;
+
   return (
     <div className="col-xxl-3 col-xl-4 theiaStickySidebar">
       <div className="stickybar pb-4">
@@ -11,18 +63,18 @@ const StudentSidebar = () => {
             <div className="d-flex align-items-center flex-wrap row-gap-3">
               <div className="d-flex align-items-center justify-content-center avatar avatar-xxl border border-dashed me-2 flex-shrink-0 text-dark frames">
                 <ImageWithBasePath
-                  src="assets/img/students/student-01.jpg"
+                  src={avatarSrc}
                   className="img-fluid"
                   alt="img"
                 />
               </div>
               <div className="overflow-hidden">
-                <span className="badge badge-soft-success d-inline-flex align-items-center mb-1">
+                <span className={`badge ${statusBadgeClass} d-inline-flex align-items-center mb-1`}>
                   <i className="ti ti-circle-filled fs-5 me-1" />
-                  Active
+                  {status ?? 'inactive'}
                 </span>
-                <h5 className="mb-1 text-truncate">Janet Daniel</h5>
-                <p className="text-primary">AD1256589</p>
+                <h5 className="mb-1 text-truncate">{studentName}</h5>
+                <p className="text-primary">{studentId}</p>
               </div>
             </div>
           </div>
@@ -31,29 +83,29 @@ const StudentSidebar = () => {
             <h5 className="mb-3">Basic Information</h5>
             <dl className="row mb-0">
               <dt className="col-6 fw-medium text-dark mb-3">Roll No</dt>
-              <dd className="col-6 mb-3">35013</dd>
+              <dd className="col-6 mb-3" title={displayRoll}>{displayRoll}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Gender</dt>
-              <dd className="col-6 mb-3">Female</dd>
+              <dd className="col-6 mb-3" title={displayGender}>{displayGender}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Date Of Birth</dt>
-              <dd className="col-6 mb-3">25 Jan 2008</dd>
+              <dd className="col-6 mb-3">{displayDob}</dd>
+              <dt className="col-6 fw-medium text-dark mb-3">Age</dt>
+              <dd className="col-6 mb-3">{displayAge}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Blood Group</dt>
-              <dd className="col-6 mb-3">O +ve</dd>
-              <dt className="col-6 fw-medium text-dark mb-3">Blood Group</dt>
-              <dd className="col-6 mb-3">Red</dd>
-              <dt className="col-6 fw-medium text-dark mb-3">Reigion</dt>
-              <dd className="col-6 mb-3">Christianity</dd>
-              <dt className="col-6 fw-medium text-dark mb-3">Caste</dt>
-              <dd className="col-6 mb-3">Catholic</dd>
+              <dd className="col-6 mb-3">{displayBloodGroup}</dd>
+              <dt className="col-6 fw-medium text-dark mb-3">Class / Section</dt>
+              <dd className="col-6 mb-3">{displayClassSection}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Category</dt>
-              <dd className="col-6 mb-3">OBC</dd>
+              <dd className="col-6 mb-3">{student?.user?.preferences?.category ?? '-'}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Mother tongue</dt>
-              <dd className="col-6 mb-3">English</dd>
+              <dd className="col-6 mb-3">{student?.user?.preferences?.mother_tongue ?? '-'}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Language</dt>
               <dd className="col-6 mb-3">
-                <span className="badge badge-light text-dark me-2">
-                  English
-                </span>
-                <span className="badge badge-light text-dark">Spanish</span>
+                {Array.isArray(student?.user?.preferences?.languages)
+                  ? student!.user!.preferences!.languages.map((l: string, i: number) => (
+                      <span key={i} className="badge badge-light text-dark me-2">{l}</span>
+                    ))
+                  : (student?.user?.preferences?.languages ? <span className="badge badge-light text-dark">{student!.user!.preferences!.languages}</span> : <span>-</span>)
+                }
               </dd>
             </dl>
             <Link
@@ -77,7 +129,7 @@ const StudentSidebar = () => {
               </span>
               <div>
                 <span className="text-dark fw-medium mb-1">Phone Number</span>
-                <p>+1 46548 84498</p>
+                <p>{displayPhone}</p>
               </div>
             </div>
             <div className="d-flex align-items-center">
@@ -86,7 +138,7 @@ const StudentSidebar = () => {
               </span>
               <div>
                 <span className="text-dark fw-medium mb-1">Email Address</span>
-                <p>jan@example.com</p>
+                <p>{displayEmail}</p>
               </div>
             </div>
           </div>
@@ -151,8 +203,8 @@ const StudentSidebar = () => {
                     <i className="ti ti-building-fortress fs-16" />
                   </span>
                   <div>
-                    <h6 className="fs-14 mb-1">HI-Hostel, Floor</h6>
-                    <p className="text-primary">Room No : 25</p>
+                    <h6 className="fs-14 mb-1">{student?.hostel_required ? (student?.organization_name ?? 'Hostel') : 'No Hostel'}</h6>
+                    <p className="text-primary">{student?.hostel_required ? `Room No : ${student?.user?.preferences?.hostel_room ?? 'N/A'}` : ''}</p>
                   </div>
                 </div>
               </div>
@@ -163,20 +215,20 @@ const StudentSidebar = () => {
                   </span>
                   <div>
                     <span className="fs-12 mb-1">Route</span>
-                    <p className="text-dark">Newyork</p>
+                    <p className="text-dark">{student?.transport_required ? (student?.user?.preferences?.route_name ?? 'N/A') : 'No Transport'}</p>
                   </div>
                 </div>
                 <div className="row">
                   <div className="col-sm-6">
                     <div className="mb-3">
                       <span className="fs-12 mb-1">Bus Number</span>
-                      <p className="text-dark">AM 54548</p>
+                      <p className="text-dark">{student?.user?.preferences?.bus_number ?? '-'}</p>
                     </div>
                   </div>
                   <div className="col-sm-6">
                     <div className="mb-3">
                       <span className="fs-12 mb-1">Pickup Point</span>
-                      <p className="text-dark">Cincinatti</p>
+                      <p className="text-dark">{student?.user?.preferences?.pickup_point ?? '-'}</p>
                     </div>
                   </div>
                 </div>
@@ -190,4 +242,4 @@ const StudentSidebar = () => {
   );
 };
 
-export default StudentSidebar;
+export default studentSidebar;
