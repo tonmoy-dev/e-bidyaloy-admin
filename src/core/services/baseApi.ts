@@ -176,6 +176,8 @@ export const baseApi = createApi({
     'Subject',
     'Session',
     'ExamType',
+    'Grade',
+    'Syllabus',
   ],
   endpoints: () => ({}),
 });
