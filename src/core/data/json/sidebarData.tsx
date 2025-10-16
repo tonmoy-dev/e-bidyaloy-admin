@@ -269,6 +269,7 @@ export const SidebarData = [
         submenuItems: [
           { label: 'Exam', link: routes.exam },
           { label: 'Exam Schedule', link: routes.examSchedule },
+              { label: 'Exam Types', link: routes.examTypes },
           { label: 'Grade', link: routes.grade },
           { label: 'Exam Attendance', link: routes.examAttendance },
           { label: 'Exam Results', link: routes.examResult },
