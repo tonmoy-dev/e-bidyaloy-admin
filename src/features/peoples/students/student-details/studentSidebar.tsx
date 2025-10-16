@@ -49,7 +49,8 @@ const studentSidebar = ({ student }: StudentSidebarProps) => {
   const displayBloodGroup = student?.blood_group ?? '-';
   const displayPhone = student?.user?.phone ?? student?.phone ?? '-';
   const displayEmail = student?.user?.email ?? student?.email ?? '-';
-  const displayClassSection = (student?.class_name || student?.grade_name || student?.section_name) ?? '-';
+  const displayClass = (student?.class_name) ?? '-';
+  const displaySection = (student?.section_name) ?? '-';
   // ...you can add more derived vars here when needed...
 
   const studentName = displayName;
@@ -92,8 +93,13 @@ const studentSidebar = ({ student }: StudentSidebarProps) => {
               <dd className="col-6 mb-3">{displayAge}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Blood Group</dt>
               <dd className="col-6 mb-3">{displayBloodGroup}</dd>
-              <dt className="col-6 fw-medium text-dark mb-3">Class / Section</dt>
-              <dd className="col-6 mb-3">{displayClassSection}</dd>
+              <dt className="col-6 fw-medium text-dark mb-3">Class</dt>
+              <dd className="col-6 mb-3">{displayClass}</dd>
+              <dt className="col-6 fw-medium text-dark mb-3">Section</dt>
+              <dd className="col-6 mb-3">{displaySection}</dd>
+
+              <dt className="col-6 fw-medium text-dark mb-3">Religion</dt>
+              <dd className="col-6 mb-3">{student?.user?.preferences?.religion ?? '-'}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Category</dt>
               <dd className="col-6 mb-3">{student?.user?.preferences?.category ?? '-'}</dd>
               <dt className="col-6 fw-medium text-dark mb-3">Mother tongue</dt>

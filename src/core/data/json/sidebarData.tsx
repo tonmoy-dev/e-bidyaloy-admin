@@ -144,7 +144,6 @@ export const SidebarData = [
             subLink4: routes.studentLeaves,
             subLink5: routes.studentTimeTable,
           },
-          { label: 'Student Promotion', link: routes.studentPromotion },
         ],
       },
       {
@@ -275,6 +274,7 @@ export const SidebarData = [
 
         submenuItems: [
           { label: 'Exam', link: routes.exam },
+          { label: 'Exam Type', link: routes.examTypes },
           { label: 'Exam Schedule', link: routes.examSchedule },
           { label: 'Grade', link: routes.grade },
           { label: 'Exam Attendance', link: routes.examAttendance },

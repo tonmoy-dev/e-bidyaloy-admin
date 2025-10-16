@@ -165,11 +165,7 @@ const StudentList = () => {
       dataIndex: "student_id",
       render: (text: string, record: any) => (
         <Link
-          to="#"
-          className="link-primary"
-          data-bs-toggle="modal"
-          data-bs-target="#login_detail"
-          onClick={() => populateStudentModals(record)}
+          to={`${routes.studentDetail}?id=${record.studentId}`} className="avatar avatar-md"
         >
           {text}
         </Link>
