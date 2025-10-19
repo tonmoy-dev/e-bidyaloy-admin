@@ -178,6 +178,8 @@ export const baseApi = createApi({
     'ExamType',
     'Grade',
     'Syllabus',
+    'ExamMark',
+    'Exam',
   ],
   endpoints: () => ({}),
 });

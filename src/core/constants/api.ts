@@ -107,5 +107,40 @@ export const API_ENDPOINTS = {
     DELETE_BY_ID: '/api/v1/exam-types/',
     DETAILS_BY_ID: '/api/v1/exam-types/',
   },
+
+  // Exam Mark endpoints
+  EXAM_MARK: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/exam-marks/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/exam-marks/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/exam-marks/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/exam-marks/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/exam-marks/${id}/`, method: 'PATCH' }),
+    DELETE: (id: string) => ({ url: `/api/v1/exam-marks/${id}/`, method: 'DELETE' }),
+    BULK_CREATE: () => ({ url: '/api/v1/exam-marks/bulk/', method: 'POST' }),
+  },
+
+  // Exam endpoints
+  EXAM: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/exams/`,
+      method: 'GET',
+      params,
+    }),
+    LIST_WP: () => ({ url: '/api/v1/exams_wp/', method: 'GET' }),
+    CREATE: () => ({ url: '/api/v1/exams/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/exams/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/exams/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/exams/${id}/`, method: 'PATCH' }),
+    DELETE: (id: string) => ({ url: `/api/v1/exams/${id}/`, method: 'DELETE' }),
+  },
+
+  // Student LIST_WP endpoint
+  STUDENT_LIST_WP: {
+    LIST: () => ({ url: '/api/v1/students_wp/', method: 'GET' }),
+  },
 };
 
