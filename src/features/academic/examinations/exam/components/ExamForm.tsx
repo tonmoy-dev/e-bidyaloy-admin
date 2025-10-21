@@ -1,5 +1,8 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import type { TeacherModel } from '../../../../peoples/teacher/models/teacher.model';
+import type { SectionModel } from '../../../../academic/classes/models/class.model';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { useEffect } from 'react';
 import { useSessions } from '../../../sessions/hooks/useSessions';
 import { useClasses } from '../../../classes/hooks/useClasses';
 import { useSubjects } from '../../../class-subject/hooks/useGetSubjectsQuery';
@@ -26,9 +29,12 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
   const {
     handleSubmit,
     control,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<CreateExamRequest>({
-    resolver: yupResolver(examSchema),
+  // resolver typing is slightly narrower than our CreateExamRequest shape; cast to any to satisfy useForm generic
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  resolver: yupResolver(examSchema) as any,
     defaultValues: {
       name: defaultValues?.name ?? '',
       description: defaultValues?.description ?? '',
@@ -68,7 +74,37 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
   const { classes } = useClasses();
   const { subjects } = useSubjects();
   const { examTypes } = useExamTypes();
-  const { data: teachersData } = useGetTeachersQuery();
+  // fetch first page of teachers explicitly
+  const { data: teachersData } = useGetTeachersQuery(1);
+
+  // normalize teacher data helpers (API sometimes nests user info)
+  const teacherIdOf = (teacher: unknown) => {
+    if (!teacher || typeof teacher !== 'object') return '';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const t = teacher as Record<string, any>;
+    return t.id ?? t.user?.id ?? '';
+  };
+
+  const teacherNameOf = (teacher: unknown) => {
+    if (!teacher || typeof teacher !== 'object') return 'Unknown';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const t = teacher as Record<string, any>;
+    const first = t.first_name ?? t.user?.first_name;
+    const last = t.last_name ?? t.user?.last_name;
+    if (first || last) return `${first ?? ''} ${last ?? ''}`.trim();
+    return t.full_name ?? t.user?.full_name ?? 'Unknown';
+  };
+
+  // Watch selected class so sections update reactively
+  const selectedClassId = useWatch({ control, name: 'class_obj' }) as string | undefined;
+  const selectedClass = classes?.results?.find((c) => c.id === selectedClassId);
+  const sectionOptions = selectedClass?.sections?.map((section: SectionModel) => ({ value: section.id!, label: section.name! })) ?? [];
+
+  // When class changes, clear section field to avoid stale selection
+  useEffect(() => {
+    // reset section when class changes
+    setValue('section', '');
+  }, [selectedClassId, setValue]);
 
   return (
     <form id="exam-form" onSubmit={handleSubmit(onSubmit)}>
@@ -297,12 +333,20 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
                   name="section"
                   control={control}
                   render={({ field }) => (
-                    <input
-                      type="text"
-                      className="form-control"
+                    <select
+                      className="form-select"
                       {...field}
-                      placeholder="Enter section (optional)"
-                    />
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                      }}
+                    >
+                      <option value="">All Sections</option>
+                      {sectionOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
                   )}
                 />
               </div>
@@ -531,11 +575,15 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
                           {...field}
                         >
                           <option value="">Select Supervisor</option>
-                          {teachersData?.results?.map((teacher) => (
-                            <option key={teacher.id} value={teacher.id}>
-                              {teacher.first_name} {teacher.last_name}
-                            </option>
-                          ))}
+                          {teachersData?.results?.map((teacher: TeacherModel) => {
+                            const tid = teacherIdOf(teacher);
+                            const tname = teacherNameOf(teacher);
+                            return (
+                              <option key={tid || tname} value={tid} disabled={!tid}>
+                                {tname}
+                              </option>
+                            );
+                          })}
                         </select>
                       )}
                     />
