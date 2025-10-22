@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { MODAL_TYPE } from '../../../../core/constants/modal';
 import type { TableData } from '../../../../core/data/interface';
@@ -7,10 +7,7 @@ import DeleteConfirmationModal from '../../../../shared/components/modals/Delete
 import DataTable from '../../../../shared/components/table/DataTable';
 import DataTableBody from '../../../../shared/components/table/DataTableBody';
 import DataTableColumnActions from '../../../../shared/components/table/DataTableColumnActions';
-import TableFilter, {
-  type FilterConfig,
-  type FilterOption,
-} from '../../../../shared/components/table/DataTableFilter';
+import TableFilter, { type FilterConfig, type FilterOption } from '../../../../shared/components/table/DataTableFilter';
 import DataTableFooter from '../../../../shared/components/table/DataTableFooter';
 import DataTableHeader from '../../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../../shared/components/table/DataTableModal';
@@ -29,6 +26,7 @@ const Exams = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { exams } = useExams(page);
   const data = exams?.results;
+  const [selectedClass, setSelectedClass] = useState<string>('');
   const skipQuery = activeModal === MODAL_TYPE.DELETE;
   const { createExam, updateExam, deleteExam } = useExamMutations();
   const { examDetails, isError: isExamError } = useExamById(selectedId ?? null, skipQuery);
@@ -141,22 +139,27 @@ const Exams = () => {
     },
   ];
 
-  const statusOptions: FilterOption[] = [
-    { label: 'All', value: '' },
-    { label: 'Scheduled', value: 'scheduled' },
-    { label: 'Active', value: 'active' },
-    { label: 'Completed', value: 'completed' },
-    { label: 'Cancelled', value: 'cancelled' },
-  ];
+  // Build class filter options from current data set
+  const classOptions: FilterOption[] = useMemo(() => {
+    const names = Array.from(
+      new Set((data ?? []).map((r: TableData) => r?.class_name).filter((v): v is string => !!v)),
+    );
+    return [{ label: 'All', value: '' }, ...names.map((n) => ({ label: n, value: n }))];
+  }, [data]);
 
   const examFilters: FilterConfig[] = [
     {
-      key: 'status',
-      label: 'Status',
-      options: statusOptions,
-      defaultValue: statusOptions[0],
+      key: 'class',
+      label: 'Class',
+      options: classOptions,
+      defaultValue: classOptions[0] ?? { label: 'All', value: '' },
     },
   ];
+
+  const filteredData = useMemo(() => {
+    if (!selectedClass) return data ?? [];
+    return (data ?? []).filter((r: TableData) => r?.class_name === selectedClass);
+  }, [data, selectedClass]);
 
   const sortingOptions = ['Ascending', 'Descending'];
 
@@ -223,8 +226,13 @@ const Exams = () => {
                 filters={
                   <TableFilter
                     filters={examFilters}
-                    onApply={(filters) => console.log('Apply:', filters)}
-                    onReset={(filters) => console.log('Reset:', filters)}
+                    onApply={(filters) => {
+                      const selected = filters['class'];
+                      setSelectedClass((selected?.value ?? '').toString());
+                    }}
+                    onReset={() => {
+                      setSelectedClass('');
+                    }}
                   />
                 }
                 sortingOptions={sortingOptions}
@@ -236,7 +244,7 @@ const Exams = () => {
             }
             footer={<DataTableFooter />}
           >
-            <DataTableBody columns={columns} dataSource={data ?? []} Selection={true} />
+            <DataTableBody columns={columns} dataSource={filteredData} Selection={true} />
           </DataTable>
         </div>
       </div>
