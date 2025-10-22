@@ -22,5 +22,5 @@ export interface CreateExamTypeRequest {
   description: string;
   weightage: string;
   is_active: boolean;
-  organization: string;
+  organization?: string;
 }
