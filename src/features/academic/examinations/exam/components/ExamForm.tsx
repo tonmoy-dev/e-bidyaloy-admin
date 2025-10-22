@@ -156,7 +156,7 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
               </div>
 
               {/* Description */}
-              <div className="col-md-12">
+              <div className="col-md-6">
                 <label className="form-label">Description <span className="text-danger">*</span></label>
                 <Controller
                   name="description"
@@ -166,7 +166,7 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
                       className={`form-control ${errors.description ? 'is-invalid' : ''}`}
                       {...field}
                       placeholder="Enter exam description"
-                      rows={3}
+                      rows={1}
                     />
                   )}
                 />
@@ -174,7 +174,7 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
               </div>
 
               {/* Instructions */}
-              <div className="col-md-12">
+              <div className="col-md-6">
                 <label className="form-label">Instructions</label>
                 <Controller
                   name="instructions"
@@ -184,7 +184,7 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
                       className="form-control"
                       {...field}
                       placeholder="Enter exam instructions"
-                      rows={2}
+                      rows={1}
                     />
                   )}
                 />
@@ -600,7 +600,7 @@ export default function ExamForm({ mode, defaultValues, onSubmit }: ExamFormProp
                           className="form-control"
                           {...field}
                           placeholder="Enter subject-specific instructions (optional)"
-                          rows={2}
+                          rows={1}
                         />
                       )}
                     />
