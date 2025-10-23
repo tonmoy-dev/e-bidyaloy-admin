@@ -28,12 +28,6 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
             </div>
           </div>
 
-          <div className="col-md-12">
-            <div className="exam-detail-info mb-3">
-              <p><b>Description:</b></p>
-              <span>{examData?.description || 'N/A'}</span>
-            </div>
-          </div>
 
           <div className="col-md-12">
             <div className="exam-detail-info mb-3">
@@ -61,13 +55,14 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
               <span>{examData?.end_date ? new Date(examData.end_date).toLocaleDateString() : 'N/A'}</span>
             </div>
           </div>
-
-          <div className="col-md-4">
+            <div className="col-md-4">
             <div className="exam-detail-info mb-3">
-              <p><b>Result Publish Date:</b></p>
-              <span>{examData?.result_publish_date ? new Date(examData.result_publish_date).toLocaleDateString() : 'N/A'}</span>
+              <p><b>Academic Year:</b></p>
+              <span>{examData?.academic_year_name || 'N/A'}</span>
             </div>
           </div>
+
+
         </div>
       </div>
 
@@ -75,13 +70,7 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
       <div className="col-md-12 mb-4">
         <h5 className="border-bottom pb-2 mb-3">Academic Information</h5>
         <div className="row">
-          <div className="col-md-4">
-            <div className="exam-detail-info mb-3">
-              <p><b>Academic Year:</b></p>
-              <span>{examData?.academic_year_name || 'N/A'}</span>
-            </div>
-          </div>
-
+        
           <div className="col-md-4">
             <div className="exam-detail-info mb-3">
               <p><b>Exam Type:</b></p>
@@ -103,19 +92,7 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
             </div>
           </div>
 
-          <div className="col-md-4">
-            <div className="exam-detail-info mb-3">
-              <p><b>Organization:</b></p>
-              <span>{examData?.organization_name || 'N/A'}</span>
-            </div>
-          </div>
-
-          <div className="col-md-4">
-            <div className="exam-detail-info mb-3">
-              <p><b>Subject Count:</b></p>
-              <span>{examData?.subject_count || examData?.exam_subjects?.length || '0'}</span>
-            </div>
-          </div>
+      
         </div>
       </div>
 
@@ -173,19 +150,6 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
           </div>
         </div>
       )}
-
-      {/* Additional Information */}
-      <div className="col-md-12 mt-4">
-        <h5 className="border-bottom pb-2 mb-3">Additional Information</h5>
-        <div className="row">
-          <div className="col-md-6">
-            <div className="exam-detail-info">
-              <p><b>Created At:</b></p>
-              <span>{examData?.created_at ? new Date(examData.created_at).toLocaleDateString() : 'N/A'}</span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };
