@@ -143,4 +143,3 @@ export const API_ENDPOINTS = {
     LIST: () => ({ url: '/api/v1/students_wp/', method: 'GET' }),
   },
 };
-

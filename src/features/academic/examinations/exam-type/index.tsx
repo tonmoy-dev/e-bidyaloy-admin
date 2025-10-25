@@ -141,16 +141,16 @@ const ExamTypes = () => {
 
   const handleExamTypeForm = async (data: CreateExamTypeRequest, mode: string) => {
     try {
-      // Ensure organization id is present. If not provided from form, take from logged-in user
-      const orgId = data.organization || (authUser ? (authUser.organization ?? authUser.organization_id ?? '') : '');
-      const payload = { ...data, organization: String(orgId) } as CreateExamTypeRequest;
-
+      // For create, do not send organization (backend will associate via token/session).
+      // For edit, include organization if available.
       if (mode === 'add') {
-        const response = await createExamType(payload);
+        const response = await createExamType(data as CreateExamTypeRequest);
         if (response?.data) {
           toast.success('Exam Type created successfully');
         }
       } else if (mode === 'edit' && examTypeDetails?.id) {
+        const orgId = data.organization || (authUser ? (authUser.organization ?? authUser.organization_id ?? '') : '');
+        const payload = { ...data, ...(orgId ? { organization: String(orgId) } : {}) } as CreateExamTypeRequest;
         const response = await updateExamType({ id: examTypeDetails?.id, data: payload });
         if (response?.data) {
           toast.success('Exam Type updated successfully');

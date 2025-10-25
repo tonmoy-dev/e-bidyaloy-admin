@@ -22,7 +22,6 @@ export default function ExamTypeForm({ mode, defaultValues, onSubmit }: ExamType
       description: defaultValues?.description ?? '',
       weightage: defaultValues?.weightage ?? '',
       is_active: defaultValues?.is_active ?? true,
-      organization: defaultValues?.organization ?? '',
     },
   });
 

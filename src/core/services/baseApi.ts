@@ -165,6 +165,7 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
+  // Merged tagTypes from both branches (deduplicated)
   tagTypes: [
     'User',
     'Auth',
@@ -176,6 +177,7 @@ export const baseApi = createApi({
     'Subject',
     'Session',
     'ExamType',
+    'Exam',
     'Grade',
     'Syllabus',
     'ExamMark',
