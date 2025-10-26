@@ -9,6 +9,7 @@ import ClassSubject from '../academic/class-subject';
 import ClassSyllabus from '../academic/class-syllabus';
 import ClassTimetable from '../academic/class-timetable';
 import Classes from '../academic/classes';
+import Assignments from '../academic/assignments';
 import Exams from '../academic/examinations/exam';
 import ExamAttendance from '../academic/examinations/exam-attendance';
 import ExamResult from '../academic/examinations/exam-results';
@@ -885,6 +886,11 @@ export const publicRoutes = [
   {
     path: routes.exams,
     element: <Exams />,
+    route: Route,
+  },
+  {
+    path: routes.assignments,
+    element: <Assignments />,
     route: Route,
   },
   {

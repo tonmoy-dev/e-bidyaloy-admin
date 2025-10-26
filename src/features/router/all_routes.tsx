@@ -260,6 +260,7 @@ export const all_routes = {
   examAttendance: '/academic/exam-attendance',
   examTypes: '/academic/exam-types',
   exams: '/academic/exams',
+  assignments: '/academic/assignments',
   classTimetable: '/academic/class-time-table',
 
   //Hrm module

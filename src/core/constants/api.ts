@@ -114,6 +114,14 @@ export const API_ENDPOINTS = {
     UPDATE_BY_ID: '/api/v1/exams/',
     DELETE_BY_ID: '/api/v1/exams/',
     DETAILS_BY_ID: '/api/v1/exams/',
+ },
+ ASSIGNMENTS:
+ {
+    LIST: '/api/v1/assignments/',
+    CREATE: '/api/v1/assignments/',
+    UPDATE_BY_ID: '/api/v1/assignments/',
+    DELETE_BY_ID: '/api/v1/assignments/',
+    DETAILS_BY_ID: '/api/v1/assignments/',
  }
 };
 

@@ -180,6 +180,7 @@ export const baseApi = createApi({
     'Exam',
     'Grade',
     'Syllabus',
+    'Assignment',
   ],
   endpoints: () => ({}),
 });
