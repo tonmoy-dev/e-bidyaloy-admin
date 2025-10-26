@@ -1,328 +1,290 @@
-import { useRef } from 'react'
-import ImageWithBasePath from '../../../../core/common/imageWithBasePath'
-import { examresult } from '../../../../core/data/json/exam-result';
-import type { TableData } from '../../../../core/data/interface';
-import Table from "../../../../core/common/dataTable/index";
-import { Link } from 'react-router-dom';
-import PredefinedDateRanges from '../../../../core/common/datePicker';
-import CommonSelect from '../../../../core/common/commonSelect';
-import { allClass, classSection, weeklytest } from '../../../../core/common/selectoption/selectoption';
-import { all_routes } from '../../../router/all_routes';
-import TooltipOption from '../../../../core/common/tooltipOption';
 
-const ExamResult= () => {
-  const routes = all_routes;
-  const data = examresult;
-  const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
-  const handleApplyClick = () => {
-    if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+import { useEffect, useState } from 'react';
+import { toast } from 'react-toastify';
+import { MODAL_TYPE } from '../../../../core/constants/modal';
+import type { TableData } from '../../../../core/data/interface';
+import PageHeader from '../../../../shared/components/layout/PageHeader';
+import DeleteConfirmationModal from '../../../../shared/components/modals/DeleteConfirmationModal';
+import DataTable from '../../../../shared/components/table/DataTable';
+import DataTableBody from '../../../../shared/components/table/DataTableBody';
+import DataTableColumnActions from '../../../../shared/components/table/DataTableColumnActions';
+import TableFilter, {
+  type FilterConfig,
+  type FilterOption,
+} from '../../../../shared/components/table/DataTableFilter';
+import DataTableFooter from '../../../../shared/components/table/DataTableFooter';
+import DataTableHeader from '../../../../shared/components/table/DataTableHeader';
+import DataModal, { type ModalType } from '../../../../shared/components/table/DataTableModal';
+import TooltipOptions from '../../../../shared/components/utils/TooltipOptions';
+import { all_routes } from '../../../router/all_routes';
+import ExamResultForm from './components/ExamResultForm';
+import { useExamResultById } from './hooks/useGetExamResultById';
+import { useExamResultsList } from './hooks/useGetExamResultsList';
+import { useExamResultMutations } from './hooks/useExamResultMutations';
+import { type ExamResultModel } from './models/examResult.model';
+
+const ExamResults = () => {
+  const page = 1;
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const { examResults } = useExamResultsList(page);
+  const data = examResults?.results;
+  const skipQuery = !selectedId || activeModal === MODAL_TYPE.DELETE;
+  const { createExamResult, updateExamResult, deleteExamResult } = useExamResultMutations();
+  const {
+    examResultDetails,
+    isError: isExamResultError,
+    isLoading: isExamResultLoading,
+  } = useExamResultById(selectedId ?? null, skipQuery);
+  const route = all_routes;
+
+  useEffect(() => {
+    if (isExamResultError) {
+      toast.error('ExamResult data not found!');
     }
-  };
+
+    return () => {
+      setActiveModal(null);
+      setSelectedId(null);
+    };
+  }, [isExamResultError]);
+
   const columns = [
     {
-      title: "Admission No",
-      dataIndex: "admissionNo",
-      render: ( record: any) => (
+      title: 'ID',
+      align: 'center',
+      render: (_: TableData, __: TableData, index: number) => (page - 1) * 10 + index + 1,
+    },
+    {
+      title: 'Examination ID',
+      align: 'center',
+      render: (record: TableData) => record?.examinationId,
+    },
+    {
+      title: 'Student ID',
+      align: 'center',
+      render: (record: TableData) => record?.studentId,
+    },
+    {
+      title: 'Action',
+      align: 'center',
+      render: (record: TableData) => (
         <>
-          <Link to="#" className="link-primary">
-            {record.admissionNo}
-          </Link>
+          <DataTableColumnActions
+            onEditButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('edit');
+            }}
+            onViewButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('view');
+            }}
+            onDeleteButtonClick={() => {
+              setSelectedId(record?.id);
+              setActiveModal('delete');
+            }}
+          />
         </>
       ),
-      sorter: (a: TableData, b: TableData) => a.admissionNo.length - b.admissionNo.length,
     },
-
-    {
-      title: "Student Name",
-      dataIndex: "studentName",
-      render: (text: string, record: any) => (
-        <div className="d-flex align-items-center">
-            <Link to={routes.studentDetail} className="avatar avatar-md">
-                <ImageWithBasePath
-                    src={record.img}
-                    className="img-fluid rounded-circle"
-                    alt="img"
-                />
-            </Link>
-            <div className="ms-2">
-                <p className="text-dark mb-0">
-                
-                    <Link to={routes.studentDetail}>{text}</Link>
-                </p>
-                <span className="fs-12">{record.roll}</span>
-            </div>
-        </div>
-    ),
-      sorter: (a: TableData, b: TableData) => a.studentName.length - b.studentName.length,
-    },
-    {
-      title: "English",
-      dataIndex: "english",
-      render: (text: string) => (
-        <>
-          {text === "30"? (
-           <span className="text-danger">{text}</span>
-          ) : (
-            <span className="attendance-range">{text}</span>
-          )}
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) => a.english.length - b.english.length,
-    },
-    {
-      title: "Spanish",
-      dataIndex: "spanish",
-      render: (text: string) => (
-        <>
-          {text === "30"? (
-           <span className="text-danger">{text}</span>
-          ) : (
-            <span className="attendance-range">{text}</span>
-          )}
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) => a.spanish.length - b.spanish.length,
-    },
-    {
-      title: "Physics",
-      dataIndex: "physics",
-      sorter: (a: TableData, b: TableData) => a.physics.length - b.physics.length,
-    },
-    {
-      title: "Chemistry",
-      dataIndex: "chemistry",
-      render: (text: string) => (
-        <>
-          {text === "28"? (
-           <span className="text-danger">{text}</span>
-          ) : (
-            <span className="attendance-range">{text}</span>
-          )}
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) => a.chemistry.length - b.chemistry.length,
-    },
-    {
-      title: "Maths",
-      dataIndex: "maths",
-      render: (text: string) => (
-        <>
-          {text === "32"? (
-           <span className="text-danger">{text}</span>
-          ) : (
-            <span className="attendance-range">{text}</span>
-          )}
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) => a.maths.length - b.maths.length,
-    },
-    {
-      title: "Computer",
-      dataIndex: "computer",
-      sorter: (a: TableData, b: TableData) => a.computer.length - b.computer.length,
-    },
-    {
-      title: "Env Science",
-      dataIndex: "envScience",
-      sorter: (a: TableData, b: TableData) => a.envScience.length - b.envScience.length,
-    },
-    {
-      title: "Total",
-      dataIndex: "total",
-      sorter: (a: TableData, b: TableData) => a.total.length - b.total.length,
-    },
-    {
-      title: "Percent",
-      dataIndex: "percent",
-      sorter: (a: TableData, b: TableData) => a.percent.length - b.percent.length,
-    },
-    {
-      title: "Grade",
-      dataIndex: "grade",
-      sorter: (a: TableData, b: TableData) => a.grade.length - b.grade.length,
-    },
-    {
-      title: "Result",
-      dataIndex: "result",
-      render: (text: string) => (
-        <>
-          {text === "Pass" ? (
-            <span className="badge badge-soft-success d-inline-flex align-items-center">
-              <i className="ti ti-circle-filled fs-5 me-1"></i>
-              {text}
-            </span>
-          ) : (
-            <span className="badge badge-soft-danger d-inline-flex align-items-center">
-              <i className="ti ti-circle-filled fs-5 me-1"></i>
-              {text}
-            </span>
-          )}
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) => a.result.length - b.result.length,
-    }
-   
   ];
+
+  const statusOptions: FilterOption[] = [
+    { label: 'Active', value: 'true' },
+    { label: 'Inactive', value: 'false' },
+  ];
+
+  const examResultFilters: FilterConfig[] = [
+    {
+      key: 'is_active',
+      label: 'Status',
+      options: statusOptions,
+      defaultValue: statusOptions[0],
+    },
+  ];
+
+  const sortingOptions = ['Ascending', 'Descending', 'Recently Added', 'Recently Viewed'];
+
+  const handleExamResultForm = async (data: ExamResultModel, mode: string) => {
+    try {
+      if (mode === 'add') {
+        const response = await createExamResult(data);
+        if (response?.data) {
+          toast.success('ExamResult created successfully');
+        }
+      } else if (mode === 'edit' && examResultDetails?.id) {
+        const response = await updateExamResult({ id: examResultDetails?.id, data: data });
+        if (response?.data) {
+          toast.success('ExamResult updated successfully');
+        }
+      }
+    } catch (error) {
+      console.log('error', error);
+      toast.error('An error occurred. Please try again.');
+    }
+  };
+
+  const handleExamResultDelete = async () => {
+    if (!selectedId) return;
+    try {
+      const response = await deleteExamResult(selectedId);
+      if (response) {
+        toast.success('ExamResult deleted successfully');
+        setActiveModal(null);
+        setSelectedId(null);
+      }
+    } catch (error) {
+      console.log('error', error);
+      toast.error('Failed to delete examResult. Please try again.');
+    }
+  };
+
   return (
     <div>
-        <>
-  {/* Page Wrapper */}
-  <div className="page-wrapper">
-    <div className="content">
-      {/* Page Header */}
-      <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
-        <div className="my-auto mb-2">
-          <h3 className="page-title mb-1">Exam Result</h3>
-          <nav>
-            <ol className="breadcrumb mb-0">
-              <li className="breadcrumb-item">
-                <Link to={routes.adminDashboard}>Dashboard</Link>
-              </li>
-              <li className="breadcrumb-item">
-                <Link to="#">Academic </Link>
-              </li>
-              <li className="breadcrumb-item active" aria-current="page">
-                Exam Result
-              </li>
-            </ol>
-          </nav>
-        </div>
-        <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
-        <TooltipOption />
+      {/* Page Wrapper */}
+      <div className="page-wrapper">
+        <div className="content">
+          {/* Page Header */}
+          <PageHeader
+            title="ExamResults"
+            breadcrumb={[
+              { label: 'Dashboard', path: `${route.adminDashboard}` },
+              { label: 'Academic', path: '#' },
+              { label: 'ExamResults' },
+            ]}
+            addButtonLabel="Add Exam Result"
+            onAddClick={() => {
+              setActiveModal('add');
+            }}
+          >
+            <TooltipOptions showPrint={true} showExport={true} />
+          </PageHeader>
+
+          {/* Page Table */}
+          <DataTable
+            header={
+              <DataTableHeader
+                filters={
+                  <TableFilter
+                    filters={examResultFilters}
+                    onApply={(filters) => console.log('Apply:', filters)}
+                    onReset={(filters) => console.log('Reset:', filters)}
+                  />
+                }
+                sortingOptions={sortingOptions}
+                onApply={() => console.log('Apply clicked')}
+                onReset={() => console.log('Reset clicked')}
+                onSortChange={(sort) => console.log('Sort:', sort)}
+                defaultSort="Ascending"
+              />
+            }
+            footer={<DataTableFooter />}
+          >
+            <DataTableBody columns={columns} dataSource={data ?? []} Selection={true} />
+          </DataTable>
         </div>
       </div>
-      {/* /Page Header */}
-      {/* Guardians List */}
-      <div className="card">
-        <div className="card-header d-flex align-items-center justify-content-between flex-wrap pb-0">
-          <h4 className="mb-3">Exam Results</h4>
-          <div className="d-flex align-items-center flex-wrap">
-            <div className="input-icon-start mb-3 me-2 position-relative">
-            <PredefinedDateRanges />
-            </div>
-            <div className="dropdown mb-3 me-2">
-              <Link
-                to="#"
-                className="btn btn-outline-light bg-white dropdown-toggle"
-                data-bs-toggle="dropdown"
-                data-bs-auto-close="outside"
-              >
-                <i className="ti ti-filter me-2" />
-                Filter
-              </Link>
-              <div className="dropdown-menu drop-width" ref={dropdownMenuRef}>
-                <form>
-                  <div className="d-flex align-items-center border-bottom p-3">
-                    <h4>Filter</h4>
-                  </div>
-                  <div className="p-3 border-bottom pb-0">
-                    <div className="row">
-                      <div className="col-md-12">
-                        <div className="mb-3">
-                          <label className="form-label">Class</label>
-                          <CommonSelect
-                                  className="select"
-                                  options={allClass}
-                                />
-                        </div>
-                      </div>
-                      <div className="col-md-12">
-                        <div className="mb-3">
-                          <label className="form-label">Section</label>
-                          <CommonSelect
-                                  className="select"
-                                  options={classSection}
-                                />
-                        </div>
-                      </div>
-                      <div className="col-md-12">
-                        <div className="mb-3">
-                          <label className="form-label">Exam Type</label>
-                          <CommonSelect
-                                  className="select"
-                                  options={weeklytest}
-                                />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-3 d-flex align-items-center justify-content-end">
-                    <Link to="#" className="btn btn-light me-3">
-                      Reset
-                    </Link>
-                    <Link
-                            to="#"
-                            className="btn btn-primary"
-                            onClick={handleApplyClick}
-                          >
-                            Apply
-                          </Link>
-                  </div>
-                </form>
-              </div>
-            </div>
-            <div className="dropdown mb-3">
-              <Link
-                to="#"
-                className="btn btn-outline-light bg-white dropdown-toggle"
-                data-bs-toggle="dropdown"
-              >
-                <i className="ti ti-sort-ascending-2 me-2" />
-                Sort by A-Z
-              </Link>
-              <ul className="dropdown-menu p-3">
-                <li>
-                  <Link
-                    to="#"
-                    className="dropdown-item rounded-1 active"
-                  >
-                    Ascending
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="#"
-                    className="dropdown-item rounded-1"
-                  >
-                    Descending
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="#"
-                    className="dropdown-item rounded-1"
-                  >
-                    Recently Viewed
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    to="#"
-                    className="dropdown-item rounded-1"
-                  >
-                    Recently Added
-                  </Link>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className="card-body p-0 py-3">
-          {/* Guardians List */}
-          <Table columns={columns} dataSource={data} Selection={true} />
-          
-          {/* /Guardians List */}
-        </div>
-      </div>
-      {/* /Guardians List */}
-    </div>
-  </div>
-  {/* /Page Wrapper */}
-</>
 
-    </div>
-  )
-}
+      <>
+        {/* Add ExamResult */}
+        <DataModal
+          show={activeModal === MODAL_TYPE.ADD}
+          onClose={() => setActiveModal(null)}
+          size="lg"
+          modalTitle="Add ExamResult Information"
+          body={
+            <ExamResultForm
+              mode="add"
+              onActiveModal={setActiveModal}
+              onSubmit={async (data) => {
+                await handleExamResultForm(data, 'add');
+                setActiveModal(null);
+              }}
+            />
+          }
+        />
 
-export default ExamResult
+        {/* Edit ExamResult */}
+        {activeModal === MODAL_TYPE.EDIT && (
+          <DataModal
+            show={true}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            size="lg"
+            modalTitle="Update ExamResult Information"
+            body={
+              isExamResultLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading examResult details...</p>
+                </div>
+              ) : examResultDetails?.id ? (
+                <ExamResultForm
+                  key={examResultDetails.id}
+                  mode="edit"
+                  defaultValues={examResultDetails}
+                  onActiveModal={setActiveModal}
+                  onSubmit={async (data) => {
+                    await handleExamResultForm(data, 'edit');
+                    setActiveModal(null);
+                    setSelectedId(null);
+                  }}
+                />
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load examResult details.</p>
+                </div>
+              )
+            }
+          />
+        )}
+
+        {/* View ExamResult */}
+        {activeModal === MODAL_TYPE.VIEW && (
+          <DataModal
+            show={true}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            modalTitle="ExamResult Details"
+            body={
+              isExamResultLoading ? (
+                <div className="text-center py-5">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <p className="mt-2">Loading examResult details...</p>
+                </div>
+              ) : examResultDetails?.id ? (
+                <div>...</div>
+              ) : (
+                <div className="text-center py-5">
+                  <p>Failed to load examResult details.</p>
+                </div>
+              )
+            }
+          />
+        )}
+
+        {/* Delete Modal */}
+        <DeleteConfirmationModal
+          show={activeModal === MODAL_TYPE.DELETE}
+          onClose={() => {
+            setActiveModal(null);
+            setSelectedId(null);
+          }}
+          onConfirm={handleExamResultDelete}
+          title="Delete ExamResult"
+          message="Do you really want to delete this examResult? This action cannot be undone."
+        />
+      </>
+    </div>
+  );
+};
+
+export default ExamResults;

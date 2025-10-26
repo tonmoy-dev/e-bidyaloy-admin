@@ -90,6 +90,10 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'DELETE' }),
   },
 
+  SECTIONS: {
+    LIST: () => ({ url: '/api/v1/sections/', method: 'GET' }),
+  },
+
   // Student endpoints
   STUDENT: {
     LIST: '/api/v1/students/',
@@ -97,6 +101,11 @@ export const API_ENDPOINTS = {
     UPDATE_BY_ID: '/api/v1/students/',
     DELETE_BY_ID: '/api/v1/students/',
     DETAILS_BY_ID: '/api/v1/students/',
+    MINIMAL_LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/students/minimal_list/`,
+      method: 'GET',
+      params,
+    }),
   },
 
   // Exam Types endpoints
@@ -110,6 +119,7 @@ export const API_ENDPOINTS = {
 
   EXAMS: {
     LIST: '/api/v1/exams/',
+    LIST_WP: () => ({ url: '/api/v1/exams/', method: 'GET' }),
     CREATE: '/api/v1/exams/',
     UPDATE_BY_ID: '/api/v1/exams/',
     DELETE_BY_ID: '/api/v1/exams/',
