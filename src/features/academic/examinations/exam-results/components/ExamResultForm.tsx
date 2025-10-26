@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useGetClassesWithoutPaginationQuery } from '../api/examResultApi';
 import { useGetExams } from '../hooks/useGetExams';
-import { useGetSections } from '../hooks/useGetSections';
 import { useGetStudentsMinimal } from '../hooks/useGetStudentsMinimal';
 import type { ExamResultModel } from '../models/examResult.model';
 import { examResultSchema } from './examResultSchema';
@@ -18,10 +17,11 @@ interface ExamResultFormProps {
 export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamResultFormProps) {
   const [selectedClass, setSelectedClass] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState<string | null>(null);
+  const [classSections, setClassSections] = useState<any[]>([]);
+  const [examSubjects, setExamSubjects] = useState<any[]>([]);
 
   const { exams } = useGetExams();
   const { data: classes } = useGetClassesWithoutPaginationQuery();
-  const { sections } = useGetSections();
 
   // Build params object for the query
   const studentQueryParams = {
@@ -40,6 +40,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     control,
     reset,
     watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<any>({
     resolver: yupResolver(examResultSchema),
@@ -48,6 +49,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
       examId: defaultValues?.examinationId ?? '',
       classId: '',
       sectionId: '',
+      exam_subject: '',
       marks: [],
     },
   });
@@ -59,26 +61,40 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
 
   const watchClass = watch('classId');
   const watchSection = watch('sectionId');
+  const watchExam = watch('examId');
 
   // Update selected class and section
   useEffect(() => {
-    if (watchClass !== selectedClass) {
-      setSelectedClass(watchClass || null);
-    }
-  }, [watchClass]);
+    if (watchClass === selectedClass) return;
+    setSelectedClass(watchClass || null);
+    const selectedClassData = classes?.results?.find((c: any) => c.id === watchClass);
+    setClassSections(selectedClassData?.sections || []);
+    setValue('sectionId', '');
+    setSelectedSection(null);
+  }, [watchClass, selectedClass, classes, setValue]);
 
   useEffect(() => {
     if (watchSection !== selectedSection) {
       setSelectedSection(watchSection || null);
     }
-  }, [watchSection]);
+  }, [watchSection, selectedSection]);
+
+  useEffect(() => {
+    if (watchExam) {
+      const selectedExam = exams?.find((e: any) => e.id === watchExam);
+      setExamSubjects(selectedExam?.exam_subjects || []);
+      setValue('exam_subject', '');
+    } else {
+      setExamSubjects([]);
+    }
+  }, [watchExam, exams, setValue]);
 
   // Refetch students when class or section changes
   useEffect(() => {
     if (selectedClass) {
       refetch();
     }
-  }, [selectedClass, selectedSection]);
+  }, [selectedClass, selectedSection, refetch]);
 
   // Initialize marks array when students are available
   useEffect(() => {
@@ -131,6 +147,32 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
 
               <div className="col-md-6">
                 <div className="mb-3">
+                  <label className="form-label">Exam Subject *</label>
+                  <Controller
+                    name="exam_subject"
+                    control={control}
+                    render={({ field }) => (
+                      <select
+                        className={`form-select ${errors.exam_subject ? 'is-invalid' : ''}`}
+                        {...field}
+                      >
+                        <option value="">Select Exam Subject</option>
+                        {examSubjects?.map((subject: any) => (
+                          <option key={subject.id} value={subject.id}>
+                            {subject.subject_name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                  />
+                  {errors.exam_subject && (
+                    <div className="invalid-feedback">{errors.exam_subject.message}</div>
+                  )}
+                </div>
+              </div>
+
+              <div className="col-md-6">
+                <div className="mb-3">
                   <label className="form-label">Class *</label>
                   <Controller
                     name="classId"
@@ -141,7 +183,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                         {...field}
                       >
                         <option value="">Select Class</option>
-                        {classes?.map((klass: any) => (
+                        {classes?.results?.map((klass: any) => (
                           <option key={klass.id} value={klass.id}>
                             {klass.name}
                           </option>
@@ -167,7 +209,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                         {...field}
                       >
                         <option value="">Select Section</option>
-                        {sections?.map((section: any) => (
+                        {classSections?.map((section: any) => (
                           <option key={section.id} value={section.id}>
                             {section.name}
                           </option>
