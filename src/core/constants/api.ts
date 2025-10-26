@@ -108,6 +108,14 @@ export const API_ENDPOINTS = {
     DETAILS_BY_ID: '/api/v1/exam-types/',
   },
 
+  EXAMS: {
+    LIST: '/api/v1/exams/',
+    CREATE: '/api/v1/exams/',
+    UPDATE_BY_ID: '/api/v1/exams/',
+    DELETE_BY_ID: '/api/v1/exams/',
+    DETAILS_BY_ID: '/api/v1/exams/',
+  },
+
   // Exam Mark endpoints
   EXAM_RESULTS: {
     LIST: (params?: Record<string, unknown>) => ({
