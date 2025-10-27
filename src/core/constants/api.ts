@@ -122,6 +122,14 @@ export const API_ENDPOINTS = {
     UPDATE_BY_ID: '/api/v1/assignments/',
     DELETE_BY_ID: '/api/v1/assignments/',
     DETAILS_BY_ID: '/api/v1/assignments/',
- }
+ }, 
+ ASSIGNMENT_ATTACHMENTS: 
+ {
+    LIST: '/api/v1/assignment-attachments/',
+    CREATE: '/api/v1/assignment-attachments/',
+    UPDATE_BY_ID: '/api/v1/assignment-attachments/',
+    DELETE_BY_ID: '/api/v1/assignment-attachments/',
+    DETAILS_BY_ID: '/api/v1/assignment-attachments/',
+  }
 };
 

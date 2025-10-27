@@ -10,6 +10,8 @@ import { useGetTeachersQuery } from '../../../peoples/teacher/api/teacherApi';
 import { useGetStudentsQuery } from '../../../peoples/students/api/studentApi';
 import type { SectionModel } from '../../classes/models/class.model';
 import type { StudentModel } from '../../../peoples/students/models/student.model';
+import FileUploadComponent from './FileUploadComponent';
+import { useAttachmentUpload } from '../hooks/useAttachmentUpload';
 
 interface AssignmentFormProps {
   mode: 'add' | 'edit';
@@ -26,6 +28,13 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
 }) => {
   const [selectedTargetType, setSelectedTargetType] = useState<'class' | 'section' | 'individual'>('class');
   const [selectedClassId, setSelectedClassId] = useState<string>('');
+
+  // Attachment upload hook
+  const { 
+    uploadedFiles, 
+    getUploadedAttachments, 
+    clearUploads 
+  } = useAttachmentUpload();
 
   const {
     register,
@@ -51,6 +60,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
       status: 'draft',
       academic_year: '',
       student_ids: [],
+      attachments: [],
     },
   });
 
@@ -165,12 +175,22 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   }, [watchedTargetType]);
 
   const handleFormSubmit = (data: AssignmentFormData) => {
+    // Get uploaded attachments
+    const attachments = getUploadedAttachments();
+    
     // Convert due_date to ISO format for API
     const formattedData = {
       ...data,
       due_date: new Date(data.due_date).toISOString(),
+      attachments,
     };
     onSubmit(formattedData);
+  };
+
+  // Handle file uploads
+  const handleFilesUploaded = (attachmentIds: string[]) => {
+    const attachments = getUploadedAttachments();
+    setValue('attachments', attachments);
   };
 
   return (
@@ -265,6 +285,174 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
           padding: 0.5rem 0.75rem;
           margin-bottom: 0.5rem;
           font-size: 0.875rem;
+        }
+
+        .student-check-item {
+          transition: all 0.2s ease-in-out;
+        }
+
+        .student-check-item:hover {
+          background-color: rgba(0, 123, 255, 0.1);
+          border-radius: 0.25rem;
+          padding: 0.25rem;
+          margin: 0.1rem 0;
+        }
+
+        /* Mobile modal fixes */
+        @media (max-width: 768px) {
+          .modal-dialog {
+            margin: 0.5rem !important;
+            max-width: calc(100% - 1rem) !important;
+            max-height: calc(100vh - 1rem) !important;
+          }
+          
+          .modal-content {
+            max-height: calc(100vh - 1rem) !important;
+            display: flex !important;
+            flex-direction: column !important;
+          }
+          
+          .modal-body {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            padding: 1rem !important;
+            -webkit-overflow-scrolling: touch !important;
+          }
+          
+          .modal-header {
+            flex-shrink: 0 !important;
+            padding: 0.75rem 1rem !important;
+            border-bottom: 1px solid #dee2e6 !important;
+          }
+          
+          .modal-footer {
+            flex-shrink: 0 !important;
+            padding: 0.75rem 1rem !important;
+            border-top: 1px solid #dee2e6 !important;
+            background-color: #f8f9fa !important;
+          }
+        }
+
+        /* Additional mobile optimizations */
+        @media (max-width: 576px) {
+          .modal-dialog {
+            margin: 0 !important;
+            max-width: 100% !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+          }
+          
+          .modal-content {
+            height: 100vh !important;
+            max-height: 100vh !important;
+            border-radius: 0 !important;
+          }
+          
+          .modal-body {
+            padding: 0.75rem !important;
+          }
+          
+          .modal-header .modal-title {
+            font-size: 1.1rem !important;
+          }
+          
+          .btn {
+            padding: 0.5rem 1rem !important;
+            font-size: 0.9rem !important;
+          }
+          
+          .form-control, .form-select {
+            font-size: 16px !important; /* Prevent zoom on iOS */
+          }
+          
+          .row .col-md-6, .row .col-md-4, .row .col-md-12 {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+            margin-bottom: 0.75rem !important;
+          }
+          
+          .form-label {
+            font-size: 0.9rem !important;
+            margin-bottom: 0.25rem !important;
+          }
+          
+          .form-text small {
+            font-size: 0.8rem !important;
+          }
+        }
+
+        /* Ensure modal backdrop doesn't interfere with scrolling */
+        body .modal-open {
+          overflow: hidden !important;
+        }
+
+        /* Ensure modal backdrop doesn't interfere with scrolling */
+        body .modal-open {
+          overflow: hidden !important;
+        }
+
+        /* Global modal fixes that apply to any modal on the page */
+        @media (max-width: 768px) {
+          body .modal-dialog {
+            margin: 0.5rem !important;
+            max-width: calc(100vw - 1rem) !important;
+            max-height: calc(100vh - 1rem) !important;
+          }
+          
+          body .modal-content {
+            max-height: calc(100vh - 1rem) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            overflow: hidden !important;
+          }
+          
+          body .modal-body {
+            flex: 1 !important;
+            overflow-y: auto !important;
+            -webkit-overflow-scrolling: touch !important;
+            padding: 1rem !important;
+          }
+          
+          body .modal-header {
+            flex-shrink: 0 !important;
+            padding: 0.75rem 1rem !important;
+          }
+          
+          body .modal-footer {
+            flex-shrink: 0 !important;
+            padding: 0.75rem 1rem !important;
+          }
+        }
+
+        @media (max-width: 576px) {
+          body .modal-dialog {
+            margin: 0 !important;
+            max-width: 100vw !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            max-height: 100vh !important;
+          }
+          
+          body .modal-content {
+            height: 100vh !important;
+            max-height: 100vh !important;
+            border-radius: 0 !important;
+            border: none !important;
+          }
+          
+          body .modal-body {
+            padding: 0.75rem !important;
+          }
+          
+          body .modal-header {
+            padding: 0.75rem !important;
+            border-bottom: 1px solid #dee2e6 !important;
+          }
+          
+          body .modal-footer {
+            padding: 0.75rem !important;
+            border-top: 1px solid #dee2e6 !important;
+          }
         }
       `}</style>
       <form onSubmit={handleSubmit(handleFormSubmit)}>
@@ -517,12 +705,9 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
                   <div className="border p-3 rounded student-list-container fade-in">
                     {filteredStudentOptions.map((student: StudentModel, index) => (
                       <div 
-                        className="form-check slide-in" 
+                        className="form-check slide-in student-check-item" 
                         key={student.id}
-                        style={{ 
-                          animationDelay: `${index * 0.05}s`,
-                          animationDuration: '0.3s'
-                        }}
+                        data-animation-delay={index * 0.05}
                       >
                         <input
                           className="form-check-input"
@@ -551,6 +736,27 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
             {errors.student_ids && <div className="text-danger mt-1">{errors.student_ids.message}</div>}
           </div>
         )}
+
+        {/* File Attachments */}
+        <div className="col-md-12 mb-3">
+          <label className="form-label">
+            <i className="fas fa-paperclip me-2"></i>
+            Assignment Files (Optional)
+          </label>
+          <FileUploadComponent
+            onFilesUploaded={handleFilesUploaded}
+            maxFiles={5}
+            maxFileSize={10 * 1024 * 1024} // 10MB
+            acceptedFileTypes={['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif']}
+            disabled={false}
+          />
+          <div className="form-text">
+            <small className="text-muted">
+              <i className="fas fa-info-circle me-1"></i>
+              Upload assignment files, reference materials, or instructions. Maximum 5 files, 10MB each. Supported: PDF, Word, Text, Images.
+            </small>
+          </div>
+        </div>
       </div>
 
       {/* Form Actions */}
@@ -558,7 +764,10 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
         <button
           type="button"
           className="btn btn-light me-2"
-          onClick={() => onActiveModal(null)}
+          onClick={() => {
+            clearUploads(); // Clear uploads on cancel
+            onActiveModal(null);
+          }}
         >
           Cancel
         </button>

@@ -181,6 +181,7 @@ export const baseApi = createApi({
     'Grade',
     'Syllabus',
     'Assignment',
+    'AssignmentAttachment',
   ],
   endpoints: () => ({}),
 });

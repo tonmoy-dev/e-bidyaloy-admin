@@ -14,6 +14,16 @@ export interface SubmissionStats {
   pending: number;
 }
 
+export interface AssignmentAttachment {
+  id: string;
+  attachment_type: 'assignment';
+  file_name: string;
+  file: string;
+  file_url: string;
+  file_size: number;
+  created_at: string;
+}
+
 export interface AssignmentModel {
   id?: string;
   title: string;
@@ -36,7 +46,7 @@ export interface AssignmentModel {
   organization_name?: string;
   academic_year: string;
   academic_year_name?: string;
-  attachments?: unknown[];
+  attachments?: AssignmentAttachment[];
   assigned_students?: AssignedStudent[];
   submission_stats?: SubmissionStats;
   student_ids?: string[]; // Keep for backward compatibility
@@ -58,6 +68,7 @@ export interface CreateAssignmentRequest {
   status: 'draft' | 'published' | 'closed';
   academic_year: string;
   student_ids?: string[];
+  attachments?: AssignmentAttachment[];
 }
 
 export interface PaginatedResponse<T> {
@@ -81,4 +92,5 @@ export interface AssignmentFormData {
   status: 'draft' | 'published' | 'closed';
   academic_year: string;
   student_ids: string[];
+  attachments?: AssignmentAttachment[];
 }
