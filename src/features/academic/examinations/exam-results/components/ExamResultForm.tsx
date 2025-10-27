@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
 import { useGetClassesWithoutPaginationQuery } from '../api/examResultApi';
 import { useGetExams } from '../hooks/useGetExams';
+import { useGetGradesWP } from '../hooks/useGetGradesWP';
 import { useGetStudentsMinimal } from '../hooks/useGetStudentsMinimal';
 import type { ExamResultModel } from '../models/examResult.model';
 import { examResultSchema } from './examResultSchema';
@@ -22,6 +23,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
 
   const { exams } = useGetExams();
   const { data: classes } = useGetClassesWithoutPaginationQuery();
+  const { grades } = useGetGradesWP();
 
   // Build params object for the query
   const studentQueryParams = {
@@ -67,7 +69,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
   useEffect(() => {
     if (watchClass === selectedClass) return;
     setSelectedClass(watchClass || null);
-    const selectedClassData = classes?.results?.find((c: any) => c.id === watchClass);
+    const selectedClassData = classes?.find((c: any) => c.id === watchClass);
     setClassSections(selectedClassData?.sections || []);
     setValue('sectionId', '');
     setSelectedSection(null);
@@ -103,6 +105,8 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
         studentId: student.id,
         studentRollNo: student.student_id,
         marksObtained: 0,
+        grade: '',
+        is_absent: false,
         remarks: '',
       }));
       replace(initialMarks);
@@ -111,11 +115,27 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     }
   }, [students, replace]);
 
+  // Transform data before submission
+  const handleFormSubmit = (data: any) => {
+    // Transform nested marks array into flat array with repeated exam_subject
+    const transformedPayload = data.marks.map((mark: any) => ({
+      exam_subject: data.exam_subject,
+      student: mark.studentId, // Rename studentId to student
+      marks_obtained: parseFloat(mark.marksObtained) || 0,
+      grade: mark.grade || '',
+      remarks: mark.remarks || '',
+      is_absent: mark.is_absent || false,
+    }));
+
+    // Call the original onSubmit with transformed data
+    onSubmit(transformedPayload);
+  };
+
   // Get students array safely
   const studentsList = Array.isArray(students) ? students : [];
 
   return (
-    <form id="exam-result-form" onSubmit={handleSubmit(onSubmit)}>
+    <form id="exam-result-form" onSubmit={handleSubmit(handleFormSubmit)}>
       <div className="row g-3">
         {/* Top Selection Fields */}
         <div className="col-md-12">
@@ -183,7 +203,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                         {...field}
                       >
                         <option value="">Select Class</option>
-                        {classes?.results?.map((klass: any) => (
+                        {classes?.map((klass: any) => (
                           <option key={klass.id} value={klass.id}>
                             {klass.name}
                           </option>
@@ -249,8 +269,10 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                     <table className="table table-bordered">
                       <thead className="table-light">
                         <tr>
-                          <th style={{ width: '30%' }}>Roll No</th>
-                          <th style={{ width: '35%' }}>Marks Obtained</th>
+                          <th style={{ width: '12%' }}>Roll No</th>
+                          <th style={{ width: '18%' }}>Marks Obtained</th>
+                          <th style={{ width: '20%' }}>Grade</th>
+                          <th style={{ width: '20%' }}>Absent</th>
                           <th style={{ width: '35%' }}>Remarks</th>
                         </tr>
                       </thead>
@@ -276,6 +298,62 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                                       placeholder="Enter marks"
                                       {...field}
                                     />
+                                  )}
+                                />
+                              </td>
+                              <td>
+                                <Controller
+                                  name={`marks[${index}].grade`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <select className="form-select" {...field}>
+                                      <option value="">Select Grade</option>
+                                      {grades?.map((grade: any) => (
+                                        <option key={grade.id} value={grade.id}>
+                                          {grade.name}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  )}
+                                />
+                              </td>
+                              <td>
+                                <Controller
+                                  name={`marks[${index}].is_absent`}
+                                  control={control}
+                                  render={({ field }) => (
+                                    <div className="d-flex gap-3 align-items-center py-2">
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="radio"
+                                          id={`absent-yes-${index}`}
+                                          checked={field.value === true}
+                                          onChange={() => field.onChange(true)}
+                                        />
+                                        <label
+                                          className="form-check-label"
+                                          htmlFor={`absent-yes-${index}`}
+                                        >
+                                          Yes
+                                        </label>
+                                      </div>
+                                      <div className="form-check">
+                                        <input
+                                          className="form-check-input"
+                                          type="radio"
+                                          id={`absent-no-${index}`}
+                                          checked={field.value === false}
+                                          onChange={() => field.onChange(false)}
+                                        />
+                                        <label
+                                          className="form-check-label"
+                                          htmlFor={`absent-no-${index}`}
+                                        >
+                                          No
+                                        </label>
+                                      </div>
+                                    </div>
                                   )}
                                 />
                               </td>

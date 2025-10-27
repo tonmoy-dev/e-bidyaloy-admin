@@ -83,6 +83,7 @@ export const API_ENDPOINTS = {
       method: 'GET',
       params,
     }),
+    LIST_WP: () => ({ url: '/api/v1/grades_wp/', method: 'GET' }),
     CREATE: () => ({ url: '/api/v1/grades/', method: 'POST' }),
     DETAILS: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'GET' }),
     UPDATE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'PUT' }),
@@ -124,6 +125,7 @@ export const API_ENDPOINTS = {
     UPDATE_BY_ID: '/api/v1/exams/',
     DELETE_BY_ID: '/api/v1/exams/',
     DETAILS_BY_ID: '/api/v1/exams/',
+    SUBJECTS_BY_ID: (id: string) => ({ url: `/api/v1/exams/${id}/subjects/`, method: 'GET' }),
   },
 
   // Exam Mark endpoints

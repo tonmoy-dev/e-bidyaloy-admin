@@ -1,7 +1,6 @@
-
-import { API_ENDPOINTS } from "../../../../../core/constants/api";
-import { baseApi } from "../../../../../core/services/baseApi";
-import type { ExamResultModel, PaginatedResponse } from "../models/examResult.model";
+import { API_ENDPOINTS } from '../../../../../core/constants/api';
+import { baseApi } from '../../../../../core/services/baseApi';
+import type { ExamResultModel, PaginatedResponse } from '../models/examResult.model';
 
 export const examResultApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -19,6 +18,21 @@ export const examResultApi = baseApi.injectEndpoints({
     }),
     getExams: builder.query<PaginatedResponse<any>, void>({
       query: () => API_ENDPOINTS.EXAMS.LIST_WP(),
+    }),
+    getExamSubjectsByExamId: builder.query<any[], string>({
+      query: (examId) => API_ENDPOINTS.EXAMS.SUBJECTS_BY_ID(examId),
+    }),
+    getGradesWithoutPagination: builder.query<any[], void>({
+      query: () => API_ENDPOINTS.GRADES.LIST_WP(),
+    }),
+    getGradeById: builder.query<any, string>({
+      query: (id) => API_ENDPOINTS.GRADES.DETAILS(id),
+    }),
+    getExamSubjectById: builder.query<any, string>({
+      query: (id) => API_ENDPOINTS.EXAM_SUBJECTS.DETAILS(id),
+    }),
+    getStudentById: builder.query<any, string>({
+      query: (id) => API_ENDPOINTS.STUDENT.DETAILS(id),
     }),
     getExamResults: builder.query<PaginatedResponse<ExamResultModel>, number | void>({
       query: (page = 1) => API_ENDPOINTS.EXAM_RESULTS.LIST({ page }),
@@ -44,7 +58,10 @@ export const examResultApi = baseApi.injectEndpoints({
       invalidatesTags: [{ type: 'ExamResult', id: 'LIST' }],
     }),
 
-    updateExamResult: builder.mutation<ExamResultModel, { id: string; data: Partial<ExamResultModel> }>({
+    updateExamResult: builder.mutation<
+      ExamResultModel,
+      { id: string; data: Partial<ExamResultModel> }
+    >({
       query: ({ id, data }) => ({
         ...API_ENDPOINTS.EXAM_RESULTS.UPDATE(id),
         body: data,
@@ -82,6 +99,11 @@ export const {
   useGetStudentsMinimalQuery,
   useGetSectionsQuery,
   useGetExamsQuery,
+  useGetExamSubjectsByExamIdQuery,
+  useGetGradesWithoutPaginationQuery,
+  useGetGradeByIdQuery,
+  useGetExamSubjectByIdQuery,
+  useGetStudentByIdQuery,
   useGetExamResultsQuery,
   useGetExamResultByIdQuery,
   useCreateExamResultMutation,
