@@ -29,7 +29,7 @@ export const examResultApi = baseApi.injectEndpoints({
       query: (id) => API_ENDPOINTS.GRADES.DETAILS(id),
     }),
     getExamSubjectById: builder.query<any, string>({
-      query: (id) => API_ENDPOINTS.EXAM_SUBJECTS.DETAILS(id),
+      query: (id) => API_ENDPOINTS.EXAMS.SUBJECTS_BY_ID(id),
     }),
     getStudentById: builder.query<any, string>({
       query: (id) => API_ENDPOINTS.STUDENT.DETAILS(id),

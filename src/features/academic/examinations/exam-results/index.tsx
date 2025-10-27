@@ -26,17 +26,25 @@ import { useExamResultsList } from './hooks/useGetExamResultsList';
 import { type ExamResultModel } from './models/examResult.model';
 
 // Helper component to fetch and display exam subject name
-const ExamSubjectName = ({ id }: { id: string }) => {
-  // You'll need to create this hook
-  const { examSubject } = useExamSubjectById(id);
+const ExamSubjectName = ({ id }: { id: string | null }) => {
+  console.log('ExamSubjectName rendering with id:', id);
+  const { examSubject, isLoading, isError } = useExamSubjectById(id, !id);
+
+  console.log('ExamSubjectName hook result:', { examSubject, isLoading, isError });
+
+  if (!id) return <span>-</span>;
+  if (isLoading) return <span>Loading...</span>;
+  if (isError) return <span className="text-danger">Error</span>;
+
   return <span>{examSubject?.subject_name || id}</span>;
 };
 
 // Helper component to fetch and display student name
-const StudentName = ({ id }: { id: string }) => {
+const StudentName = ({ id }: { id: string | null }) => {
   // You'll need to create this hook
   const { studentDetails } = useStudentById(id);
-  return <span>{studentDetails?.name || id}</span>;
+  if (!id) return <span>-</span>;
+  return <span>{studentDetails?.student_id || id}</span>;
 };
 
 // Helper component to fetch and display grade name
