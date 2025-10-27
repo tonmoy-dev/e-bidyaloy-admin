@@ -1,6 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { Controller, useFieldArray, useForm } from 'react-hook-form';
+import { useStudentById } from '../../../../peoples/students/hooks/useStudentById';
 import { useGetClassesWithoutPaginationQuery } from '../api/examResultApi';
 import { useGetExams } from '../hooks/useGetExams';
 import { useGetGradesWP } from '../hooks/useGetGradesWP';
@@ -24,6 +25,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
   const { exams } = useGetExams();
   const { data: classes } = useGetClassesWithoutPaginationQuery();
   const { grades } = useGetGradesWP();
+  const { studentDetails } = useStudentById(mode === 'edit' ? defaultValues?.student : null);
 
   // Build params object for the query
   const studentQueryParams = {
@@ -100,6 +102,19 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
 
   // Initialize marks array when students are available
   useEffect(() => {
+    if (mode === 'edit' && defaultValues) {
+      replace([
+        {
+          studentId: defaultValues.student,
+          marksObtained: defaultValues.marks_obtained,
+          grade: defaultValues.grade,
+          is_absent: defaultValues.is_absent,
+          remarks: defaultValues.remarks,
+        },
+      ]);
+      return;
+    }
+
     if (students && Array.isArray(students) && students.length > 0) {
       const initialMarks = students.map((student: any) => ({
         studentId: student.id,
@@ -113,7 +128,43 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     } else {
       replace([]);
     }
-  }, [students, replace]);
+  }, [students, replace, mode, defaultValues]);
+
+  useEffect(() => {
+    if (mode === 'edit' && defaultValues && exams?.length) {
+      const subjectId = defaultValues.exam_subject;
+      const exam = exams.find((e: any) => e.exam_subjects.some((s: any) => s.id === subjectId));
+      if (exam) {
+        setValue('examId', exam.id);
+      }
+    }
+  }, [mode, defaultValues, exams, setValue]);
+
+  useEffect(() => {
+    if (mode === 'edit' && defaultValues && examSubjects?.length) {
+      if (examSubjects.some((s: any) => s.id === defaultValues.exam_subject)) {
+        setValue('exam_subject', defaultValues.exam_subject);
+      }
+    }
+  }, [mode, defaultValues, examSubjects, setValue]);
+
+  useEffect(() => {
+    if (mode === 'edit' && studentDetails && classes?.length) {
+      const classId = studentDetails.class_assigned?.id;
+      if (classId && classes.some((c: any) => c.id === classId)) {
+        setValue('classId', classId);
+      }
+    }
+  }, [mode, studentDetails, classes, setValue]);
+
+  useEffect(() => {
+    if (mode === 'edit' && studentDetails && classSections?.length) {
+      const sectionId = studentDetails.section?.id;
+      if (sectionId && classSections.some((s: any) => s.id === sectionId)) {
+        setValue('sectionId', sectionId);
+      }
+    }
+  }, [mode, studentDetails, classSections, setValue]);
 
   // Transform data before submission
   const handleFormSubmit = (data: any) => {
@@ -125,6 +176,8 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
       grade: mark.grade || '',
       remarks: mark.remarks || '',
       is_absent: mark.is_absent || false,
+      classId: data.classId,
+      sectionId: data.sectionId,
     }));
 
     // Call the original onSubmit with transformed data
@@ -151,6 +204,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       <select
                         className={`form-select ${errors.examId ? 'is-invalid' : ''}`}
                         {...field}
+                        disabled={mode === 'edit'}
                       >
                         <option value="">Select Examination</option>
                         {exams?.map((exam: any) => (
@@ -175,6 +229,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       <select
                         className={`form-select ${errors.exam_subject ? 'is-invalid' : ''}`}
                         {...field}
+                        disabled={mode === 'edit'}
                       >
                         <option value="">Select Exam Subject</option>
                         {examSubjects?.map((subject: any) => (
@@ -201,6 +256,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       <select
                         className={`form-select ${errors.classId ? 'is-invalid' : ''}`}
                         {...field}
+                        disabled={mode === 'edit'}
                       >
                         <option value="">Select Class</option>
                         {classes?.map((klass: any) => (
@@ -227,6 +283,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       <select
                         className={`form-select ${errors.sectionId ? 'is-invalid' : ''}`}
                         {...field}
+                        disabled={mode === 'edit'}
                       >
                         <option value="">Select Section</option>
                         {classSections?.map((section: any) => (
@@ -259,7 +316,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
         )}
 
         {/* Student Marks Table */}
-        {studentsList.length > 0 && !studentsLoading && (
+        {(studentsList.length > 0 || mode === 'edit') && !studentsLoading && (
           <div className="col-md-12">
             <div className="border rounded p-3 mb-3">
               <h6 className="mb-3">Student Marks Entry</h6>
@@ -384,7 +441,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
         )}
 
         {/* No Students Message */}
-        {selectedClass && !studentsLoading && studentsList.length === 0 && (
+        {selectedClass && !studentsLoading && studentsList.length === 0 && mode !== 'edit' && (
           <div className="col-md-12">
             <div className="alert alert-warning text-center">
               <i className="bi bi-exclamation-triangle me-2"></i>
@@ -394,7 +451,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
         )}
 
         {/* Instruction Message */}
-        {!selectedClass && (
+        {!selectedClass && mode !== 'edit' && (
           <div className="col-md-12">
             <div className="alert alert-info text-center">
               Please select Examination and Class to view students.
@@ -408,7 +465,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
             <button
               type="submit"
               className="btn btn-primary"
-              disabled={isSubmitting || studentsList.length === 0}
+              disabled={isSubmitting || (studentsList.length === 0 && mode !== 'edit')}
             >
               {isSubmitting ? (
                 <>
