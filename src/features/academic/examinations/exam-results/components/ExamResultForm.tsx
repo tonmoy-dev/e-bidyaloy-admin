@@ -51,8 +51,8 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     defaultValues: {
       id: defaultValues?.id ?? '',
       examId: defaultValues?.examinationId ?? '',
-      classId: '',
-      sectionId: '',
+      class_id: '',
+      section_id: '',
       exam_subject: '',
       marks: [],
     },
@@ -63,8 +63,8 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     name: 'marks',
   });
 
-  const watchClass = watch('classId');
-  const watchSection = watch('sectionId');
+  const watchClass = watch('class_id');
+  const watchSection = watch('section_id');
   const watchExam = watch('examId');
 
   // Update selected class and section
@@ -73,7 +73,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     setSelectedClass(watchClass || null);
     const selectedClassData = classes?.find((c: any) => c.id === watchClass);
     setClassSections(selectedClassData?.sections || []);
-    setValue('sectionId', '');
+    setValue('section_id', '');
     setSelectedSection(null);
   }, [watchClass, selectedClass, classes, setValue]);
 
@@ -150,18 +150,18 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
 
   useEffect(() => {
     if (mode === 'edit' && studentDetails && classes?.length) {
-      const classId = studentDetails.class_assigned?.id;
-      if (classId && classes.some((c: any) => c.id === classId)) {
-        setValue('classId', classId);
+      const class_id = studentDetails.class_assigned?.id;
+      if (class_id && classes.some((c: any) => c.id === class_id)) {
+        setValue('class_id', class_id);
       }
     }
   }, [mode, studentDetails, classes, setValue]);
 
   useEffect(() => {
     if (mode === 'edit' && studentDetails && classSections?.length) {
-      const sectionId = studentDetails.section?.id;
-      if (sectionId && classSections.some((s: any) => s.id === sectionId)) {
-        setValue('sectionId', sectionId);
+      const section_id = studentDetails.section?.id;
+      if (section_id && classSections.some((s: any) => s.id === section_id)) {
+        setValue('section_id', section_id);
       }
     }
   }, [mode, studentDetails, classSections, setValue]);
@@ -176,8 +176,8 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
       grade: mark.grade || '',
       remarks: mark.remarks || '',
       is_absent: mark.is_absent || false,
-      classId: data.classId,
-      sectionId: data.sectionId,
+      class_id: data.class_id,
+      section_id: data.section_id,
     }));
 
     // Call the original onSubmit with transformed data
@@ -250,11 +250,11 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                 <div className="mb-3">
                   <label className="form-label">Class *</label>
                   <Controller
-                    name="classId"
+                    name="class_id"
                     control={control}
                     render={({ field }) => (
                       <select
-                        className={`form-select ${errors.classId ? 'is-invalid' : ''}`}
+                        className={`form-select ${errors.class_id ? 'is-invalid' : ''}`}
                         {...field}
                         disabled={mode === 'edit'}
                       >
@@ -267,8 +267,8 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       </select>
                     )}
                   />
-                  {errors.classId && (
-                    <div className="invalid-feedback">{errors.classId.message}</div>
+                  {errors.class_id && (
+                    <div className="invalid-feedback">{errors.class_id.message}</div>
                   )}
                 </div>
               </div>
@@ -277,11 +277,11 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                 <div className="mb-3">
                   <label className="form-label">Section (optional)</label>
                   <Controller
-                    name="sectionId"
+                    name="section_id"
                     control={control}
                     render={({ field }) => (
                       <select
-                        className={`form-select ${errors.sectionId ? 'is-invalid' : ''}`}
+                        className={`form-select ${errors.section_id ? 'is-invalid' : ''}`}
                         {...field}
                         disabled={mode === 'edit'}
                       >
@@ -294,8 +294,8 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       </select>
                     )}
                   />
-                  {errors.sectionId && (
-                    <div className="invalid-feedback">{errors.sectionId.message}</div>
+                  {errors.section_id && (
+                    <div className="invalid-feedback">{errors.section_id.message}</div>
                   )}
                 </div>
               </div>

@@ -142,4 +142,23 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => ({ url: `/api/v1/exam-results/${id}/`, method: 'DELETE' }),
     BULK_CREATE: () => ({ url: '/api/v1/exam-results/bulk/', method: 'POST' }),
   },
+
+  PAYMENT_GATEWAY_CREDENTIALS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/payment-gateway-credentials/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/payment-gateway-credentials/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/payment-gateway-credentials/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/payment-gateway-credentials/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/payment-gateway-credentials/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/payment-gateway-credentials/${id}/`,
+      method: 'DELETE',
+    }),
+  },
 };
