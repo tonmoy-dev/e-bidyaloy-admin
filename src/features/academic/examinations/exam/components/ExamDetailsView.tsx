@@ -72,7 +72,7 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
       </div>
 
       {/* Academic Information */}
-      <div className="col-md-12 mb-4">
+      <div className="col-md-12 mb-4">git
         <h5 className="border-bottom pb-2 mb-3">Academic Information</h5>
         <div className="row">
           <div className="col-md-4">
