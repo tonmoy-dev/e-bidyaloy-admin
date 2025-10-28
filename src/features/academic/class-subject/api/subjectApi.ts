@@ -10,21 +10,21 @@ export const subjectApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.results.map(({ id }) => ({ type: 'Subject' as const, id })),
-              { type: 'Subject', id: 'LIST' },
-            ]
+            ...result.results.map(({ id }) => ({ type: 'Subject' as const, id })),
+            { type: 'Subject', id: 'LIST' },
+          ]
           : [{ type: 'Subject', id: 'LIST' }],
     }),
 
-    getClassesWithoutPagination: builder.query<SubjectModel[], void>({
-      query: () => API_ENDPOINTS.CLASS.LIST_WP(),
+    getSubjectsWithoutPagination: builder.query<SubjectModel[], void>({
+      query: () => API_ENDPOINTS.SUBJECT.LIST_WP(),
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: 'Class' as const, id })),
-              { type: 'Class', id: 'LIST_WP' },
-            ]
-          : [{ type: 'Class', id: 'LIST_WP' }],
+            ...result.map(({ id }) => ({ type: 'Subject' as const, id })),
+            { type: 'Subject', id: 'LIST_WP' },
+          ]
+          : [{ type: 'Subject', id: 'LIST_WP' }],
     }),
 
     getSubjectById: builder.query<SubjectModel, string>({
@@ -86,7 +86,7 @@ export const subjectApi = baseApi.injectEndpoints({
 
 export const {
   useGetSubjectsQuery,
-  useGetClassesWithoutPaginationQuery,
+  useGetSubjectsWithoutPaginationQuery,
   useGetSubjectByIdQuery,
   useCreateSubjectMutation,
   useUpdateSubjectMutation,
