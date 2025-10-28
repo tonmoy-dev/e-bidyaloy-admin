@@ -11,6 +11,7 @@ import ClassTimetable from '../academic/class-timetable';
 import Classes from '../academic/classes';
 import Assignments from '../academic/assignments';
 import Exams from '../academic/examinations/exam';
+import StudentExams from '../academic/examinations/exam/student-index';
 import ExamAttendance from '../academic/examinations/exam-attendance';
 import ExamResult from '../academic/examinations/exam-results';
 import ExamSchedule from '../academic/examinations/exam-schedule';
@@ -836,6 +837,11 @@ export const publicRoutes = [
   {
     path: routes.exam,
     element: <Exams />,
+    route: Route,
+  },
+  {
+    path: routes.studentExamRoutine,
+    element: <StudentExams />,
     route: Route,
   },
   {
