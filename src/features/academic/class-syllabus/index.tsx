@@ -16,13 +16,13 @@ import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { all_routes } from '../../router/all_routes';
-import { useClassesWithoutPagination } from '../class-subject/hooks/useGetClassesQueryWP';
+import { useClassesWithoutPagination } from '../classes/hooks/useClassWP';
 import SyllabusDetailsView from './components/SyllabusDetailsView';
 import SyllabusForm from './components/SyllabusForm';
 import { useSyllabusById } from './hooks/useGetSyllabusById';
 import { useSyllabusList } from './hooks/useGetSyllabusList';
-import { useSyllabusMutations } from './hooks/useSyllabusMutations';
 import { useSubjectsWithoutPagination } from './hooks/useSubjectsWP';
+import { useSyllabusMutations } from './hooks/useSyllabusMutations';
 import { type SyllabusModel } from './models/syllabus.model';
 
 const ClassSyllabus = () => {

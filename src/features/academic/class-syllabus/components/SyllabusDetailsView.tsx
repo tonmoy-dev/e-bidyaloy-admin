@@ -1,6 +1,6 @@
-import { useClassesWithoutPagination } from '../../class-subject/hooks/useGetClassesQueryWP';
-import type { SyllabusModel } from '../models/syllabus.model';
+import { useClassesWithoutPagination } from '../../classes/hooks/useClassWP';
 import { useSubjectsWithoutPagination } from '../hooks/useSubjectsWP';
+import type { SyllabusModel } from '../models/syllabus.model';
 
 const SyllabusDetailsView = ({ syllabusData }: { syllabusData: SyllabusModel }) => {
   // Fetch classes and subjects for ID to name mapping

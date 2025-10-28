@@ -44,7 +44,7 @@ export const API_ENDPOINTS = {
   },
   TEACHER: {
     LIST: '/api/v1/teachers/',
-    LIST_WP: '/api/v1/teachers_wp/',
+    LIST_WP: '/api/v1/teachers/minimal_list',
     CREATE: '/api/v1/teachers/',
     UPDATE_BY_ID: '/api/v1/teachers/',
     DELETE_BY_ID: '/api/v1/teachers/',
