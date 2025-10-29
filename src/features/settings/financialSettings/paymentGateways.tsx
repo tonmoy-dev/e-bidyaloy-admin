@@ -30,8 +30,8 @@ const PaymentGateways = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedGateway, setSelectedGateway] = useState<string>('');
 
-  const { paymentGateway } = usePaymentGateway(page);
-  const data = paymentGateway;
+  const { paymentGateway } = usePaymentGateway();
+  const data = useMemo(() => paymentGateway?.results ?? [], [paymentGateway]);
 
   const skipQuery = activeModal === MODAL_TYPE.DELETE;
   const { createPaymentGateway, updatePaymentGateway, deletePaymentGateway } =

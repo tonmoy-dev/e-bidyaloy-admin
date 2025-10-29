@@ -1,8 +1,7 @@
-import { useGetPaymentGatewayByIdQuery } from '../api/paymentGatewayApi';
+import { useGetPaymentGatewaysQuery } from '../api/paymentGatewayApi';
 
-export const usePaymentGateway = (id: string) => {
-  const { isLoading, isFetching, data, isError, error, refetch } =
-    useGetPaymentGatewayByIdQuery(id);
+export const usePaymentGateway = () => {
+  const { isLoading, isFetching, data, isError, error, refetch } = useGetPaymentGatewaysQuery();
 
   return {
     isLoading,

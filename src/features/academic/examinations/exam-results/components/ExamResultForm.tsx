@@ -48,12 +48,13 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     formState: { errors, isSubmitting },
   } = useForm<any>({
     resolver: yupResolver(examResultSchema),
+    mode: 'onSubmit',
     defaultValues: {
       id: defaultValues?.id ?? '',
       examId: defaultValues?.examinationId ?? '',
-      class_id: '',
-      section_id: '',
-      exam_subject: '',
+      class_id: defaultValues?.class_id ?? '',
+      section_id: defaultValues?.section_id ?? '',
+      exam_subject: defaultValues?.exam_subject ?? '',
       marks: [],
     },
   });
@@ -102,10 +103,11 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
 
   // Initialize marks array when students are available
   useEffect(() => {
-    if (mode === 'edit' && defaultValues) {
+    if (mode === 'edit' && defaultValues && studentDetails) {
       replace([
         {
           studentId: defaultValues.student,
+          studentRollNo: studentDetails.student_id,
           marksObtained: defaultValues.marks_obtained,
           grade: defaultValues.grade,
           is_absent: defaultValues.is_absent,
@@ -128,7 +130,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     } else {
       replace([]);
     }
-  }, [students, replace, mode, defaultValues]);
+  }, [students, replace, mode, defaultValues, studentDetails]);
 
   useEffect(() => {
     if (mode === 'edit' && defaultValues && exams?.length) {
@@ -148,44 +150,50 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
     }
   }, [mode, defaultValues, examSubjects, setValue]);
 
-  useEffect(() => {
-    if (mode === 'edit' && studentDetails && classes?.length) {
-      const class_id = studentDetails.class_assigned?.id;
-      if (class_id && classes.some((c: any) => c.id === class_id)) {
-        setValue('class_id', class_id);
-      }
-    }
-  }, [mode, studentDetails, classes, setValue]);
-
-  useEffect(() => {
-    if (mode === 'edit' && studentDetails && classSections?.length) {
-      const section_id = studentDetails.section?.id;
-      if (section_id && classSections.some((s: any) => s.id === section_id)) {
-        setValue('section_id', section_id);
-      }
-    }
-  }, [mode, studentDetails, classSections, setValue]);
-
   // Transform data before submission
   const handleFormSubmit = (data: any) => {
-    // Transform nested marks array into flat array with repeated exam_subject
-    const transformedPayload = data.marks.map((mark: any) => ({
-      exam_subject: data.exam_subject,
-      student: mark.studentId, // Rename studentId to student
-      marks_obtained: parseFloat(mark.marksObtained) || 0,
-      grade: mark.grade || '',
-      remarks: mark.remarks || '',
-      is_absent: mark.is_absent || false,
-      class_id: data.class_id,
-      section_id: data.section_id,
-    }));
+    console.log('Form submitted with data:', data);
+
+    // For edit mode, return single object
+    if (mode === 'edit') {
+      const mark = data.marks[0];
+      const editPayload = {
+        exam_subject: data.exam_subject,
+        student: mark.studentId,
+        marks_obtained: parseFloat(mark.marksObtained) || 0,
+        grade: mark.grade || '',
+        remarks: mark.remarks || '',
+        is_absent: mark.is_absent || false,
+      };
+
+      console.log('Edit payload:', editPayload);
+      onSubmit(editPayload);
+      return;
+    }
+
+    // For add mode, transform nested marks array into flat array
+    const transformedPayload = data.marks.map((mark: any) => {
+      return {
+        exam_subject: data.exam_subject,
+        student: mark.studentId,
+        marks_obtained: parseFloat(mark.marksObtained) || 0,
+        grade: mark.grade || '',
+        remarks: mark.remarks || '',
+        is_absent: mark.is_absent || false,
+        class_id: data.class_id,
+        section_id: data.section_id,
+      };
+    });
+
+    console.log('Transformed payload:', transformedPayload);
 
     // Call the original onSubmit with transformed data
     onSubmit(transformedPayload);
   };
 
-  // Get students array safely
-  const studentsList = Array.isArray(students) ? students : [];
+  // Get students array safely - include studentDetails in edit mode
+  const studentsList =
+    mode === 'edit' && studentDetails ? [studentDetails] : Array.isArray(students) ? students : [];
 
   return (
     <form id="exam-result-form" onSubmit={handleSubmit(handleFormSubmit)}>
@@ -204,7 +212,6 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       <select
                         className={`form-select ${errors.examId ? 'is-invalid' : ''}`}
                         {...field}
-                        disabled={mode === 'edit'}
                       >
                         <option value="">Select Examination</option>
                         {exams?.map((exam: any) => (
@@ -229,7 +236,6 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       <select
                         className={`form-select ${errors.exam_subject ? 'is-invalid' : ''}`}
                         {...field}
-                        disabled={mode === 'edit'}
                       >
                         <option value="">Select Exam Subject</option>
                         {examSubjects?.map((subject: any) => (
@@ -328,7 +334,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                         <tr>
                           <th style={{ width: '12%' }}>Roll No</th>
                           <th style={{ width: '18%' }}>Marks Obtained</th>
-                          <th style={{ width: '20%' }}>Grade</th>
+                          <th style={{ width: '25%' }}>Grade</th>
                           <th style={{ width: '20%' }}>Absent</th>
                           <th style={{ width: '35%' }}>Remarks</th>
                         </tr>
@@ -336,12 +342,11 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
                       <tbody>
                         {fields.map((field: any, index: number) => {
                           const student = studentsList.find((s: any) => s.id === field.studentId);
+                          const rollNo = field.studentRollNo || student?.student_id || 'N/A';
                           return (
                             <tr key={field.id}>
                               <td>
-                                <div className="py-2 fw-semibold">
-                                  {student?.student_id || 'N/A'}
-                                </div>
+                                <div className="py-2 fw-semibold">{rollNo}</div>
                               </td>
                               <td>
                                 <Controller
@@ -464,6 +469,7 @@ export default function ExamResultForm({ mode, defaultValues, onSubmit }: ExamRe
           <div className="mt-3">
             <button
               type="submit"
+              form="exam-result-form"
               className="btn btn-primary"
               disabled={isSubmitting || (studentsList.length === 0 && mode !== 'edit')}
             >

@@ -15,41 +15,16 @@ import DataTableFooter from '../../../../shared/components/table/DataTableFooter
 import DataTableHeader from '../../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../../shared/components/table/DataTableModal';
 import TooltipOptions from '../../../../shared/components/utils/TooltipOptions';
-import { useStudentById } from '../../../peoples/students/hooks/useStudentById';
 import { all_routes } from '../../../router/all_routes';
 import { useGradeById } from '../grade/hooks/useGetGradeById';
 import ExamResultForm from './components/ExamResultForm';
 import { useExamResultMutations } from './hooks/useExamResultMutations';
-import { useExamSubjectById } from './hooks/useExamSubjectById';
 import { useExamResultById } from './hooks/useGetExamResultById';
 import { useExamResultsList } from './hooks/useGetExamResultsList';
 import { type ExamResultModel } from './models/examResult.model';
 
-// Helper component to fetch and display exam subject name
-const ExamSubjectName = ({ id }: { id: string | null }) => {
-  console.log('ExamSubjectName rendering with id:', id);
-  const { examSubject, isLoading, isError } = useExamSubjectById(id, !id);
-
-  console.log('ExamSubjectName hook result:', { examSubject, isLoading, isError });
-
-  if (!id) return <span>-</span>;
-  if (isLoading) return <span>Loading...</span>;
-  if (isError) return <span className="text-danger">Error</span>;
-
-  return <span>{examSubject?.subject_name || id}</span>;
-};
-
-// Helper component to fetch and display student name
-const StudentName = ({ id }: { id: string | null }) => {
-  // You'll need to create this hook
-  const { studentDetails } = useStudentById(id);
-  if (!id) return <span>-</span>;
-  return <span>{studentDetails?.student_id || id}</span>;
-};
-
 // Helper component to fetch and display grade name
 const GradeName = ({ id }: { id: string | null }) => {
-  // You'll need to create this hook
   const { gradeDetails } = useGradeById(id, !id);
   if (!id) return <span>-</span>;
   return <span>{gradeDetails?.name || id}</span>;
@@ -90,12 +65,12 @@ const ExamResults = () => {
     {
       title: 'Exam Subject',
       align: 'center',
-      render: (record: TableData) => <ExamSubjectName id={record?.exam_subject} />,
+      render: (record: TableData) => <span>{record?.subject_name || '-'}</span>,
     },
     {
       title: 'Student',
       align: 'center',
-      render: (record: TableData) => <StudentName id={record?.student} />,
+      render: (record: TableData) => <span>{record?.student_id || '-'}</span>,
     },
     {
       title: 'Marks Obtained',
@@ -333,15 +308,11 @@ const ExamResults = () => {
                   <div className="row g-3">
                     <div className="col-md-6">
                       <strong>Exam Subject:</strong>
-                      <div>
-                        <ExamSubjectName id={examResultDetails.exam_subject} />
-                      </div>
+                      <div>{examResultDetails.subject_name || '-'}</div>
                     </div>
                     <div className="col-md-6">
                       <strong>Student:</strong>
-                      <div>
-                        <StudentName id={examResultDetails.student} />
-                      </div>
+                      <div>{examResultDetails.student_id || '-'}</div>
                     </div>
                     <div className="col-md-6">
                       <strong>Marks Obtained:</strong>

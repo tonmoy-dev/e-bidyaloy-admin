@@ -83,7 +83,7 @@ export const API_ENDPOINTS = {
       method: 'GET',
       params,
     }),
-    LIST_WP: () => ({ url: '/api/v1/grades_wp/', method: 'GET' }),
+    LIST_WP: () => ({ url: '/api/v1/grades/minimal_list/', method: 'GET' }),
     CREATE: () => ({ url: '/api/v1/grades/', method: 'POST' }),
     DETAILS: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'GET' }),
     UPDATE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'PUT' }),
@@ -120,7 +120,7 @@ export const API_ENDPOINTS = {
 
   EXAMS: {
     LIST: '/api/v1/exams/',
-    LIST_WP: () => ({ url: '/api/v1/exams/', method: 'GET' }),
+    LIST_WP: () => ({ url: '/api/v1/exams/minimal_list/', method: 'GET' }),
     CREATE: '/api/v1/exams/',
     UPDATE_BY_ID: '/api/v1/exams/',
     DELETE_BY_ID: '/api/v1/exams/',
