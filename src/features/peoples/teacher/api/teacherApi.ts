@@ -11,10 +11,22 @@ export const teacherApi = baseApi.injectEndpoints({
       providesTags: (result) =>
         result
           ? [
-              ...result.results.map(({ id }) => ({ type: 'Teacher' as const, id })),
-              { type: 'Teacher', id: 'LIST' },
-            ]
+            ...result.results.map(({ id }) => ({ type: 'Teacher' as const, id })),
+            { type: 'Teacher', id: 'LIST' },
+          ]
           : [{ type: 'Teacher', id: 'LIST' }],
+    }),
+
+    // get teachers without pagination
+    getTeachersWithoutPagination: builder.query<TeacherModel[], void>({
+      query: () => API_ENDPOINTS.TEACHER.LIST_WP,
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ id }) => ({ type: 'Teacher' as const, id })),
+            { type: 'Teacher', id: 'LIST_WP' },
+          ]
+          : [{ type: 'Teacher', id: 'LIST_WP' }],
     }),
 
     // Get single teacher by ID
@@ -79,6 +91,7 @@ export const teacherApi = baseApi.injectEndpoints({
 
 export const {
   useGetTeachersQuery,
+  useGetTeachersWithoutPaginationQuery,
   useGetTeacherByIdQuery,
   useCreateTeacherMutation,
   useUpdateTeacherMutation,

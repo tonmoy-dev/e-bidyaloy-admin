@@ -18,6 +18,18 @@ export const classApi = baseApi.injectEndpoints({
           : [{ type: 'Class', id: 'LIST' }],
     }),
 
+    getClassesWithoutPagination: builder.query<ClassModel[], void>({
+      query: () => API_ENDPOINTS.CLASS.LIST_WP(),
+      providesTags: (result) =>
+        result
+          ? [
+            ...result.map(({ id }) => ({ type: 'Class' as const, id })),
+            { type: 'Class', id: 'LIST_WP' },
+          ]
+          : [{ type: 'Class', id: 'LIST_WP' }],
+    }),
+
+
     getClassById: builder.query<ClassModel, string>({
       query: (id) => API_ENDPOINTS.CLASS.DETAILS(id),
       providesTags: (_result, _error, id) => [{ type: 'Class', id }],
@@ -57,6 +69,7 @@ export const classApi = baseApi.injectEndpoints({
 
 export const {
   useGetClassesQuery,
+  useGetClassesWithoutPaginationQuery,
   useGetClassByIdQuery,
   useCreateClassMutation,
   useUpdateClassMutation,

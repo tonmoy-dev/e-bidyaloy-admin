@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
   },
   TEACHER: {
     LIST: '/api/v1/teachers/',
+    LIST_WP: '/api/v1/teachers/minimal_list',
     CREATE: '/api/v1/teachers/',
     UPDATE_BY_ID: '/api/v1/teachers/',
     DELETE_BY_ID: '/api/v1/teachers/',
@@ -118,6 +119,7 @@ export const API_ENDPOINTS = {
     DETAILS_BY_ID: '/api/v1/exam-types/',
   },
 
+  EXAMS: {
   EXAMS: {
     LIST: '/api/v1/exams/',
     LIST_WP: () => ({ url: '/api/v1/exams/minimal_list/', method: 'GET' }),

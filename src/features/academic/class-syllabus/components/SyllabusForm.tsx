@@ -2,9 +2,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
-import { useClassesWithoutPagination } from '../../class-subject/hooks/useGetClassesQueryWP';
-import type { SyllabusModel } from '../models/syllabus.model';
+import { useClassesWithoutPagination } from '../../classes/hooks/useClassWP';
 import { useSubjectsWithoutPagination } from '../hooks/useSubjectsWP';
+import type { SyllabusModel } from '../models/syllabus.model';
 import { SyllabusStatusEnum, syllabusSchema } from './syllabusSchema';
 
 interface SyllabusFormProps {
@@ -171,7 +171,9 @@ export default function SyllabusForm({ mode, defaultValues, onSubmit }: Syllabus
                           statusOptions[0]
                         }
                         options={statusOptions}
-                        onChange={(option) => field.onChange(option?.value || SyllabusStatusEnum.DRAFT)}
+                        onChange={(option) =>
+                          field.onChange(option?.value || SyllabusStatusEnum.DRAFT)
+                        }
                       />
                     )}
                   />
