@@ -120,7 +120,6 @@ export const API_ENDPOINTS = {
   },
 
   EXAMS: {
-  EXAMS: {
     LIST: '/api/v1/exams/',
     LIST_WP: () => ({ url: '/api/v1/exams/minimal_list/', method: 'GET' }),
     CREATE: '/api/v1/exams/',
