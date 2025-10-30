@@ -53,8 +53,12 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
         headers.set('authorization', `Bearer ${token}`);
       }
 
-      // Set content type for JSON requests
-      if (!headers.has('content-type')) {
+      const skipContentType = headers.get('skip-content-type');
+
+      if (skipContentType) {
+        headers.delete('skip-content-type');
+      } else if (!headers.has('content-type')) {
+        // Default to JSON when caller has not provided a body-specific content type
         headers.set('content-type', 'application/json');
       }
 

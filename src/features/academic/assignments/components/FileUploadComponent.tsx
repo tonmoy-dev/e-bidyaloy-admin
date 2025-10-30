@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAttachmentUpload } from '../hooks/useAttachmentUpload';
 import type { UploadedFile } from '../models/attachment.model';
 
@@ -8,6 +8,7 @@ interface FileUploadComponentProps {
   maxFileSize?: number; // in bytes
   acceptedFileTypes?: string[];
   disabled?: boolean;
+  assignmentId?: string; // Optional assignment ID for linking attachments
 }
 
 const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
@@ -16,15 +17,13 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
   maxFileSize = 10 * 1024 * 1024, // 10MB
   acceptedFileTypes = ['.pdf', '.doc', '.docx', '.txt', '.jpg', '.jpeg', '.png', '.gif'],
   disabled = false,
+  assignmentId,
 }) => {
   const [dragActive, setDragActive] = useState(false);
-  const {
-    uploadStates,
-    uploadedFiles,
-    uploadFiles,
-    removeUploadedFile,
-    getUploadedAttachmentIds,
-  } = useAttachmentUpload();
+  const { uploadStates, uploadedFiles, pendingFiles, uploadOrQueue, removeUploadedFile } =
+    useAttachmentUpload({
+      assignmentId,
+    });
 
   // Handle drag events
   const handleDrag = useCallback((e: React.DragEvent) => {
@@ -38,79 +37,95 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
   }, []);
 
   // Validate files
-  const validateFiles = useCallback((files: File[]): { valid: File[]; errors: string[] } => {
-    const errors: string[] = [];
-    const valid: File[] = [];
+  const validateFiles = useCallback(
+    (files: File[]): { valid: File[]; errors: string[] } => {
+      const errors: string[] = [];
+      const valid: File[] = [];
 
-    // Format file size helper
-    const formatSize = (bytes: number): string => {
-      if (bytes === 0) return '0 Bytes';
-      const k = 1024;
-      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-      const i = Math.floor(Math.log(bytes) / Math.log(k));
-      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-    };
+      // Format file size helper
+      const formatSize = (bytes: number): string => {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+      };
 
-    // Check total files limit
-    if (uploadedFiles.length + files.length > maxFiles) {
-      errors.push(`Maximum ${maxFiles} files allowed. You can upload ${maxFiles - uploadedFiles.length} more files.`);
+      // Check total files limit
+      if (uploadedFiles.length + files.length > maxFiles) {
+        errors.push(
+          `Maximum ${maxFiles} files allowed. You can upload ${
+            maxFiles - uploadedFiles.length
+          } more files.`,
+        );
+        return { valid, errors };
+      }
+
+      files.forEach((file) => {
+        // Check file size
+        if (file.size > maxFileSize) {
+          errors.push(`${file.name} is too large. Maximum size is ${formatSize(maxFileSize)}.`);
+          return;
+        }
+
+        // Check file type
+        const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+        if (!acceptedFileTypes.includes(fileExtension)) {
+          errors.push(
+            `${file.name} file type not supported. Allowed types: ${acceptedFileTypes.join(', ')}`,
+          );
+          return;
+        }
+
+        // Check for duplicates
+        if (
+          uploadedFiles.some(
+            (uploaded) => uploaded.fileName === file.name && uploaded.fileSize === file.size,
+          )
+        ) {
+          errors.push(`${file.name} is already uploaded.`);
+          return;
+        }
+
+        valid.push(file);
+      });
+
       return { valid, errors };
-    }
-
-    files.forEach(file => {
-      // Check file size
-      if (file.size > maxFileSize) {
-        errors.push(`${file.name} is too large. Maximum size is ${formatSize(maxFileSize)}.`);
-        return;
-      }
-
-      // Check file type
-      const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
-      if (!acceptedFileTypes.includes(fileExtension)) {
-        errors.push(`${file.name} file type not supported. Allowed types: ${acceptedFileTypes.join(', ')}`);
-        return;
-      }
-
-      // Check for duplicates
-      if (uploadedFiles.some(uploaded => uploaded.fileName === file.name && uploaded.fileSize === file.size)) {
-        errors.push(`${file.name} is already uploaded.`);
-        return;
-      }
-
-      valid.push(file);
-    });
-
-    return { valid, errors };
-  }, [uploadedFiles, maxFiles, maxFileSize, acceptedFileTypes]);
+    },
+    [uploadedFiles, maxFiles, maxFileSize, acceptedFileTypes],
+  );
 
   // Handle file selection/drop
-  const handleFiles = useCallback(async (files: File[]) => {
-    const { valid, errors } = validateFiles(files);
+  const handleFiles = useCallback(
+    async (files: File[]) => {
+      const { valid, errors } = validateFiles(files);
 
-    if (errors.length > 0) {
-      alert('Upload errors:\n' + errors.join('\n'));
-      return;
-    }
-
-    if (valid.length > 0) {
-      await uploadFiles(valid);
-      if (onFilesUploaded) {
-        onFilesUploaded(getUploadedAttachmentIds());
+      if (errors.length > 0) {
+        alert('Upload errors:\n' + errors.join('\n'));
+        return;
       }
-    }
-  }, [validateFiles, uploadFiles, onFilesUploaded, getUploadedAttachmentIds]);
+
+      if (valid.length > 0) {
+        await uploadOrQueue(valid);
+      }
+    },
+    [validateFiles, uploadOrQueue],
+  );
 
   // Handle drop
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
 
-    if (disabled) return;
+      if (disabled) return;
 
-    const files = Array.from(e.dataTransfer.files);
-    handleFiles(files);
-  }, [disabled, handleFiles]);
+      const files = Array.from(e.dataTransfer.files);
+      handleFiles(files);
+    },
+    [disabled, handleFiles],
+  );
 
   // Handle file input change
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -134,25 +149,45 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
   const getFileIcon = (fileName: string): string => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
-      case 'pdf': return 'fas fa-file-pdf text-danger';
+      case 'pdf':
+        return 'fas fa-file-pdf text-danger';
       case 'doc':
-      case 'docx': return 'fas fa-file-word text-primary';
-      case 'txt': return 'fas fa-file-alt text-secondary';
+      case 'docx':
+        return 'fas fa-file-word text-primary';
+      case 'txt':
+        return 'fas fa-file-alt text-secondary';
       case 'jpg':
       case 'jpeg':
       case 'png':
-      case 'gif': return 'fas fa-file-image text-success';
-      default: return 'fas fa-file text-secondary';
+      case 'gif':
+        return 'fas fa-file-image text-success';
+      default:
+        return 'fas fa-file text-secondary';
     }
   };
 
   // Remove file handler
   const handleRemoveFile = async (fileId: string) => {
     const success = await removeUploadedFile(fileId);
-    if (success && onFilesUploaded) {
-      onFilesUploaded(getUploadedAttachmentIds());
+    if (!success) {
+      console.error('Failed to remove uploaded file with id:', fileId);
     }
   };
+
+  useEffect(() => {
+    if (!onFilesUploaded) {
+      return;
+    }
+
+    const ids = uploadedFiles
+      .map((file) => file.attachmentData?.id)
+      .filter((id): id is string => Boolean(id));
+
+    console.log('useEffect detected uploadedFiles change:', uploadedFiles);
+    console.log('Calculated attachment IDs to emit:', ids);
+
+    onFilesUploaded(ids);
+  }, [uploadedFiles, onFilesUploaded]);
 
   return (
     <>
@@ -198,6 +233,16 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
         
         .file-item:hover {
           box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .pending-file {
+          border: 2px dashed #ffc107 !important;
+          background-color: #fff3cd;
+          opacity: 0.8;
+        }
+        
+        .pending-files h6 {
+          color: #856404;
         }
         
         .file-progress {
@@ -342,7 +387,9 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
       <div className="file-upload-container">
         {/* Upload Zone */}
         <div
-          className={`file-upload-zone ${dragActive ? 'drag-active' : ''} ${disabled ? 'disabled' : ''}`}
+          className={`file-upload-zone ${dragActive ? 'drag-active' : ''} ${
+            disabled ? 'disabled' : ''
+          }`}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
           onDragOver={handleDrag}
@@ -353,13 +400,11 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
             <i className="fas fa-cloud-upload-alt fa-3x text-primary"></i>
           </div>
           <h5 className="mb-2">Drop files here or click to browse</h5>
-          <p className="text-muted mb-0">
-            Supported formats: {acceptedFileTypes.join(', ')}
-          </p>
+          <p className="text-muted mb-0">Supported formats: {acceptedFileTypes.join(', ')}</p>
           <p className="upload-info">
             Maximum file size: {formatFileSize(maxFileSize)} | Maximum files: {maxFiles}
           </p>
-          
+
           <input
             id="file-input"
             type="file"
@@ -373,6 +418,32 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
           />
         </div>
 
+        {/* Pending Files List (awaiting assignment creation) */}
+        {pendingFiles.length > 0 && (
+          <div className="pending-files mt-3">
+            <h6 className="mb-3 text-warning">
+              <i className="fas fa-clock me-2"></i>
+              Files Ready to Upload ({pendingFiles.length}) - Waiting for assignment creation
+            </h6>
+
+            {pendingFiles.map((file, index) => (
+              <div key={`pending-${file.name}-${index}`} className="file-item pending-file">
+                <div className="file-icon">
+                  <i className={`${getFileIcon(file.name)} file-icon-large text-warning`}></i>
+                </div>
+                <div className="file-info flex-grow-1">
+                  <div className="file-name fw-medium">{file.name}</div>
+                  <div className="file-size text-muted small">{formatFileSize(file.size)}</div>
+                  <div className="text-warning small">
+                    <i className="fas fa-hourglass-half me-1"></i>
+                    Waiting for assignment creation...
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Uploaded Files List */}
         {uploadedFiles.length > 0 && (
           <div className="uploaded-files mt-3">
@@ -380,17 +451,17 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
               <i className="fas fa-paperclip me-2"></i>
               Uploaded Files ({uploadedFiles.length}/{maxFiles})
             </h6>
-            
+
             {uploadedFiles.map((uploadedFile: UploadedFile) => {
               const uploadState = uploadStates[uploadedFile.id];
-              
+
               return (
                 <div key={uploadedFile.id} className="file-item">
                   {/* File Icon/Preview */}
                   <div className="file-icon">
                     {uploadedFile.preview ? (
-                      <img 
-                        src={uploadedFile.preview} 
+                      <img
+                        src={uploadedFile.preview}
                         alt={uploadedFile.fileName}
                         className="file-preview-image"
                       />
@@ -398,23 +469,25 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
                       <i className={`${getFileIcon(uploadedFile.fileName)} file-icon-large`}></i>
                     )}
                   </div>
-                  
+
                   {/* File Info */}
                   <div className="file-info flex-grow-1">
                     <div className="file-name fw-medium">{uploadedFile.fileName}</div>
                     <div className="file-size text-muted small">
                       {formatFileSize(uploadedFile.fileSize)}
                     </div>
-                    
+
                     {/* Progress Bar */}
                     {uploadState?.uploading && (
                       <div className="file-progress mt-1">
-                        <div 
-                          className={`file-progress-bar progress-${Math.round(uploadState.progress / 10) * 10}`}
+                        <div
+                          className={`file-progress-bar progress-${
+                            Math.round(uploadState.progress / 10) * 10
+                          }`}
                         ></div>
                       </div>
                     )}
-                    
+
                     {/* Error Message */}
                     {uploadState?.error && (
                       <div className="text-danger small mt-1">
@@ -423,7 +496,7 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Status & Actions */}
                   <div className="file-actions">
                     {uploadState?.uploading ? (
@@ -432,20 +505,20 @@ const FileUploadComponent: React.FC<FileUploadComponentProps> = ({
                         Uploading...
                       </div>
                     ) : uploadState?.error ? (
-                        <button 
-                          className="btn btn-outline-danger btn-sm"
-                          onClick={() => handleRemoveFile(uploadedFile.id)}
-                          title="Remove failed upload"
-                          aria-label="Remove failed upload"
-                        >
-                          <i className="fas fa-times"></i>
-                        </button>
+                      <button
+                        className="btn btn-outline-danger btn-sm"
+                        onClick={() => handleRemoveFile(uploadedFile.id)}
+                        title="Remove failed upload"
+                        aria-label="Remove failed upload"
+                      >
+                        <i className="fas fa-times"></i>
+                      </button>
                     ) : (
                       <>
                         <span className="text-success me-2">
                           <i className="fas fa-check-circle"></i>
                         </span>
-                        <button 
+                        <button
                           className="btn btn-outline-secondary btn-sm"
                           onClick={() => handleRemoveFile(uploadedFile.id)}
                           title="Remove file"

@@ -7,7 +7,10 @@ import DeleteConfirmationModal from '../../../shared/components/modals/DeleteCon
 import DataTable from '../../../shared/components/table/DataTable';
 import DataTableBody from '../../../shared/components/table/DataTableBody';
 import DataTableColumnActions from '../../../shared/components/table/DataTableColumnActions';
-import TableFilter, { type FilterConfig, type FilterOption } from '../../../shared/components/table/DataTableFilter';
+import TableFilter, {
+  type FilterConfig,
+  type FilterOption,
+} from '../../../shared/components/table/DataTableFilter';
 import DataTableFooter from '../../../shared/components/table/DataTableFooter';
 import DataTableHeader from '../../../shared/components/table/DataTableHeader';
 import DataModal, { type ModalType } from '../../../shared/components/table/DataTableModal';
@@ -16,9 +19,9 @@ import { all_routes } from '../../router/all_routes';
 import AssignmentDetailsView from './components/AssignmentDetailsView';
 import AssignmentForm from './components/AssignmentForm';
 import { useAssignmentById } from './hooks/useAssignmentById';
-import { useAssignments } from './hooks/useAssignments';
 import { useAssignmentMutations } from './hooks/useAssignmentMutations';
-import { type AssignmentFormData } from './models/assignment.model';
+import { useAssignments } from './hooks/useAssignments';
+import type { AssignmentFormData, AssignmentModel } from './models/assignment.model';
 
 const Assignments = () => {
   const page = 1;
@@ -29,7 +32,10 @@ const Assignments = () => {
   const data = assignments?.results;
   const skipQuery = activeModal === MODAL_TYPE.DELETE;
   const { createAssignment, updateAssignment, deleteAssignment } = useAssignmentMutations();
-  const { assignmentDetails, isError: isAssignmentError } = useAssignmentById(selectedId ?? null, skipQuery);
+  const { assignmentDetails, isError: isAssignmentError } = useAssignmentById(
+    selectedId ?? null,
+    skipQuery,
+  );
   const route = all_routes;
 
   useEffect(() => {
@@ -58,34 +64,35 @@ const Assignments = () => {
     {
       title: 'Class',
       align: 'center',
-      render: (record: TableData) => record?.class_name || 'N/A',
+      render: (record: AssignmentModel) => record?.class_name || 'N/A',
     },
     {
       title: 'Subject',
       align: 'center',
-      render: (record: TableData) => record?.subject_name || 'N/A',
+      render: (record: AssignmentModel) => record?.subject_name || 'N/A',
     },
     {
       title: 'Target Type',
       align: 'center',
-      render: (record: TableData) => (
+      render: (record: AssignmentModel) => (
         <span className="text-capitalize">{record?.target_type || 'N/A'}</span>
       ),
     },
     {
       title: 'Total Marks',
       align: 'center',
-      render: (record: TableData) => record?.total_marks || 'N/A',
+      render: (record: AssignmentModel) => record?.total_marks || 'N/A',
     },
     {
       title: 'Due Date',
       align: 'center',
-      render: (record: TableData) => record?.due_date ? new Date(record.due_date).toLocaleDateString() : 'N/A',
+      render: (record: AssignmentModel) =>
+        record?.due_date ? new Date(record.due_date).toLocaleDateString() : 'N/A',
     },
     {
       title: 'Assigned By',
       align: 'center',
-      render: (record: TableData) => record?.assigned_by_name || 'N/A',
+      render: (record: AssignmentModel) => record?.assigned_by_name || 'N/A',
     },
     {
       title: 'Status',
@@ -139,7 +146,9 @@ const Assignments = () => {
   // Build class filter options from current data set
   const classOptions: FilterOption[] = useMemo(() => {
     const names = Array.from(
-      new Set((data ?? []).map((r: TableData) => r?.class_name).filter((v): v is string => !!v)),
+      new Set(
+        (data ?? []).map((r: AssignmentModel) => r?.class_name).filter((v): v is string => !!v),
+      ),
     );
     return [{ label: 'All', value: '' }, ...names.map((n) => ({ label: n, value: n }))];
   }, [data]);
@@ -155,27 +164,42 @@ const Assignments = () => {
 
   const filteredData = useMemo(() => {
     if (!selectedClass) return data ?? [];
-    return (data ?? []).filter((r: TableData) => r?.class_name === selectedClass);
+    return (data ?? []).filter((r: AssignmentModel) => r?.class_name === selectedClass);
   }, [data, selectedClass]);
 
   const sortingOptions = ['Ascending', 'Descending'];
 
-  const handleAssignmentForm = async (data: AssignmentFormData, mode: string) => {
+  const handleAssignmentForm = async (
+    data: AssignmentFormData,
+    mode: string,
+  ): Promise<
+    { createdAssignment?: AssignmentModel; shouldUploadAttachments?: boolean } | undefined
+  > => {
     try {
       if (mode === 'add') {
-        const response = await createAssignment(data);
-        if (response?.data) {
+        // Create assignment without attachments first
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { attachments, ...assignmentData } = data;
+        const response = await createAssignment(assignmentData);
+        if (response?.data && response.data.id) {
           toast.success('Assignment created successfully');
+          return {
+            createdAssignment: response.data,
+            shouldUploadAttachments: false,
+          };
         }
       } else if (mode === 'edit' && assignmentDetails?.id) {
         const response = await updateAssignment({ id: assignmentDetails?.id, data });
         if (response?.data) {
           toast.success('Assignment updated successfully');
+          setActiveModal(null);
         }
       }
+      return undefined;
     } catch (error) {
       console.log('error', error);
       toast.error('Something went wrong');
+      return undefined;
     }
   };
 
@@ -255,10 +279,9 @@ const Assignments = () => {
           body={
             <AssignmentForm
               mode="add"
-              onActiveModal={setActiveModal}
+              onActiveModal={(modal) => setActiveModal(modal as ModalType)}
               onSubmit={async (data) => {
-                await handleAssignmentForm(data, 'add');
-                setActiveModal(null);
+                return await handleAssignmentForm(data, 'add');
               }}
             />
           }
@@ -278,10 +301,9 @@ const Assignments = () => {
               <AssignmentForm
                 mode="edit"
                 defaultValues={assignmentDetails}
-                onActiveModal={setActiveModal}
+                onActiveModal={(modal) => setActiveModal(modal as ModalType)}
                 onSubmit={async (data) => {
-                  await handleAssignmentForm(data, 'edit');
-                  setActiveModal(null);
+                  return await handleAssignmentForm(data, 'edit');
                 }}
               />
             }

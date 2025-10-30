@@ -4,7 +4,10 @@ export const assignmentSchema = yup.object().shape({
   title: yup.string().required('Title is required').min(2, 'Title must be at least 2 characters'),
   description: yup.string().required('Description is required'),
   instructions: yup.string().required('Instructions are required'),
-  target_type: yup.string().oneOf(['class', 'section', 'individual']).required('Target type is required'),
+  target_type: yup
+    .string()
+    .oneOf(['class', 'section', 'individual'])
+    .required('Target type is required'),
   class_assigned: yup.string().required('Class is required'),
   section: yup.string().when('target_type', {
     is: (val: string) => val === 'section' || val === 'individual',
@@ -22,4 +25,5 @@ export const assignmentSchema = yup.object().shape({
     then: (schema) => schema.min(1, 'At least one student must be selected'),
     otherwise: (schema) => schema.optional(),
   }),
+  attachments: yup.array().of(yup.string().required()).optional(),
 });

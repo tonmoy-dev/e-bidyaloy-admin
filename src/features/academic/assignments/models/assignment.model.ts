@@ -16,10 +16,12 @@ export interface SubmissionStats {
 
 export interface AssignmentAttachment {
   id: string;
+  assignment: string;
+  submission: string | null;
   attachment_type: 'assignment';
   file_name: string;
   file: string;
-  file_url: string;
+  file_url: string | null;
   file_size: number;
   created_at: string;
 }
@@ -68,7 +70,7 @@ export interface CreateAssignmentRequest {
   status: 'draft' | 'published' | 'closed';
   academic_year: string;
   student_ids?: string[];
-  attachments?: AssignmentAttachment[];
+  attachments?: string[]; // Array of attachment IDs
 }
 
 export interface PaginatedResponse<T> {
@@ -84,13 +86,13 @@ export interface AssignmentFormData {
   instructions: string;
   target_type: 'class' | 'section' | 'individual';
   class_assigned: string;
-  section: string;
+  section?: string; // Optional since it's conditional in schema
   subject: string;
   total_marks: string;
   assigned_by: string;
   due_date: string;
   status: 'draft' | 'published' | 'closed';
   academic_year: string;
-  student_ids: string[];
-  attachments?: AssignmentAttachment[];
+  student_ids?: string[]; // Optional since it's conditional in schema
+  attachments?: string[]; // Array of attachment IDs for submission
 }

@@ -1,9 +1,6 @@
 import { API_ENDPOINTS } from '../../../../core/constants/api';
 import { baseApi } from '../../../../core/services/baseApi';
-import type { 
-  AssignmentAttachment, 
-  AttachmentUploadResponse 
-} from '../models/attachment.model';
+import type { AssignmentAttachment, AttachmentUploadResponse } from '../models/attachment.model';
 
 export const assignmentAttachmentApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -25,7 +22,7 @@ export const assignmentAttachmentApi = baseApi.injectEndpoints({
     // Get single assignment attachment
     getAssignmentAttachment: builder.query<AssignmentAttachment, string>({
       query: (id) => `${API_ENDPOINTS.ASSIGNMENT_ATTACHMENTS.DETAILS_BY_ID}${id}/`,
-      providesTags: (result, error, id) => [{ type: 'AssignmentAttachment', id }],
+      providesTags: (_result, _error, id) => [{ type: 'AssignmentAttachment', id }],
     }),
 
     // Upload/Create assignment attachment
@@ -34,6 +31,7 @@ export const assignmentAttachmentApi = baseApi.injectEndpoints({
         url: API_ENDPOINTS.ASSIGNMENT_ATTACHMENTS.CREATE,
         method: 'POST',
         body: formData,
+        headers: { 'skip-content-type': 'true' },
       }),
       invalidatesTags: ['AssignmentAttachment'],
     }),
@@ -47,8 +45,9 @@ export const assignmentAttachmentApi = baseApi.injectEndpoints({
         url: `${API_ENDPOINTS.ASSIGNMENT_ATTACHMENTS.UPDATE_BY_ID}${id}/`,
         method: 'PUT',
         body: data,
+        headers: data instanceof FormData ? { 'skip-content-type': 'true' } : undefined,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: 'AssignmentAttachment', id }],
+      invalidatesTags: (_result, _error, { id }) => [{ type: 'AssignmentAttachment', id }],
     }),
 
     // Delete assignment attachment
@@ -57,7 +56,7 @@ export const assignmentAttachmentApi = baseApi.injectEndpoints({
         url: `${API_ENDPOINTS.ASSIGNMENT_ATTACHMENTS.DELETE_BY_ID}${id}/`,
         method: 'DELETE',
       }),
-      invalidatesTags: (result, error, id) => [{ type: 'AssignmentAttachment', id }],
+      invalidatesTags: (_result, _error, id) => [{ type: 'AssignmentAttachment', id }],
     }),
   }),
   overrideExisting: false,
