@@ -162,4 +162,23 @@ export const API_ENDPOINTS = {
       method: 'DELETE',
     }),
   },
+
+  NOTICES: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/notices/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/notices/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/notices/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/notices/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/notices/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/notices/${id}/`,
+      method: 'DELETE',
+    }),
+  },
 };
