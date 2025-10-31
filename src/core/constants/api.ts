@@ -13,8 +13,8 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/api/v1/auth/reset-password/',
   },
   USER: {
-    PROFILE: '/user/api/v1/user/profile/',
-    CHANGE_PASSWORD: '/user/api/v1/user/change-password/',
+    PROFILE: 'api/v1/auth/profile/',
+    CHANGE_PASSWORD: '/api/v1/auth/change-password/',
   },
   POKEMON: {
     LIST: '/pokemon',
@@ -180,5 +180,11 @@ export const API_ENDPOINTS = {
       url: `/api/v1/notices/${id}/`,
       method: 'DELETE',
     }),
+  },
+
+  RESET_PASSWORD: {
+    RESET: '/api/v1/auth/reset-password/',
+    VERIFY: '/api/v1/auth/verify/',
+    SEND_VERIFICATION_CODE: '/api/v1/auth/send-verification-code/',
   },
 };
