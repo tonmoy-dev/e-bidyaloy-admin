@@ -102,10 +102,15 @@ const AssignmentDetailsView = ({ assignmentData }: { assignmentData: AssignmentM
             margin-bottom: 0.75rem !important;
           }
 
-          /* Make grid denser on small screens */
+          /* Single column layout for tablets */
           .attachments-grid {
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            grid-template-columns: 1fr;
             gap: 10px;
+          }
+          
+          /* Full width for attachment items on tablets */
+          .attachments-grid-item {
+            grid-column: 1 / -1;
           }
         }
 
@@ -168,8 +173,13 @@ const AssignmentDetailsView = ({ assignmentData }: { assignmentData: AssignmentM
 
           /* Extra-small: allow smaller cards to avoid overlap in narrow modals */
           .attachments-grid {
-            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            grid-template-columns: 1fr;
             gap: 8px;
+          }
+          
+          /* Ensure full width on extra small screens */
+          .attachments-grid-item {
+            grid-column: 1 / -1;
           }
         }
 
