@@ -242,7 +242,7 @@ export const all_routes = {
   transportPickupPoints: '/management/transport-pickup-points',
   transportRoutes: '/management/transport-routes',
 
-  //Academic module
+  // Academic module
   AcademicReason: '/academic/academic-reason',
   classSyllabus: '/academic/class-syllabus',
   classGrades: '/academic/grades',
@@ -254,12 +254,15 @@ export const all_routes = {
   classes: '/academic/classes',
   classHomeWork: '/academic/class-home-work',
   exam: '/academic/exam',
+  studentExamRoutine: '/academic/student-exam-routine', //student exam routine
   examSchedule: '/academic/exam-schedule',
   grade: '/academic/grade',
   examResult: '/academic/exam-result',
   examAttendance: '/academic/exam-attendance',
   examTypes: '/academic/exam-types',
   exams: '/academic/exams',
+  assignments: '/academic/assignments',
+  studentAssignments: '/academic/student-assignments', //student assignments
   classTimetable: '/academic/class-time-table',
 
   //Hrm module

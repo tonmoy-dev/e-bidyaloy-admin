@@ -67,7 +67,7 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
       </div>
 
       {/* Academic Information */}
-      <div className="col-md-12 mb-4">
+      <div className="col-md-12 mb-4">git
         <h5 className="border-bottom pb-2 mb-3">Academic Information</h5>
         <div className="row">
         
@@ -127,7 +127,16 @@ const ExamDetailsView = ({ examData }: { examData: ExamModel }) => {
                       </div>
                     </td>
                     <td>{subject.exam_date ? new Date(subject.exam_date).toLocaleDateString() : 'N/A'}</td>
-                    <td>{subject.start_time || 'N/A'}</td>
+                    <td>
+                      {subject.start_time 
+                        ? new Date(`1970-01-01T${subject.start_time}`).toLocaleTimeString('en-US', {
+                            hour: 'numeric',
+                            minute: '2-digit',
+                            hour12: true
+                          })
+                        : 'N/A'
+                      }
+                    </td>
                     <td>{subject.duration_minutes ? `${subject.duration_minutes} min` : 'N/A'}</td>
                     <td>{subject.max_marks || 'N/A'}</td>
                     <td>{subject.passing_marks || 'N/A'}</td>

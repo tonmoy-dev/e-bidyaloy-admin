@@ -36,7 +36,7 @@ const StudentModals = () => {
             data-bs-dismiss="modal"
             aria-label="Close"
           >
-            <i className="ti ti-x" />
+            <i className="ti ti-x" /> 
           </button>
         </div>
         <form>

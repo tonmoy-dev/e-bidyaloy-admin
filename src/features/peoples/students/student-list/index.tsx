@@ -1,32 +1,33 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useRef, useMemo, useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { all_routes } from "../../../router/all_routes";
-import type { TableData } from "../../../../core/data/interface";
-import StudentModals from "../studentModals";
-import Table from "../../../../core/common/dataTable/index";
-import { useStudents } from "../hooks/useStudents";
-import { useStudentMutations } from "../hooks/useStudentMutations";
-import PredefinedDateRanges from "../../../../core/common/datePicker";
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import CommonSelect from '../../../../core/common/commonSelect';
+import Table from '../../../../core/common/dataTable/index';
+import PredefinedDateRanges from '../../../../core/common/datePicker';
 import {
   allClass,
   allSection,
   gender,
   names,
   status,
-} from "../../../../core/common/selectoption/selectoption";
-import CommonSelect from "../../../../core/common/commonSelect";
-import TooltipOption from "../../../../core/common/tooltipOption";
+} from '../../../../core/common/selectoption/selectoption';
+import TooltipOption from '../../../../core/common/tooltipOption';
+import type { TableData } from '../../../../core/data/interface';
+import { all_routes } from '../../../router/all_routes';
+import { useStudentMutations } from '../hooks/useStudentMutations';
+import { useStudents } from '../hooks/useStudents';
+import StudentModals from '../studentModals';
+import StudentTypeModal from '../StudentTypeModal';
 
 const StudentList = () => {
   const routes = all_routes;
   const [currentPage, setCurrentPage] = useState(1);
   const [filters, setFilters] = useState({
-    name: "",
-    class: "",
-    section: "",
-    gender: "",
-    status: "",
+    name: '',
+    class: '',
+    section: '',
+    gender: '',
+    status: '',
   });
 
   // API hooks
@@ -39,19 +40,16 @@ const StudentList = () => {
   const tableData = useMemo(() => {
     if (!students?.results) return [];
     return students.results.map((s: any) => ({
-      key:
-        s.id ?? s.id ?? s.admission_number ?? Math.random().toString(36).slice(2),
-      student_id: s.student_id ?? s.admission_number ?? "",
-      RollNo: s.roll_number ?? "",
-      name:
-        s.user?.full_name ||
-        `${s.user?.first_name ?? ""} ${s.user?.last_name ?? ""}`.trim(),
-      class: s.class_name || s.class_assigned?.name || "",
-      section: s.section_name || s.section?.name || "",
-      gender: s.user?.gender || "",
-      status: s.status || "",
+      key: s.id ?? s.id ?? s.admission_number ?? Math.random().toString(36).slice(2),
+      student_id: s.student_id ?? s.admission_number ?? '',
+      RollNo: s.roll_number ?? '',
+      name: s.user?.full_name || `${s.user?.first_name ?? ''} ${s.user?.last_name ?? ''}`.trim(),
+      class: s.class_name || s.class_assigned?.name || '',
+      section: s.section_name || s.section?.name || '',
+      gender: s.user?.gender || '',
+      status: s.status || '',
       raw: s,
-      studentId: s.id
+      studentId: s.id,
     }));
   }, [students]);
 
@@ -59,62 +57,51 @@ const StudentList = () => {
   const filteredData = useMemo(() => {
     return tableData.filter((student) => {
       const matchesName =
-        !filters.name ||
-        student.name.toLowerCase().includes(filters.name.toLowerCase());
+        !filters.name || student.name.toLowerCase().includes(filters.name.toLowerCase());
       const matchesClass =
-        !filters.class ||
-        student.class.toLowerCase().includes(filters.class.toLowerCase());
+        !filters.class || student.class.toLowerCase().includes(filters.class.toLowerCase());
       const matchesSection =
-        !filters.section ||
-        student.section.toLowerCase().includes(filters.section.toLowerCase());
-      const matchesGender =
-        !filters.gender || student.gender === filters.gender;
-      const matchesStatus =
-        !filters.status || student.status === filters.status;
+        !filters.section || student.section.toLowerCase().includes(filters.section.toLowerCase());
+      const matchesGender = !filters.gender || student.gender === filters.gender;
+      const matchesStatus = !filters.status || student.status === filters.status;
 
-      return (
-        matchesName &&
-        matchesClass &&
-        matchesSection &&
-        matchesGender &&
-        matchesStatus
-      );
+      return matchesName && matchesClass && matchesSection && matchesGender && matchesStatus;
     });
   }, [tableData, filters]);
 
   const handleDeleteStudent = async (studentId: string) => {
-    if (window.confirm("Are you sure you want to delete this student?")) {
+    if (window.confirm('Are you sure you want to delete this student?')) {
       try {
         await deleteStudent(studentId).unwrap();
         refetch();
       } catch (error) {
-        console.error("Failed to delete student:", error);
-        alert("Failed to delete student. Please try again.");
+        console.error('Failed to delete student:', error);
+        alert('Failed to delete student. Please try again.');
       }
     }
   };
 
   const handleApplyClick = () => {
     if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+      dropdownMenuRef.current.classList.remove('show');
     }
   };
 
   const handleFilterChange = (field: string, value: any) => {
     setFilters((prev) => ({
       ...prev,
-      [field]: value?.value || value || "",
+      [field]: value?.value || value || '',
     }));
   };
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleResetFilters = () => {
     setFilters({
-      name: "",
-      class: "",
-      section: "",
-      gender: "",
-      status: "",
+      name: '',
+      class: '',
+      section: '',
+      gender: '',
+      status: '',
     });
   };
 
@@ -126,17 +113,17 @@ const StudentList = () => {
   }, [isDeleteSuccess, refetch]);
 
   // Utility to extract a stable student id from either the static fixture or transformed row
-  const getStudentId = (record: any) => record?.student_id ?? record?.AdmissionNo ?? record?.admNo ?? "";
+  const getStudentId = (record: any) =>
+    record?.student_id ?? record?.AdmissionNo ?? record?.admNo ?? '';
 
   // Populate student modals with the selected student's info so when Bootstrap opens them they show correct data
   const populateStudentModals = (record: any) => {
     try {
       const studentId = getStudentId(record);
-      const name = record?.name ?? `${record?.first_name ?? ""} ${record?.last_name ?? ""}`.trim();
-      const imgSrc = record?.imgSrc ?? record?.avatar ?? "assets/img/students/student-01.jpg";
- 
-      // console.log('Populating modals for student ID:', studentId, 'Name:', name);
+      const name = record?.name ?? `${record?.first_name ?? ''} ${record?.last_name ?? ''}`.trim();
+      const imgSrc = record?.imgSrc ?? record?.avatar ?? 'assets/img/students/student-01.jpg';
 
+      // console.log('Populating modals for student ID:', studentId, 'Name:', name);
 
       // Add Fees modal badge (admission no)
       const addFeesBadge = document.querySelector('#add_fees_collect .badge-sm');
@@ -154,28 +141,26 @@ const StudentList = () => {
 
       // Delete modal: make message a bit specific
       const deleteMsg = document.querySelector('#delete-modal .modal-body p');
-      if (deleteMsg && name) deleteMsg.textContent = `You want to delete ${name} (${studentId}), this can't be undone once you delete.`;
+      if (deleteMsg && name)
+        deleteMsg.textContent = `You want to delete ${name} (${studentId}), this can't be undone once you delete.`;
     } catch {
       // ignore DOM errors
     }
   };
   const columns = [
     {
-      title: "Student ID",
-      dataIndex: "student_id",
+      title: 'Student ID',
+      dataIndex: 'student_id',
       render: (text: string, record: any) => (
-        <Link
-          to={`${routes.studentDetail}?id=${record.studentId}`} className="avatar avatar-md"
-        >
+        <Link to={`${routes.studentDetail}?id=${record.studentId}`} className="avatar avatar-md">
           {text}
         </Link>
       ),
-      sorter: (a: any, b: any) =>
-        (a.student_id || "").localeCompare(b.student_id || ""),
+      sorter: (a: any, b: any) => (a.student_id || '').localeCompare(b.student_id || ''),
     },
     {
-      title: "Roll No",
-      dataIndex: "RollNo",
+      title: 'Roll No',
+      dataIndex: 'RollNo',
       render: (text: string, record: any) => (
         <Link
           to="#"
@@ -190,20 +175,18 @@ const StudentList = () => {
       sorter: (a: TableData, b: TableData) => a.RollNo.length - b.RollNo.length,
     },
     {
-      title: "Name",
-      dataIndex: "name",
+      title: 'Name',
+      dataIndex: 'name',
       render: (text: string, record: any) => (
-        <Link
-          to={`${routes.studentDetail}?id=${record.studentId}`} className="avatar avatar-md"
-        >
+        <Link to={`${routes.studentDetail}?id=${record.studentId}`} className="avatar avatar-md">
           {text}
         </Link>
       ),
       sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
     },
     {
-      title: "Class",
-      dataIndex: "class",
+      title: 'Class',
+      dataIndex: 'class',
       render: (text: string, record: any) => (
         <Link
           to="#"
@@ -217,8 +200,8 @@ const StudentList = () => {
       sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
     },
     {
-      title: "Section",
-      dataIndex: "section",
+      title: 'Section',
+      dataIndex: 'section',
       render: (text: string, record: any) => (
         <Link
           to="#"
@@ -229,12 +212,11 @@ const StudentList = () => {
           {text}
         </Link>
       ),
-      sorter: (a: TableData, b: TableData) =>
-        a.section.length - b.section.length,
+      sorter: (a: TableData, b: TableData) => a.section.length - b.section.length,
     },
     {
-      title: "Gender",
-      dataIndex: "gender",
+      title: 'Gender',
+      dataIndex: 'gender',
       render: (text: string, record: any) => (
         <Link
           to="#"
@@ -249,8 +231,8 @@ const StudentList = () => {
     },
 
     {
-      title: "Status",
-      dataIndex: "status",
+      title: 'Status',
+      dataIndex: 'status',
       render: (text: string, record: any) => (
         <Link
           to="#"
@@ -258,7 +240,7 @@ const StudentList = () => {
           data-bs-target="#login_detail"
           onClick={() => populateStudentModals(record)}
         >
-          {text === "active" ? (
+          {text === 'active' ? (
             <span className="badge badge-soft-success d-inline-flex align-items-center">
               <i className="ti ti-circle-filled fs-5 me-1"></i>
               {text}
@@ -274,8 +256,8 @@ const StudentList = () => {
       sorter: (a: TableData, b: TableData) => a.status.length - b.status.length,
     },
     {
-      title: "Action",
-      dataIndex: "action",
+      title: 'Action',
+      dataIndex: 'action',
       render: (_: any, record: any) => (
         <>
           <div className="d-flex align-items-center">
@@ -329,10 +311,7 @@ const StudentList = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to={routes.editStudent}
-                  >
+                  <Link className="dropdown-item rounded-1" to={routes.editStudent}>
                     <i className="ti ti-edit-circle me-2" />
                     Edit
                   </Link>
@@ -356,10 +335,7 @@ const StudentList = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link
-                    className="dropdown-item rounded-1"
-                    to="student-promotion"
-                  >
+                  <Link className="dropdown-item rounded-1" to="student-promotion">
                     <i className="ti ti-arrow-ramp-right-2 me-2" />
                     Promote Student
                   </Link>
@@ -404,11 +380,20 @@ const StudentList = () => {
             <div className="d-flex my-xl-auto right-content align-items-center flex-wrap">
               <TooltipOption />
 
-              <div className="mb-2">
-                <Link
-                  to={routes.addStudent}
-                  className="btn btn-primary d-flex align-items-center"
+              <div className="mb-2 me-2">
+                <button
+                  type="button"
+                  className="btn btn-outline-primary d-flex align-items-center"
+                  data-bs-toggle="modal"
+                  data-bs-target="#student_type_modal"
                 >
+                  <i className="ti ti-category me-2" />
+                  Student Type
+                </button>
+              </div>
+
+              <div className="mb-2">
+                <Link to={routes.addStudent} className="btn btn-primary d-flex align-items-center">
                   <i className="ti ti-square-rounded-plus me-2" />
                   Add Student
                 </Link>
@@ -434,10 +419,7 @@ const StudentList = () => {
                     <i className="ti ti-filter me-2" />
                     Filter
                   </Link>
-                  <div
-                    className="dropdown-menu drop-width"
-                    ref={dropdownMenuRef}
-                  >
+                  <div className="dropdown-menu drop-width" ref={dropdownMenuRef}>
                     <form>
                       <div className="d-flex align-items-center border-bottom p-3">
                         <h4>Filter</h4>
@@ -451,7 +433,7 @@ const StudentList = () => {
                                 className="select"
                                 options={allClass}
                                 defaultValue={allClass[0]}
-                                onChange={(value) => handleFilterChange("class", value)}
+                                onChange={(value) => handleFilterChange('class', value)}
                               />
                             </div>
                           </div>
@@ -462,7 +444,7 @@ const StudentList = () => {
                                 className="select"
                                 options={allSection}
                                 defaultValue={allSection[0]}
-                                onChange={(value) => handleFilterChange("section", value)}
+                                onChange={(value) => handleFilterChange('section', value)}
                               />
                             </div>
                           </div>
@@ -473,7 +455,7 @@ const StudentList = () => {
                                 className="select"
                                 options={names}
                                 defaultValue={names[0]}
-                                onChange={(value) => handleFilterChange("name", value)}
+                                onChange={(value) => handleFilterChange('name', value)}
                               />
                             </div>
                           </div>
@@ -587,6 +569,7 @@ const StudentList = () => {
       </div>
       {/* /Page Wrapper */}
       <StudentModals />
+      <StudentTypeModal />
     </>
   );
 };

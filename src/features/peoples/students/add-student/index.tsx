@@ -1,22 +1,34 @@
-import { useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
+import { DatePicker } from 'antd';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { DatePicker } from "antd";
-import dayjs from "dayjs";
-import { all_routes } from "../../../router/all_routes";
-import {
-  gender,
-  status,
-} from "../../../../core/common/selectoption/selectoption";
+import { gender, status } from '../../../../core/common/selectoption/selectoption';
+import { all_routes } from '../../../router/all_routes';
 
-import CommonSelect from "../../../../core/common/commonSelect";
-import { yupResolver } from "@hookform/resolvers/yup";
-import { useStudentById } from "../hooks/useStudentById";
-import { useStudentMutations } from "../hooks/useStudentMutations";
-import { studentSchema } from "../models/student.schema";
-import type { StudentModel } from "../models/student.model";
-import { useGetClassesQuery } from "../../../academic/classes/api/classApi";
+import { yupResolver } from '@hookform/resolvers/yup';
+import CommonSelect from '../../../../core/common/commonSelect';
+import { useGetClassesQuery } from '../../../academic/classes/api/classApi';
+import { useStudentById } from '../hooks/useStudentById';
+import { useStudentMutations } from '../hooks/useStudentMutations';
+import { useStudentTypes } from '../hooks/useStudentTypes';
+import { studentSchema } from '../models/student.schema';
 
+// Form data type for the add/edit student form
+type StudentFormData = {
+  first_name: string;
+  last_name: string;
+  gender: 'male' | 'female' | 'other';
+  student_id: string;
+  email: string;
+  admission_number: string;
+  admission_date: string;
+  roll_number: string;
+  status: 'active' | 'inactive';
+  type?: string;
+  class_assigned: string;
+  section: string;
+};
 
 const AddStudent = () => {
   const routes = all_routes;
@@ -27,7 +39,7 @@ const AddStudent = () => {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const id = searchParams.get("id");
+    const id = searchParams.get('id');
     if (id) {
       setStudentId(id);
     }
@@ -48,6 +60,9 @@ const AddStudent = () => {
   // Fetch classes for dropdowns
   const { data: classesData } = useGetClassesQuery();
 
+  // Fetch student types for dropdown
+  const { studentTypes } = useStudentTypes();
+
   // Form setup
   const {
     control,
@@ -55,8 +70,9 @@ const AddStudent = () => {
     reset,
     setValue,
     formState: { errors },
-  } = useForm<StudentModel>({
-    resolver: yupResolver(studentSchema),
+  } = useForm<StudentFormData>({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    resolver: yupResolver(studentSchema) as any,
     defaultValues: {
       status: 'active',
       gender: 'male',
@@ -71,13 +87,18 @@ const AddStudent = () => {
     if (location.pathname === routes.editStudent && studentId) {
       setIsEdit(true);
       if (studentDetails) {
-  // Some APIs return personal fields nested under `user` (user.first_name, user.last_name, user.email).
-  // Prefer top-level fields when present, otherwise fallback to nested user object.
-  const user = (studentDetails as unknown as { user?: { first_name?: string; last_name?: string; email?: string; gender?: string } }).user || {};
+        // Some APIs return personal fields nested under `user` (user.first_name, user.last_name, user.email).
+        // Prefer top-level fields when present, otherwise fallback to nested user object.
+        const user =
+          (
+            studentDetails as unknown as {
+              user?: { first_name?: string; last_name?: string; email?: string; gender?: string };
+            }
+          ).user || {};
         reset({
           first_name: studentDetails.first_name || user.first_name || '',
           last_name: studentDetails.last_name || user.last_name || '',
-          gender: studentDetails.gender || user.gender || 'male',
+          gender: (studentDetails.gender || user.gender || 'male') as 'male' | 'female' | 'other',
           student_id: studentDetails.student_id || '',
           email: studentDetails.email || user.email || '',
           admission_number: studentDetails.admission_number || '',
@@ -85,7 +106,8 @@ const AddStudent = () => {
             ? dayjs(studentDetails.admission_date).format('YYYY-MM-DD')
             : '',
           roll_number: studentDetails.roll_number || '',
-          status: studentDetails.status || 'active',
+          status: (studentDetails.status || 'active') as 'active' | 'inactive',
+          type: studentDetails.type || '',
           class_assigned: studentDetails.class_assigned || '',
           section: studentDetails.section || '',
         });
@@ -100,7 +122,7 @@ const AddStudent = () => {
   }, [location.pathname, studentDetails, reset, studentId, routes.editStudent]);
 
   // Handle form submission
-  const onSubmit = async (data: StudentModel) => {
+  const onSubmit = async (data: StudentFormData) => {
     try {
       // Prepare payload with only required fields as per API specification
       const payload = {
@@ -113,6 +135,7 @@ const AddStudent = () => {
         admission_date: data.admission_date,
         roll_number: data.roll_number,
         status: data.status,
+        type: data.type,
         class_assigned: data.class_assigned,
         section: data.section,
       };
@@ -149,7 +172,7 @@ const AddStudent = () => {
           {/* Page Header */}
           <div className="d-md-flex d-block align-items-center justify-content-between mb-3">
             <div className="my-auto mb-2">
-              <h3 className="mb-1">{isEdit ? "Edit" : "Add"} Student</h3>
+              <h3 className="mb-1">{isEdit ? 'Edit' : 'Add'} Student</h3>
               <nav>
                 <ol className="breadcrumb mb-0">
                   <li className="breadcrumb-item">
@@ -159,7 +182,7 @@ const AddStudent = () => {
                     <Link to={routes.studentList}>Students</Link>
                   </li>
                   <li className="breadcrumb-item active" aria-current="page">
-                    {isEdit ? "Edit" : "Add"} Student
+                    {isEdit ? 'Edit' : 'Add'} Student
                   </li>
                 </ol>
               </nav>
@@ -292,12 +315,41 @@ const AddStudent = () => {
                                 {...field}
                                 className={`select ${errors.gender ? 'is-invalid' : ''}`}
                                 // normalize option values to lowercase to match schema ('male','female','other')
-                                options={gender.map((g) => ({ value: String(g.value).toLowerCase(), label: g.label }))}
+                                options={gender.map((g) => ({
+                                  value: String(g.value).toLowerCase(),
+                                  label: g.label,
+                                }))}
                               />
                             )}
                           />
                           {errors.gender && (
                             <div className="invalid-feedback d-block">{errors.gender.message}</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Student Type */}
+                      <div className="col-xxl col-xl-3 col-md-6">
+                        <div className="mb-3">
+                          <label className="form-label">Student Type</label>
+                          <Controller
+                            name="type"
+                            control={control}
+                            render={({ field }) => (
+                              <CommonSelect
+                                {...field}
+                                className={`select ${errors.type ? 'is-invalid' : ''}`}
+                                options={
+                                  studentTypes?.map((type) => ({
+                                    value: type.id!,
+                                    label: type.name,
+                                  })) || []
+                                }
+                              />
+                            )}
+                          />
+                          {errors.type && (
+                            <div className="invalid-feedback d-block">{errors.type.message}</div>
                           )}
                         </div>
                       </div>
@@ -328,7 +380,9 @@ const AddStudent = () => {
                             )}
                           />
                           {errors.class_assigned && (
-                            <div className="invalid-feedback d-block">{errors.class_assigned.message}</div>
+                            <div className="invalid-feedback d-block">
+                              {errors.class_assigned.message}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -341,11 +395,14 @@ const AddStudent = () => {
                             name="section"
                             control={control}
                             render={({ field: { value, onChange } }) => {
-                              const selectedClass = classesData?.results?.find((cls) => cls.id === selectedClassId);
-                              const sections = selectedClass?.sections?.map((section) => ({
-                                value: section.id!,
-                                label: section.name!,
-                              })) || [];
+                              const selectedClass = classesData?.results?.find(
+                                (cls) => cls.id === selectedClassId,
+                              );
+                              const sections =
+                                selectedClass?.sections?.map((section) => ({
+                                  value: section.id!,
+                                  label: section.name!,
+                                })) || [];
 
                               return (
                                 <CommonSelect
@@ -395,12 +452,16 @@ const AddStudent = () => {
                               <input
                                 {...field}
                                 type="text"
-                                className={`form-control ${errors.admission_number ? 'is-invalid' : ''}`}
+                                className={`form-control ${
+                                  errors.admission_number ? 'is-invalid' : ''
+                                }`}
                               />
                             )}
                           />
                           {errors.admission_number && (
-                            <div className="invalid-feedback">{errors.admission_number.message}</div>
+                            <div className="invalid-feedback">
+                              {errors.admission_number.message}
+                            </div>
                           )}
                         </div>
                       </div>
@@ -453,7 +514,9 @@ const AddStudent = () => {
                                 className="select"
                                 options={status}
                                 value={field.value === 'active' ? 'Active' : 'Inactive'}
-                                onChange={(value) => field.onChange(value === 'Active' ? 'active' : 'inactive')}
+                                onChange={(value) =>
+                                  field.onChange(value === 'Active' ? 'active' : 'inactive')
+                                }
                               />
                             )}
                           />
