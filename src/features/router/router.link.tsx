@@ -1,6 +1,6 @@
 import Ribbon from 'antd/es/badge/Ribbon';
 import { Navigate, Route } from 'react-router';
-import AcademicReason from '../academic/academic-reason';
+import AcademicApplication from '../academic/academic-application/index.tsx';
 import ClassHomeWork from '../academic/class-home-work';
 import ClassRoom from '../academic/class-room';
 import ClassRoutine from '../academic/class-routine';
@@ -14,8 +14,7 @@ import ExamAttendance from '../academic/examinations/exam-attendance';
 import ExamResult from '../academic/examinations/exam-results';
 import ExamSchedule from '../academic/examinations/exam-schedule';
 import ExamTypes from '../academic/examinations/exam-type';
-import Grade from '../academic/examinations/grade';
-import Grades from '../academic/examinations/grade';
+import { default as Grade, default as Grades } from '../academic/examinations/grade';
 import ScheduleClasses from '../academic/schedule-classes';
 import AccountsIncome from '../accounts/accounts-income';
 import AccountsInvoices from '../accounts/accounts-invoices';
@@ -792,8 +791,8 @@ export const publicRoutes = [
     route: Route,
   },
   {
-    path: routes.AcademicReason,
-    element: <AcademicReason />,
+    path: routes.AcademicApplication,
+    element: <AcademicApplication />,
     route: Route,
   },
   {

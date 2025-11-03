@@ -282,8 +282,8 @@ export const SidebarData = [
         ],
       },
       {
-        label: 'Reasons',
-        link: routes.AcademicReason,
+        label: 'AcademicApplication',
+        link: routes.AcademicApplication,
         icon: 'ti ti-lifebuoy',
         showSubRoute: false,
         submenu: false,

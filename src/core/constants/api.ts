@@ -1,5 +1,6 @@
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
+  // import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
+  import.meta.env.VITE_API_BASE_URL || 'http://192.168.0.242:8014/';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -179,6 +180,58 @@ export const API_ENDPOINTS = {
     DELETE: (id: string) => ({
       url: `/api/v1/notices/${id}/`,
       method: 'DELETE',
+    }),
+  },
+
+  // Applications endpoints
+  APPLICATIONS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/applications/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/applications/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/applications/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/applications/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/applications/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/applications/${id}/`,
+      method: 'DELETE',
+    }),
+    APPROVE: (id: string) => ({
+      url: `/api/v1/applications/${id}/approve/`,
+      method: 'POST',
+    }),
+    REJECT: (id: string) => ({
+      url: `/api/v1/applications/${id}/reject/`,
+      method: 'POST',
+    }),
+  },
+
+  // Complaints endpoints
+  COMPLAINTS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/complaints/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/complaints/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/complaints/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/complaints/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/complaints/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/complaints/${id}/`,
+      method: 'DELETE',
+    }),
+    MARK_RESOLVED: (id: string) => ({
+      url: `/api/v1/complaints/${id}/mark_resolved/`,
+      method: 'POST',
     }),
   },
 

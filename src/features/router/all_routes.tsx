@@ -243,7 +243,7 @@ export const all_routes = {
   transportRoutes: '/management/transport-routes',
 
   //Academic module
-  AcademicReason: '/academic/academic-reason',
+  AcademicApplication: '/academic/academic-application',
   classSyllabus: '/academic/class-syllabus',
   classGrades: '/academic/grades',
   classSubject: '/academic/class-subject',

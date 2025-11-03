@@ -194,6 +194,7 @@ export const baseApi = createApi({
     'Notice',
     'PaymentGateway',
     'ExamResult',
+    'Application',
   ],
   endpoints: () => ({}),
 });
