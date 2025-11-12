@@ -37,6 +37,7 @@ export const all_routes = {
   resetPasswordSuccess2: '/reset-password-success-2',
   resetPasswordSuccess3: '/reset-password-success-3',
 
+
   //ui routes
   alert: '/ui-alert',
   accordion: '/ui-accordion',

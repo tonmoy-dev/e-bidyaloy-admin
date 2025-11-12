@@ -1,6 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
+import { toast } from 'react-toastify';
 import { useGetStudentsQuery } from '../../../peoples/students/api/studentApi';
 import type { StudentModel } from '../../../peoples/students/models/student.model';
 import { useGetTeachersQuery } from '../../../peoples/teacher/api/teacherApi';
@@ -175,6 +176,22 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
   }, [watchedTargetType]);
 
   const handleFormSubmit = async (data: AssignmentFormData) => {
+    // Validate due date is not in the past (compare date-only)
+    if (data.due_date) {
+      try {
+        const selected = new Date(data.due_date);
+        const today = new Date();
+        // normalize to date-only (midnight)
+        selected.setHours(0, 0, 0, 0);
+        today.setHours(0, 0, 0, 0);
+        if (selected < today) {
+          toast.error('Due date cannot be in the past.');
+          return; // prevent further processing
+        }
+      } catch {
+        // ignore parse errors and let schema handle invalid format
+      }
+    }
     if (currentStep === 'assignment') {
       if (mode === 'edit') {
         // Edit mode: Create assignment with attachments in one step
@@ -606,7 +623,7 @@ const AssignmentForm: React.FC<AssignmentFormProps> = ({
               {/* Instructions */}
               <div className="col-md-12 mb-3">
                 <label className="form-label">
-                  Instructions <span className="text-danger">*</span>
+                  Instructions For Students<span className="text-danger">*</span>
                 </label>
                 <textarea
                   className={`form-control ${errors.instructions ? 'is-invalid' : ''}`}

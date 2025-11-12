@@ -1,8 +1,43 @@
+import { useEffect, useState } from 'react';
+import { useGetSubmissionsByAssignmentQuery } from '../api/submissionApi';
 import type { AssignmentModel } from '../models/assignment.model';
+import type { AssignmentSubmission } from '../models/submission.model';
+import SubmissionForm from './SubmissionForm';
 
 const StudentAssignmentDetailsView = ({ assignmentData }: { assignmentData: AssignmentModel }) => {
+  const [showSubmissionForm, setShowSubmissionForm] = useState(false);
+  const [mySubmission, setMySubmission] = useState<AssignmentSubmission | null>(null);
+
   // Get attachments directly from assignment data
   const attachments = assignmentData?.attachments || [];
+
+  // Fetch submissions for this assignment
+  const { data: submissions } = useGetSubmissionsByAssignmentQuery(assignmentData?.id || '', {
+    skip: !assignmentData?.id,
+  });
+
+  // Find the current student's submission
+  useEffect(() => {
+    if (submissions && submissions.length > 0) {
+      const userStr = localStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : null;
+      const studentId = user?.id || user?.student_id;
+
+      const studentSubmission = submissions.find((sub) => sub.student === studentId);
+      if (studentSubmission) {
+        setMySubmission(studentSubmission);
+      }
+    }
+  }, [submissions]);
+
+  // Filter attachments - assignment attachments vs submission attachments
+  const assignmentAttachments = attachments.filter(
+    (att) => att.attachment_type === 'assignment' || !att.submission,
+  );
+
+  const submissionAttachments = attachments.filter(
+    (att) => att.attachment_type === 'submission' && att.submission === mySubmission?.id,
+  );
 
   return (
     <>
@@ -312,6 +347,46 @@ const StudentAssignmentDetailsView = ({ assignmentData }: { assignmentData: Assi
         }
       `}</style>
       <div className="row">
+        {/* Submit Assignment Button */}
+        <div className="col-md-12 mb-3">
+          <div className="d-flex justify-content-end">
+            {!showSubmissionForm && !mySubmission && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => setShowSubmissionForm(true)}
+              >
+                <i className="fas fa-paper-plane me-2"></i>
+                Submit Assignment
+              </button>
+            )}
+            {mySubmission && (
+              <div className="alert alert-info mb-0">
+                <i className="fas fa-check-circle me-2"></i>
+                You have already submitted this assignment.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Submission Form */}
+        {showSubmissionForm && (
+          <div className="col-md-12 mb-4">
+            <div className="card border-0 shadow-sm">
+              <div className="card-body">
+                <SubmissionForm
+                  assignmentId={assignmentData.id || ''}
+                  onSubmitSuccess={() => {
+                    setShowSubmissionForm(false);
+                    // Optionally refresh the page or show success message
+                  }}
+                  onCancel={() => setShowSubmissionForm(false)}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Assignment Header + Meta (polished card) - Student View */}
         <div className="col-md-12 mb-4">
           <div className="card assignment-card border-0 shadow-sm">
@@ -405,14 +480,14 @@ const StudentAssignmentDetailsView = ({ assignmentData }: { assignmentData: Assi
         </div>
 
         {/* Attachments */}
-        {attachments && attachments.length > 0 ? (
+        {assignmentAttachments && assignmentAttachments.length > 0 ? (
           <div className="col-md-12 mb-4">
             <h5 className="border-bottom pb-2 mb-3">
               <i className="fas fa-paperclip me-2"></i>
-              Assignment Files ({attachments.length})
+              Assignment Files ({assignmentAttachments.length})
             </h5>
             <div className="attachments-grid">
-              {attachments.map((attachment, index) => {
+              {assignmentAttachments.map((attachment, index) => {
                 // Get file icon based on extension
                 const getFileIcon = (fileName: string): string => {
                   const extension = fileName.split('.').pop()?.toLowerCase();
@@ -494,6 +569,120 @@ const StudentAssignmentDetailsView = ({ assignmentData }: { assignmentData: Assi
                           </div>
                           <div className="flex-shrink-0">
                             <span className="badge bg-light text-dark">{index + 1}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null}
+
+        {/* Student's Submitted Files */}
+        {mySubmission && submissionAttachments && submissionAttachments.length > 0 ? (
+          <div className="col-md-12 mb-4">
+            <h5 className="border-bottom pb-2 mb-3">
+              <i className="fas fa-check-circle me-2 text-success"></i>
+              Your Submitted Files ({submissionAttachments.length})
+            </h5>
+            <div className="alert alert-success mb-3">
+              <i className="fas fa-info-circle me-2"></i>
+              <strong>Submission Status:</strong> {mySubmission.status} |
+              <strong className="ms-2">Submitted At:</strong>{' '}
+              {new Date(mySubmission.submitted_at).toLocaleString()}
+              {mySubmission.submission_text && (
+                <>
+                  <br />
+                  <strong className="mt-2 d-block">Your Message:</strong>{' '}
+                  {mySubmission.submission_text}
+                </>
+              )}
+            </div>
+            <div className="attachments-grid">
+              {submissionAttachments.map((attachment) => {
+                // Get file icon based on extension
+                const getFileIcon = (fileName: string): string => {
+                  const extension = fileName.split('.').pop()?.toLowerCase();
+                  switch (extension) {
+                    case 'pdf':
+                      return 'fas fa-file-pdf text-danger';
+                    case 'doc':
+                    case 'docx':
+                      return 'fas fa-file-word text-primary';
+                    case 'txt':
+                      return 'fas fa-file-alt text-secondary';
+                    case 'jpg':
+                    case 'jpeg':
+                    case 'png':
+                    case 'gif':
+                      return 'fas fa-file-image text-success';
+                    default:
+                      return 'fas fa-file text-secondary';
+                  }
+                };
+
+                // Format file size
+                const formatFileSize = (bytes: number): string => {
+                  if (bytes === 0) return '0 Bytes';
+                  const k = 1024;
+                  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                  const i = Math.floor(Math.log(bytes) / Math.log(k));
+                  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                };
+
+                return (
+                  <div key={attachment.id} className="attachments-grid-item">
+                    <div className="card border-0 shadow-sm h-100 attachment-card">
+                      <div className="card-body p-3">
+                        <div className="d-flex align-items-start">
+                          <div className="flex-shrink-0 me-3">
+                            <div className="attachment-icon-wrapper">
+                              <i className={`${getFileIcon(attachment.file_name)} fa-2x`}></i>
+                            </div>
+                          </div>
+                          <div className="flex-grow-1">
+                            <h6 className="mb-1 text-truncate" title={attachment.file_name}>
+                              {attachment.file_name}
+                            </h6>
+                            <div className="text-muted small mb-2">
+                              <div>Size: {formatFileSize(attachment.file_size)}</div>
+                              <div>
+                                Uploaded:{' '}
+                                {attachment.created_at
+                                  ? new Date(attachment.created_at).toLocaleDateString()
+                                  : 'N/A'}
+                              </div>
+                            </div>
+                            <div className="d-flex gap-2">
+                              {attachment.file && (
+                                <a
+                                  href={attachment.file}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="btn btn-sm btn-outline-primary"
+                                  title="View file"
+                                >
+                                  <i className="fas fa-eye me-1"></i>
+                                  View
+                                </a>
+                              )}
+                              {attachment.file && (
+                                <a
+                                  href={attachment.file}
+                                  download={attachment.file_name}
+                                  className="btn btn-sm btn-outline-secondary"
+                                  title="Download file"
+                                >
+                                  <i className="fas fa-download me-1"></i>
+                                  Download
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0">
+                            <span className="badge bg-success">Submitted</span>
                           </div>
                         </div>
                       </div>

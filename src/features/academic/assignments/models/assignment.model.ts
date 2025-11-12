@@ -18,7 +18,7 @@ export interface AssignmentAttachment {
   id: string;
   assignment: string;
   submission: string | null;
-  attachment_type: 'assignment';
+  attachment_type: 'assignment' | 'submission';
   file_name: string;
   file: string;
   file_url: string | null;

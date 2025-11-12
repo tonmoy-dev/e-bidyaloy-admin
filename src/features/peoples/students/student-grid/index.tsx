@@ -469,12 +469,6 @@ const StudentGrid = () => {
                           >
                             <i className="ti ti-phone" />
                           </Link>
-                          <Link
-                            to="#"
-                            className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-                          >
-                            <i className="ti ti-mail" />
-                          </Link>
                         </div>
                         <Link
                           to="#"

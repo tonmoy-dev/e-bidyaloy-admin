@@ -44,6 +44,8 @@ const StudentList = () => {
       student_id: s.student_id ?? s.admission_number ?? '',
       RollNo: s.roll_number ?? '',
       name: s.user?.full_name || `${s.user?.first_name ?? ''} ${s.user?.last_name ?? ''}`.trim(),
+      // Add username so we can display it in a dedicated column
+      username: s.user?.username ?? s.username ?? '',
       class: s.class_name || s.class_assigned?.name || '',
       section: s.section_name || s.section?.name || '',
       gender: s.user?.gender || '',
@@ -185,6 +187,16 @@ const StudentList = () => {
       sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
     },
     {
+      title: 'Username',
+      dataIndex: 'username',
+      render: (text: string, record: any) => (
+        <Link to={`${routes.studentDetail}?id=${record.studentId}`} className="text-dark">
+          {text}
+        </Link>
+      ),
+      sorter: (a: TableData, b: TableData) => (a.username || '').localeCompare(b.username || ''),
+    },
+    {
       title: 'Class',
       dataIndex: 'class',
       render: (text: string, record: any) => (
@@ -273,12 +285,7 @@ const StudentList = () => {
             >
               <i className="ti ti-phone" />
             </Link>
-            <Link
-              to="#"
-              className="btn btn-outline-light bg-white btn-icon d-flex align-items-center justify-content-center rounded-circle p-0 me-3"
-            >
-              <i className="ti ti-mail" />
-            </Link>
+
             <Link
               to="#"
               data-bs-toggle="modal"
