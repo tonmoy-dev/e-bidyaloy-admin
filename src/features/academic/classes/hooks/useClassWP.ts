@@ -1,4 +1,5 @@
-import { useGetClassesWithoutPaginationQuery } from '../api/subjectApi';
+import { useGetClassesWithoutPaginationQuery } from "../api/classApi";
+
 
 export const useClassesWithoutPagination = () => {
   const { isLoading, isFetching, data, isError, error, refetch } =

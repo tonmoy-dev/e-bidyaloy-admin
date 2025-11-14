@@ -1,7 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
 import SelectDropDown from '../../../../shared/components/utils/SelectDropDown';
-import { useClassesWithoutPagination } from '../hooks/useGetClassesQueryWP';
+import { useClassesWithoutPagination } from '../../classes/hooks/useClassWP';
 import type { SubjectModel } from '../models/subject.model';
 import { subjectSchema } from './subjectSchema';
 

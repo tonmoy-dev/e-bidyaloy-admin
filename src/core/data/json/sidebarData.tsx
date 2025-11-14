@@ -1,4 +1,6 @@
+import { label } from 'yet-another-react-lightbox';
 import { all_routes } from '../../../features/router/all_routes';
+import SubMenu from 'antd/es/menu/SubMenu';
 const routes = all_routes;
 
 export const SidebarData = [
@@ -280,6 +282,17 @@ export const SidebarData = [
           { label: 'Exam Attendance', link: routes.examAttendance },
           { label: 'Exam Results', link: routes.examResult },
         ],
+      },
+      {
+        label: 'Assignments',
+        link: routes.assignments,
+        icon: 'ti ti-clipboard-list',
+        submenuItems: [
+          { label: 'Student Assignments', link: routes.studentAssignments},
+        ],
+        showSubRoute: true,
+        SubMenu: true,
+        
       },
       {
         label: 'Reasons',

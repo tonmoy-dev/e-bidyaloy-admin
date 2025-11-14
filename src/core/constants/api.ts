@@ -1,5 +1,5 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
+
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -44,6 +44,7 @@ export const API_ENDPOINTS = {
   },
   TEACHER: {
     LIST: '/api/v1/teachers/',
+    LIST_WP: '/api/v1/teachers/minimal_list',
     CREATE: '/api/v1/teachers/',
     UPDATE_BY_ID: '/api/v1/teachers/',
     DELETE_BY_ID: '/api/v1/teachers/',
@@ -83,11 +84,16 @@ export const API_ENDPOINTS = {
       method: 'GET',
       params,
     }),
+    LIST_WP: () => ({ url: '/api/v1/grades/minimal_list/', method: 'GET' }),
     CREATE: () => ({ url: '/api/v1/grades/', method: 'POST' }),
     DETAILS: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'GET' }),
     UPDATE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'PUT' }),
     PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'PATCH' }),
     DELETE: (id: string) => ({ url: `/api/v1/grades/${id}/`, method: 'DELETE' }),
+  },
+
+  SECTIONS: {
+    LIST: () => ({ url: '/api/v1/sections/', method: 'GET' }),
   },
 
   // Student endpoints
@@ -97,6 +103,11 @@ export const API_ENDPOINTS = {
     UPDATE_BY_ID: '/api/v1/students/',
     DELETE_BY_ID: '/api/v1/students/',
     DETAILS_BY_ID: '/api/v1/students/',
+    MINIMAL_LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/students/minimal_list/`,
+      method: 'GET',
+      params,
+    }),
   },
 
   // Exam Types endpoints
@@ -108,12 +119,101 @@ export const API_ENDPOINTS = {
     DETAILS_BY_ID: '/api/v1/exam-types/',
   },
 
- EXAMS:{
+  EXAMS: {
     LIST: '/api/v1/exams/',
-    CREATE: '/api/v1/exams/',  
+    LIST_WP: () => ({ url: '/api/v1/exams/minimal_list/', method: 'GET' }),
+    CREATE: '/api/v1/exams/',
     UPDATE_BY_ID: '/api/v1/exams/',
     DELETE_BY_ID: '/api/v1/exams/',
     DETAILS_BY_ID: '/api/v1/exams/',
- }
-};
+    SUBJECTS_BY_ID: (id: string) => ({ url: `/api/v1/exams/${id}/subjects/`, method: 'GET' }),
+  },
+  ASSIGNMENTS: {
+    LIST: '/api/v1/assignments/',
+    CREATE: '/api/v1/assignments/',
+    UPDATE_BY_ID: '/api/v1/assignments/',
+    DELETE_BY_ID: '/api/v1/assignments/',
+    DETAILS_BY_ID: '/api/v1/assignments/',
+  },
+  ASSIGNMENT_ATTACHMENTS: {
+    LIST: '/api/v1/assignment-attachments/',
+    CREATE: '/api/v1/assignment-attachments/',
+    UPDATE_BY_ID: '/api/v1/assignment-attachments/',
+    DELETE_BY_ID: '/api/v1/assignment-attachments/',
+    DETAILS_BY_ID: '/api/v1/assignment-attachments/',
+  },
 
+  // Assignment Submissions endpoints
+  ASSIGNMENT_SUBMISSIONS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/assignment-submissions/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/assignment-submissions/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'PATCH' }),
+    DELETE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'DELETE' }),
+  },
+
+  // Exam Mark endpoints
+  EXAM_RESULTS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/exam-results/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/exam-results/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/exam-results/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/exam-results/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/exam-results/${id}/`, method: 'PATCH' }),
+    DELETE: (id: string) => ({ url: `/api/v1/exam-results/${id}/`, method: 'DELETE' }),
+    BULK_CREATE: () => ({ url: '/api/v1/exam-results/bulk/', method: 'POST' }),
+  },
+
+  PAYMENT_GATEWAY_CREDENTIALS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/payment-gateway-credentials/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/payment-gateway-credentials/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/payment-gateway-credentials/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/payment-gateway-credentials/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/payment-gateway-credentials/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/payment-gateway-credentials/${id}/`,
+      method: 'DELETE',
+    }),
+  },
+
+  NOTICES: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/notices/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/notices/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/notices/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/notices/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/notices/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/notices/${id}/`,
+      method: 'DELETE',
+    }),
+  },
+  STUDENT_TYPES: {
+    LIST: '/api/v1/student-types/',
+    CREATE: '/api/v1/student-types/',
+    UPDATE_BY_ID: '/api/v1/student-types/',
+    DELETE_BY_ID: '/api/v1/student-types/',
+    DETAILS_BY_ID: '/api/v1/student-types/',
+  },
+};
