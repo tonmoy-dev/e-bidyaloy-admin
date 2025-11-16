@@ -1,5 +1,5 @@
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://192.168.0.242:8015/';
+   import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
   
 
 export const API_ENDPOINTS = {

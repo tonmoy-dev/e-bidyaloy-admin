@@ -18,6 +18,7 @@ import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { all_routes } from '../../router/all_routes';
 import AssignmentDetailsView from './components/AssignmentDetailsView';
 import AssignmentForm from './components/AssignmentForm';
+import GradeSubmissionsModal from './components/GradeSubmissionsModal';
 import { useAssignmentById } from './hooks/useAssignmentById';
 import { useAssignmentMutations } from './hooks/useAssignmentMutations';
 import { useAssignments } from './hooks/useAssignments';
@@ -124,20 +125,33 @@ const Assignments = () => {
       align: 'center',
       render: (record: TableData) => (
         <>
-          <DataTableColumnActions
-            onEditButtonClick={() => {
-              setSelectedId(record?.id);
-              setActiveModal('edit');
-            }}
-            onViewButtonClick={() => {
-              setSelectedId(record?.id);
-              setActiveModal('view');
-            }}
-            onDeleteButtonClick={() => {
-              setSelectedId(record?.id);
-              setActiveModal('delete');
-            }}
-          />
+          <div className="d-flex gap-2 justify-content-center">
+            <DataTableColumnActions
+              onEditButtonClick={() => {
+                setSelectedId(record?.id);
+                setActiveModal('edit');
+              }}
+              onViewButtonClick={() => {
+                setSelectedId(record?.id);
+                setActiveModal('view');
+              }}
+              onDeleteButtonClick={() => {
+                setSelectedId(record?.id);
+                setActiveModal('delete');
+              }}
+            />
+            <button
+              className="btn btn-sm btn-success"
+              title="Grade Assignment"
+              onClick={() => {
+                setSelectedId(record?.id);
+                setActiveModal('grade');
+              }}
+            >
+              <i className="fas fa-award me-1"></i>
+              Grade
+            </button>
+          </div>
         </>
       ),
     },
@@ -339,6 +353,25 @@ const Assignments = () => {
               )
             }
             body={<AssignmentDetailsView assignmentData={assignmentDetails} />}
+          />
+        )}
+
+        {/* Grade Submissions Modal */}
+        {assignmentDetails?.id && (
+          <DataModal
+            show={activeModal === 'grade'}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            size="xl"
+            modalTitle="Grade Submissions"
+            body={
+              <GradeSubmissionsModal
+                assignmentData={assignmentDetails}
+                onClose={() => setActiveModal(null)}
+              />
+            }
           />
         )}
 
