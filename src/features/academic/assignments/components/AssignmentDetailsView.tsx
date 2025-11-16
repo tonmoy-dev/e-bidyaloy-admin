@@ -1,8 +1,10 @@
 import type { AssignedStudent, AssignmentModel } from '../models/assignment.model';
 
 const AssignmentDetailsView = ({ assignmentData }: { assignmentData: AssignmentModel }) => {
-  // Get attachments directly from assignment data
-  const attachments = assignmentData?.attachments || [];
+  // Get attachments directly from assignment data, excluding submission type attachments
+  const attachments = (assignmentData?.attachments || []).filter(
+    (att) => att.attachment_type !== 'submission',
+  );
 
   return (
     <>

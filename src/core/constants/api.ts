@@ -1,6 +1,5 @@
 export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || 'http://192.168.0.242:8015/';
-  
+  import.meta.env.VITE_API_BASE_URL || 'https://school.jordanbikestation.com';
 
 export const API_ENDPOINTS = {
   AUTH: {
@@ -154,7 +153,10 @@ export const API_ENDPOINTS = {
     CREATE: () => ({ url: '/api/v1/assignment-submissions/', method: 'POST' }),
     DETAILS: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'GET' }),
     UPDATE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'PUT' }),
-    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'PATCH' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/assignment-submissions/${id}/`,
+      method: 'PATCH',
+    }),
     DELETE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'DELETE' }),
   },
 

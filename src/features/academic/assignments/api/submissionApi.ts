@@ -20,10 +20,18 @@ export const submissionApi = baseApi.injectEndpoints({
 
     // Get submissions by assignment
     getSubmissionsByAssignment: builder.query<AssignmentSubmission[], string>({
-      query: (assignmentId) => ({
-        url: API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.LIST({ assignment: assignmentId }).url,
-        method: API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.LIST({ assignment: assignmentId }).method,
-      }),
+      query: (assignmentId) => {
+        const endpoint = API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.LIST({ assignment: assignmentId });
+        return {
+          url: endpoint.url,
+          method: endpoint.method,
+          params: endpoint.params, // Include params for query string
+        };
+      },
+      // Transform paginated response to extract results array
+      transformResponse: (response: { results: AssignmentSubmission[] }) => {
+        return response.results || [];
+      },
       providesTags: ['Assignment'],
     }),
 

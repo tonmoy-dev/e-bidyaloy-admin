@@ -31,9 +31,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   onSubmitSuccess,
   onCancel,
 }) => {
-  const [step, setStep] = useState<1 | 2>(1);
   const [submissionText, setSubmissionText] = useState('');
-  const [submissionId, setSubmissionId] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
   const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>({});
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
@@ -43,20 +41,15 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   const [uploadAttachment] = useUploadAssignmentAttachmentMutation();
   const { user } = useAppSelector((state) => state.auth);
 
-  // Derive student id from auth user object. Prefer explicit student fields if present.
+  // Derive profile_id from auth user object
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const _authUser: any = user;
-  const studentIdFromAuth: string | undefined =
-    _authUser?.student_id ||
-    _authUser?.student?.id ||
-    _authUser?.profile?.id ||
-    _authUser?.student_profile?.id ||
-    _authUser?.id;
+  const profileIdFromAuth: string | undefined = _authUser?.profile_id;
 
-    console.log('Derived student ID from auth:', studentIdFromAuth);
+  console.log('Derived profile ID from auth:', profileIdFromAuth);
 
-  // Handle first step - Create submission
-  const handleCreateSubmission = async () => {
+  // Handle final submission - create submission and upload all files
+  const handleFinalSubmit = async () => {
     if (!submissionText.trim()) {
       toast.error('Please enter submission message');
       return;
@@ -65,100 +58,71 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     try {
       setIsSubmitting(true);
 
-      const studentId = studentIdFromAuth;
+      const profileId = profileIdFromAuth;
 
-      if (!studentId) {
-        toast.error('Student ID not found in auth state. Please login again as student.');
+      if (!profileId) {
+        toast.error('Profile ID not found in auth state. Please login again as student.');
         return;
       }
 
+      // Create submission with profile_id
       const submissionData: CreateSubmissionRequest = {
         assignment: assignmentId,
-        student: studentId,
+        student: profileId, // Using profile_id from auth token
         submission_text: submissionText,
         submitted_at: new Date().toISOString(),
         status: 'submitted',
       };
 
       const response = await createSubmission(submissionData).unwrap();
-      setSubmissionId(response.id);
-      setStep(2);
-      toast.success('Submission created successfully. Now you can upload files.');
+      const submissionId = response.id;
+
+      // Upload all files if any
+      if (uploadedFiles.length > 0) {
+        for (const uploadedFile of uploadedFiles) {
+          const fileId = uploadedFile.id;
+
+          setUploadStates((prev) => ({
+            ...prev,
+            [fileId]: { uploading: true, progress: 50, error: null },
+          }));
+
+          try {
+            const formData = new FormData();
+            formData.append('assignment', assignmentId);
+            formData.append('submission', submissionId);
+            formData.append('attachment_type', 'submission');
+            formData.append('file_name', uploadedFile.fileName);
+            formData.append('file', uploadedFile.file);
+            formData.append('file_size', uploadedFile.fileSize.toString());
+
+            await uploadAttachment(formData).unwrap();
+
+            setUploadStates((prev) => ({
+              ...prev,
+              [fileId]: { uploading: false, progress: 100, error: null },
+            }));
+          } catch (error) {
+            console.error('Upload error:', error);
+            setUploadStates((prev) => ({
+              ...prev,
+              [fileId]: { uploading: false, progress: 0, error: 'Failed to upload' },
+            }));
+          }
+        }
+      }
+
+      toast.success('Assignment submitted successfully!');
+      if (onSubmitSuccess) {
+        onSubmitSuccess();
+      }
     } catch (error) {
-      console.error('Failed to create submission:', error);
-      toast.error('Failed to create submission. Please try again.');
+      console.error('Failed to submit assignment:', error);
+      toast.error('Failed to submit assignment. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
   };
-
-  // Handle file upload
-  const uploadFile = useCallback(
-    async (file: File): Promise<SubmissionAttachment | null> => {
-      if (!submissionId) {
-        toast.error('Submission ID not available');
-        return null;
-      }
-
-      const fileId = `${file.name}-${file.size}-${Date.now()}`;
-
-      setUploadStates((prev) => ({
-        ...prev,
-        [fileId]: { uploading: true, progress: 50, error: null },
-      }));
-
-      // Create preview for images
-      let preview: string | undefined;
-      if (file.type.startsWith('image/')) {
-        preview = URL.createObjectURL(file);
-      }
-
-      try {
-        const formData = new FormData();
-        formData.append('assignment', assignmentId);
-        formData.append('submission', submissionId);
-        formData.append('attachment_type', 'submission');
-        formData.append('file_name', file.name);
-        formData.append('file', file);
-        formData.append('file_size', file.size.toString());
-
-        const response = await uploadAttachment(formData).unwrap();
-
-        // Add to uploaded files
-        setUploadedFiles((prev) => [
-          ...prev,
-          {
-            id: fileId,
-            file,
-            fileName: file.name,
-            fileSize: file.size,
-            preview,
-            attachmentData: response as unknown as SubmissionAttachment,
-          },
-        ]);
-
-        setUploadStates((prev) => ({
-          ...prev,
-          [fileId]: { uploading: false, progress: 100, error: null },
-        }));
-
-        toast.success(`${file.name} uploaded successfully`);
-        return response as unknown as SubmissionAttachment;
-      } catch (error) {
-        console.error('Upload error:', error);
-        const errorMessage = 'Failed to upload file';
-
-        setUploadStates((prev) => ({
-          ...prev,
-          [fileId]: { uploading: false, progress: 0, error: errorMessage },
-        }));
-
-        toast.error(`Failed to upload ${file.name}`);
-        return null;
-      }
-    },
-    [assignmentId, submissionId, uploadAttachment],
-  );
 
   // Validate files
   const validateFiles = useCallback(
@@ -217,9 +181,9 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     [uploadedFiles],
   );
 
-  // Handle files
+  // Handle files - add them to queue for later upload
   const handleFiles = useCallback(
-    async (files: File[]) => {
+    (files: File[]) => {
       const { valid, errors } = validateFiles(files);
 
       if (errors.length > 0) {
@@ -228,12 +192,27 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       }
 
       if (valid.length > 0) {
-        for (const file of valid) {
-          await uploadFile(file);
-        }
+        valid.forEach((file) => {
+          const fileId = `${file.name}-${file.size}-${Date.now()}`;
+          let preview: string | undefined;
+          if (file.type.startsWith('image/')) {
+            preview = URL.createObjectURL(file);
+          }
+
+          setUploadedFiles((prev) => [
+            ...prev,
+            {
+              id: fileId,
+              file,
+              fileName: file.name,
+              fileSize: file.size,
+              preview,
+            },
+          ]);
+        });
       }
     },
-    [validateFiles, uploadFile],
+    [validateFiles],
   );
 
   // Drag handlers
@@ -297,11 +276,13 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     }
   };
 
-  // Final submit
-  const handleFinalSubmit = () => {
-    toast.success('Assignment submitted successfully!');
-    if (onSubmitSuccess) {
-      onSubmitSuccess();
+  // Remove file from queue
+  const removeFile = (fileId: string) => {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
+    // Clean up object URL if it exists
+    const file = uploadedFiles.find((f) => f.id === fileId);
+    if (file?.preview) {
+      URL.revokeObjectURL(file.preview);
     }
   };
 
@@ -310,52 +291,6 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       <style>{`
         .submission-step {
           padding: 1.5rem;
-        }
-        
-        .step-indicator {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 2rem;
-        }
-        
-        .step-item {
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-        }
-        
-        .step-circle {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 600;
-          background: #e9ecef;
-          color: #6c757d;
-        }
-        
-        .step-circle.active {
-          background: #007bff;
-          color: white;
-        }
-        
-        .step-circle.completed {
-          background: #28a745;
-          color: white;
-        }
-        
-        .step-line {
-          width: 60px;
-          height: 2px;
-          background: #e9ecef;
-          margin: 0 1rem;
-        }
-        
-        .step-line.completed {
-          background: #28a745;
         }
         
         .file-upload-zone {
@@ -426,65 +361,26 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       `}</style>
 
       <div className="submission-form">
-        {/* Step Indicator */}
-        <div className="step-indicator">
-          <div className="step-item">
-            <div className={`step-circle ${step >= 1 ? 'active' : ''}`}>1</div>
-            <span>Submission Message</span>
-          </div>
-          <div className={`step-line ${step >= 2 ? 'completed' : ''}`} />
-          <div className="step-item">
-            <div className={`step-circle ${step >= 2 ? 'active' : ''}`}>2</div>
-            <span>Upload Files</span>
-          </div>
-        </div>
+        <div className="submission-step">
+          <h5 className="mb-3">Submit Your Assignment</h5>
 
-        {/* Step 1: Submission Message */}
-        {step === 1 && (
-          <div className="submission-step">
-            <h5 className="mb-3">Enter Your Submission Message</h5>
-            <div className="mb-3">
-              <label className="form-label">
-                Submission Message <span className="text-danger">*</span>
-              </label>
-              <textarea
-                className="form-control"
-                rows={5}
-                placeholder="Enter your submission message, notes, or comments..."
-                value={submissionText}
-                onChange={(e) => setSubmissionText(e.target.value)}
-              />
-            </div>
-            <div className="d-flex gap-2 justify-content-end">
-              {onCancel && (
-                <button type="button" className="btn btn-light" onClick={onCancel}>
-                  Cancel
-                </button>
-              )}
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleCreateSubmission}
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="spinner-border spinner-border-sm me-2" />
-                    Creating...
-                  </>
-                ) : (
-                  'Next: Upload Files'
-                )}
-              </button>
-            </div>
+          {/* Submission Message */}
+          <div className="mb-3">
+            <label className="form-label">
+              Submission Message <span className="text-danger">*</span>
+            </label>
+            <textarea
+              className="form-control"
+              rows={4}
+              placeholder="Enter your submission message, notes, or comments..."
+              value={submissionText}
+              onChange={(e) => setSubmissionText(e.target.value)}
+            />
           </div>
-        )}
 
-        {/* Step 2: File Upload */}
-        {step === 2 && (
-          <div className="submission-step">
-            <h5 className="mb-3">Upload Your Submission Files</h5>
-
+          {/* File Upload Section */}
+          <div className="mb-3">
+            <label className="form-label">Upload Files (Optional)</label>
             {/* Upload Zone */}
             <div
               className={`file-upload-zone ${dragActive ? 'drag-active' : ''} mb-3`}
@@ -574,9 +470,14 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
                             <i className="fas fa-spinner fa-spin"></i>
                           </div>
                         ) : (
-                          <span className="text-success">
-                            <i className="fas fa-check-circle"></i>
-                          </span>
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-outline-danger"
+                            onClick={() => removeFile(uploadedFile.id)}
+                            title="Remove file"
+                          >
+                            <i className="fas fa-times"></i>
+                          </button>
                         )}
                       </div>
                     </div>
@@ -584,30 +485,40 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
                 })}
               </div>
             )}
+          </div>
 
-            <div className="d-flex gap-2 justify-content-end">
+          {/* Submit Button */}
+          <div className="d-flex gap-2 justify-content-end">
+            {onCancel && (
               <button
                 type="button"
                 className="btn btn-light"
-                onClick={() => {
-                  if (uploadedFiles.length === 0) {
-                    setStep(1);
-                  } else {
-                    if (confirm('Are you sure you want to go back? Uploaded files will remain.')) {
-                      setStep(1);
-                    }
-                  }
-                }}
+                onClick={onCancel}
+                disabled={isSubmitting}
               >
-                Back
+                Cancel
               </button>
-              <button type="button" className="btn btn-success" onClick={handleFinalSubmit}>
-                <i className="fas fa-check me-2"></i>
-                Submit Assignment
-              </button>
-            </div>
+            )}
+            <button
+              type="button"
+              className="btn btn-success"
+              onClick={handleFinalSubmit}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <i className="fas fa-check me-2"></i>
+                  Submit Assignment
+                </>
+              )}
+            </button>
           </div>
-        )}
+        </div>
       </div>
     </>
   );

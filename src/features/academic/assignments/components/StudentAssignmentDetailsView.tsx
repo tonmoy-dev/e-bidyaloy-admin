@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useGetSubmissionsByAssignmentQuery } from '../api/submissionApi';
+import { useAppSelector } from '../../../../core/store';
+import {
+  useGetSubmissionByIdQuery,
+  useGetSubmissionsByAssignmentQuery,
+} from '../api/submissionApi';
 import type { AssignmentModel } from '../models/assignment.model';
 import type { AssignmentSubmission } from '../models/submission.model';
 import SubmissionForm from './SubmissionForm';
@@ -7,6 +11,14 @@ import SubmissionForm from './SubmissionForm';
 const StudentAssignmentDetailsView = ({ assignmentData }: { assignmentData: AssignmentModel }) => {
   const [showSubmissionForm, setShowSubmissionForm] = useState(false);
   const [mySubmission, setMySubmission] = useState<AssignmentSubmission | null>(null);
+  const [mySubmissionId, setMySubmissionId] = useState<string | null>(null);
+
+  const { user } = useAppSelector((state) => state.auth);
+
+  // Get profile_id from auth
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const _authUser: any = user;
+  const profileId: string | undefined = _authUser?.profile_id;
 
   // Get attachments directly from assignment data
   const attachments = assignmentData?.attachments || [];
@@ -16,28 +28,45 @@ const StudentAssignmentDetailsView = ({ assignmentData }: { assignmentData: Assi
     skip: !assignmentData?.id,
   });
 
-  // Find the current student's submission
+  // Find the current student's submission ID (get the latest one if multiple submissions exist)
   useEffect(() => {
-    if (submissions && submissions.length > 0) {
-      const userStr = localStorage.getItem('user');
-      const user = userStr ? JSON.parse(userStr) : null;
-      const studentId = user?.id || user?.student_id;
+    if (submissions && submissions.length > 0 && profileId) {
+      // Filter all submissions by this student
+      const studentSubmissions = submissions.filter((sub) => sub.student === profileId);
 
-      const studentSubmission = submissions.find((sub) => sub.student === studentId);
-      if (studentSubmission) {
-        setMySubmission(studentSubmission);
+      if (studentSubmissions.length > 0) {
+        // Get the most recent submission (assuming sorted by date, or get first one)
+        const latestSubmission = studentSubmissions[0]; // API returns newest first
+        setMySubmissionId(latestSubmission.id);
+        // If the submission data from list already has all the fields we need, set it directly
+        setMySubmission(latestSubmission as AssignmentSubmission);
       }
     }
-  }, [submissions]);
+  }, [submissions, profileId]);
+
+  // Fetch detailed submission info by ID
+  const { data: submissionDetails } = useGetSubmissionByIdQuery(mySubmissionId || '', {
+    skip: !mySubmissionId || !!mySubmission, // Skip if we already have the submission data
+  });
+
+  // Update mySubmission when submissionDetails is fetched (for detailed info)
+  useEffect(() => {
+    if (submissionDetails && !mySubmission) {
+      setMySubmission(submissionDetails);
+    }
+  }, [submissionDetails, mySubmission]);
 
   // Filter attachments - assignment attachments vs submission attachments
   const assignmentAttachments = attachments.filter(
     (att) => att.attachment_type === 'assignment' || !att.submission,
   );
 
-  const submissionAttachments = attachments.filter(
-    (att) => att.attachment_type === 'submission' && att.submission === mySubmission?.id,
-  );
+  // Use attachments from the submission object if available, otherwise filter from assignment attachments
+  const submissionAttachments =
+    mySubmission?.attachments ||
+    attachments.filter(
+      (att) => att.attachment_type === 'submission' && att.submission === mySubmission?.id,
+    );
 
   return (
     <>
@@ -580,119 +609,216 @@ const StudentAssignmentDetailsView = ({ assignmentData }: { assignmentData: Assi
           </div>
         ) : null}
 
-        {/* Student's Submitted Files */}
-        {mySubmission && submissionAttachments && submissionAttachments.length > 0 ? (
+        {/* Student's Submission Details */}
+        {mySubmission && (
           <div className="col-md-12 mb-4">
             <h5 className="border-bottom pb-2 mb-3">
               <i className="fas fa-check-circle me-2 text-success"></i>
-              Your Submitted Files ({submissionAttachments.length})
+              Your Submission
             </h5>
-            <div className="alert alert-success mb-3">
-              <i className="fas fa-info-circle me-2"></i>
-              <strong>Submission Status:</strong> {mySubmission.status} |
-              <strong className="ms-2">Submitted At:</strong>{' '}
-              {new Date(mySubmission.submitted_at).toLocaleString()}
-              {mySubmission.submission_text && (
-                <>
-                  <br />
-                  <strong className="mt-2 d-block">Your Message:</strong>{' '}
-                  {mySubmission.submission_text}
-                </>
-              )}
-            </div>
-            <div className="attachments-grid">
-              {submissionAttachments.map((attachment) => {
-                // Get file icon based on extension
-                const getFileIcon = (fileName: string): string => {
-                  const extension = fileName.split('.').pop()?.toLowerCase();
-                  switch (extension) {
-                    case 'pdf':
-                      return 'fas fa-file-pdf text-danger';
-                    case 'doc':
-                    case 'docx':
-                      return 'fas fa-file-word text-primary';
-                    case 'txt':
-                      return 'fas fa-file-alt text-secondary';
-                    case 'jpg':
-                    case 'jpeg':
-                    case 'png':
-                    case 'gif':
-                      return 'fas fa-file-image text-success';
-                    default:
-                      return 'fas fa-file text-secondary';
-                  }
-                };
 
-                // Format file size
-                const formatFileSize = (bytes: number): string => {
-                  if (bytes === 0) return '0 Bytes';
-                  const k = 1024;
-                  const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                  const i = Math.floor(Math.log(bytes) / Math.log(k));
-                  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-                };
-
-                return (
-                  <div key={attachment.id} className="attachments-grid-item">
-                    <div className="card border-0 shadow-sm h-100 attachment-card">
-                      <div className="card-body p-3">
-                        <div className="d-flex align-items-start">
-                          <div className="flex-shrink-0 me-3">
-                            <div className="attachment-icon-wrapper">
-                              <i className={`${getFileIcon(attachment.file_name)} fa-2x`}></i>
-                            </div>
-                          </div>
-                          <div className="flex-grow-1">
-                            <h6 className="mb-1 text-truncate" title={attachment.file_name}>
-                              {attachment.file_name}
-                            </h6>
-                            <div className="text-muted small mb-2">
-                              <div>Size: {formatFileSize(attachment.file_size)}</div>
-                              <div>
-                                Uploaded:{' '}
-                                {attachment.created_at
-                                  ? new Date(attachment.created_at).toLocaleDateString()
-                                  : 'N/A'}
-                              </div>
-                            </div>
-                            <div className="d-flex gap-2">
-                              {attachment.file && (
-                                <a
-                                  href={attachment.file}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="btn btn-sm btn-outline-primary"
-                                  title="View file"
-                                >
-                                  <i className="fas fa-eye me-1"></i>
-                                  View
-                                </a>
-                              )}
-                              {attachment.file && (
-                                <a
-                                  href={attachment.file}
-                                  download={attachment.file_name}
-                                  className="btn btn-sm btn-outline-secondary"
-                                  title="Download file"
-                                >
-                                  <i className="fas fa-download me-1"></i>
-                                  Download
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex-shrink-0">
-                            <span className="badge bg-success">Submitted</span>
-                          </div>
+            {/* Submission Info Card */}
+            <div className="card border-0 shadow-sm mb-3">
+              <div className="card-body">
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="me-3">
+                        <div className="bg-success bg-opacity-10 p-2 rounded">
+                          <i className="fas fa-check-circle text-success fs-4"></i>
                         </div>
+                      </div>
+                      <div>
+                        <small className="text-muted d-block">Status</small>
+                        <strong className="text-capitalize">{mySubmission.status || 'N/A'}</strong>
                       </div>
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="col-md-6 mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="me-3">
+                        <div className="bg-primary bg-opacity-10 p-2 rounded">
+                          <i className="fas fa-calendar-alt text-primary fs-4"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <small className="text-muted d-block">Submitted At</small>
+                        <strong>
+                          {mySubmission.submitted_at
+                            ? new Date(mySubmission.submitted_at).toLocaleString()
+                            : 'N/A'}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="me-3">
+                        <div className="bg-info bg-opacity-10 p-2 rounded">
+                          <i className="fas fa-award text-info fs-4"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <small className="text-muted d-block">Marks Obtained</small>
+                        <strong>
+                          {mySubmission.marks_obtained !== null &&
+                          mySubmission.marks_obtained !== undefined
+                            ? `${mySubmission.marks_obtained} / ${assignmentData?.total_marks}`
+                            : 'Not Graded Yet'}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <div className="d-flex align-items-center">
+                      <div className="me-3">
+                        <div className="bg-warning bg-opacity-10 p-2 rounded">
+                          <i className="fas fa-clock text-warning fs-4"></i>
+                        </div>
+                      </div>
+                      <div>
+                        <small className="text-muted d-block">Graded At</small>
+                        <strong>
+                          {mySubmission.graded_at
+                            ? new Date(mySubmission.graded_at).toLocaleString()
+                            : 'Not Graded Yet'}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Submission Message */}
+                {mySubmission.submission_text && (
+                  <div className="mt-3">
+                    <h6 className="text-muted mb-2">Your Message:</h6>
+                    <div className="p-3 bg-light rounded">
+                      <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                        {mySubmission.submission_text}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Teacher Feedback */}
+                {mySubmission.feedback && (
+                  <div className="mt-3">
+                    <h6 className="text-muted mb-2">Teacher's Feedback:</h6>
+                    <div className="p-3 bg-success bg-opacity-10 border border-success rounded">
+                      <p className="mb-0" style={{ whiteSpace: 'pre-wrap' }}>
+                        {mySubmission.feedback}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
+
+            {/* Submitted Files */}
+            {submissionAttachments && submissionAttachments.length > 0 && (
+              <>
+                <h6 className="mb-3">
+                  <i className="fas fa-paperclip me-2"></i>
+                  Your Submitted Files ({submissionAttachments.length})
+                </h6>
+                <div className="attachments-grid">
+                  {submissionAttachments.map((attachment) => {
+                    // Get file icon based on extension
+                    const getFileIcon = (fileName: string): string => {
+                      const extension = fileName.split('.').pop()?.toLowerCase();
+                      switch (extension) {
+                        case 'pdf':
+                          return 'fas fa-file-pdf text-danger';
+                        case 'doc':
+                        case 'docx':
+                          return 'fas fa-file-word text-primary';
+                        case 'txt':
+                          return 'fas fa-file-alt text-secondary';
+                        case 'jpg':
+                        case 'jpeg':
+                        case 'png':
+                        case 'gif':
+                          return 'fas fa-file-image text-success';
+                        default:
+                          return 'fas fa-file text-secondary';
+                      }
+                    };
+
+                    // Format file size
+                    const formatFileSize = (bytes: number): string => {
+                      if (bytes === 0) return '0 Bytes';
+                      const k = 1024;
+                      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+                      const i = Math.floor(Math.log(bytes) / Math.log(k));
+                      return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+                    };
+
+                    return (
+                      <div key={attachment.id} className="attachments-grid-item">
+                        <div className="card border-0 shadow-sm h-100 attachment-card">
+                          <div className="card-body p-3">
+                            <div className="d-flex align-items-start">
+                              <div className="flex-shrink-0 me-3">
+                                <div className="attachment-icon-wrapper">
+                                  <i className={`${getFileIcon(attachment.file_name)} fa-2x`}></i>
+                                </div>
+                              </div>
+                              <div className="flex-grow-1">
+                                <h6 className="mb-1 text-truncate" title={attachment.file_name}>
+                                  {attachment.file_name}
+                                </h6>
+                                <div className="text-muted small mb-2">
+                                  <div>Size: {formatFileSize(attachment.file_size)}</div>
+                                  <div>
+                                    Uploaded:{' '}
+                                    {attachment.created_at
+                                      ? new Date(attachment.created_at).toLocaleDateString()
+                                      : 'N/A'}
+                                  </div>
+                                </div>
+                                <div className="d-flex gap-2">
+                                  {attachment.file && (
+                                    <a
+                                      href={attachment.file}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn btn-sm btn-outline-primary"
+                                      title="View file"
+                                    >
+                                      <i className="fas fa-eye me-1"></i>
+                                      View
+                                    </a>
+                                  )}
+                                  {attachment.file && (
+                                    <a
+                                      href={attachment.file}
+                                      download={attachment.file_name}
+                                      className="btn btn-sm btn-outline-secondary"
+                                      title="Download file"
+                                    >
+                                      <i className="fas fa-download me-1"></i>
+                                      Download
+                                    </a>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex-shrink-0">
+                                <span className="badge bg-success">Submitted</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
-        ) : null}
+        )}
       </div>
     </>
   );
