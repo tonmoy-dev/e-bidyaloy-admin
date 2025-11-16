@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../../core/store';
-import { useGetAssignmentsQuery } from "../api/assignmentApi";
+import { useGetAssignmentsQuery } from '../api/assignmentApi';
 
 export const useAssignments = (page?: number) => {
   // Get logged-in user from Redux store
@@ -19,8 +19,7 @@ export const useAssignments = (page?: number) => {
       ...data,
       results: data.results.filter(
         (assignment) =>
-          assignment.class_assigned === user.class_id &&
-          assignment.section === user.section_id
+          assignment.class_assigned === user.class_id && assignment.section === user.section_id,
       ),
     };
   }, [data, user?.class_id, user?.section_id]);
