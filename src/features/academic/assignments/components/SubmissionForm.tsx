@@ -11,12 +11,6 @@ interface SubmissionFormProps {
   onCancel?: () => void;
 }
 
-interface UploadState {
-  uploading: boolean;
-  progress: number;
-  error: string | null;
-}
-
 interface UploadedFile {
   id: string;
   file: File;
@@ -33,7 +27,6 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
 }) => {
   const [submissionText, setSubmissionText] = useState('');
   const [dragActive, setDragActive] = useState(false);
-  const [uploadStates, setUploadStates] = useState<Record<string, UploadState>>({});
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,34 +34,46 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
   const [uploadAttachment] = useUploadAssignmentAttachmentMutation();
   const { user } = useAppSelector((state) => state.auth);
 
-  // Derive profile_id from auth user object
+  // Derive student id from auth user object. Prefer explicit student fields if present.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const _authUser: any = user;
-  const profileIdFromAuth: string | undefined = _authUser?.profile_id;
+  // Prefer profile_id returned by login, fall back to other possible shapes
+  const studentIdFromAuth: string | undefined =
+    _authUser?.profile_id ||
+    _authUser?.student_id ||
+    _authUser?.profile?.id ||
+    _authUser?.student?.id ||
+    _authUser?.student_profile?.id ||
+    _authUser?.id;
 
-  console.log('Derived profile ID from auth:', profileIdFromAuth);
+  // Helpful debug during development; remove if verbose in production
+  console.log('Derived student ID from auth (preferred profile_id):', studentIdFromAuth);
 
-  // Handle final submission - create submission and upload all files
-  const handleFinalSubmit = async () => {
+  // Handle combined submission - Create submission and upload files
+  const handleSubmitAssignment = async () => {
     if (!submissionText.trim()) {
       toast.error('Please enter submission message');
+      return;
+    }
+
+    if (uploadedFiles.length === 0) {
+      toast.error('Please upload at least one file');
       return;
     }
 
     try {
       setIsSubmitting(true);
 
-      const profileId = profileIdFromAuth;
+      const studentId = studentIdFromAuth;
 
-      if (!profileId) {
-        toast.error('Profile ID not found in auth state. Please login again as student.');
+      if (!studentId) {
+        toast.error('Student ID not found in auth state. Please login again as student.');
         return;
       }
 
-      // Create submission with profile_id
       const submissionData: CreateSubmissionRequest = {
         assignment: assignmentId,
-        student: profileId, // Using profile_id from auth token
+        student: studentId,
         submission_text: submissionText,
         submitted_at: new Date().toISOString(),
         status: 'submitted',
@@ -77,38 +82,20 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       const response = await createSubmission(submissionData).unwrap();
       const submissionId = response.id;
 
-      // Upload all files if any
-      if (uploadedFiles.length > 0) {
-        for (const uploadedFile of uploadedFiles) {
-          const fileId = uploadedFile.id;
+      // Upload all files to the created submission
+      // NOTE: Backend serializer must include 'attachments' field for attachments to appear in GET response.
+      // Django: Add to AssignmentSubmissionSerializer: attachments = SubmissionAttachmentSerializer(many=True, read_only=True)
+      for (const uploadedFile of uploadedFiles) {
+        if (!uploadedFile.attachmentData) {
+          const formData = new FormData();
+          formData.append('assignment', assignmentId);
+          formData.append('submission', submissionId);
+          formData.append('attachment_type', 'submission');
+          formData.append('file_name', uploadedFile.fileName);
+          formData.append('file', uploadedFile.file);
+          formData.append('file_size', uploadedFile.fileSize.toString());
 
-          setUploadStates((prev) => ({
-            ...prev,
-            [fileId]: { uploading: true, progress: 50, error: null },
-          }));
-
-          try {
-            const formData = new FormData();
-            formData.append('assignment', assignmentId);
-            formData.append('submission', submissionId);
-            formData.append('attachment_type', 'submission');
-            formData.append('file_name', uploadedFile.fileName);
-            formData.append('file', uploadedFile.file);
-            formData.append('file_size', uploadedFile.fileSize.toString());
-
-            await uploadAttachment(formData).unwrap();
-
-            setUploadStates((prev) => ({
-              ...prev,
-              [fileId]: { uploading: false, progress: 100, error: null },
-            }));
-          } catch (error) {
-            console.error('Upload error:', error);
-            setUploadStates((prev) => ({
-              ...prev,
-              [fileId]: { uploading: false, progress: 0, error: 'Failed to upload' },
-            }));
-          }
+          await uploadAttachment(formData).unwrap();
         }
       }
 
@@ -123,6 +110,28 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  // Handle file selection (not upload yet, just add to list)
+  const addFileToList = useCallback((file: File): void => {
+    const fileId = `${file.name}-${file.size}-${Date.now()}`;
+
+    // Create preview for images
+    let preview: string | undefined;
+    if (file.type.startsWith('image/')) {
+      preview = URL.createObjectURL(file);
+    }
+
+    setUploadedFiles((prev) => [
+      ...prev,
+      {
+        id: fileId,
+        file,
+        fileName: file.name,
+        fileSize: file.size,
+        preview,
+      },
+    ]);
+  }, []);
 
   // Validate files
   const validateFiles = useCallback(
@@ -181,7 +190,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     [uploadedFiles],
   );
 
-  // Handle files - add them to queue for later upload
+  // Handle files
   const handleFiles = useCallback(
     (files: File[]) => {
       const { valid, errors } = validateFiles(files);
@@ -192,27 +201,12 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       }
 
       if (valid.length > 0) {
-        valid.forEach((file) => {
-          const fileId = `${file.name}-${file.size}-${Date.now()}`;
-          let preview: string | undefined;
-          if (file.type.startsWith('image/')) {
-            preview = URL.createObjectURL(file);
-          }
-
-          setUploadedFiles((prev) => [
-            ...prev,
-            {
-              id: fileId,
-              file,
-              fileName: file.name,
-              fileSize: file.size,
-              preview,
-            },
-          ]);
-        });
+        for (const file of valid) {
+          addFileToList(file);
+        }
       }
     },
-    [validateFiles],
+    [validateFiles, addFileToList],
   );
 
   // Drag handlers
@@ -276,14 +270,9 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
     }
   };
 
-  // Remove file from queue
+  // Remove uploaded file
   const removeFile = (fileId: string) => {
     setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
-    // Clean up object URL if it exists
-    const file = uploadedFiles.find((f) => f.id === fileId);
-    if (file?.preview) {
-      URL.revokeObjectURL(file.preview);
-    }
   };
 
   return (
@@ -291,6 +280,52 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       <style>{`
         .submission-step {
           padding: 1.5rem;
+        }
+        
+        .step-indicator {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-bottom: 2rem;
+        }
+        
+        .step-item {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+        }
+        
+        .step-circle {
+          width: 40px;
+          height: 40px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 600;
+          background: #e9ecef;
+          color: #6c757d;
+        }
+        
+        .step-circle.active {
+          background: #007bff;
+          color: white;
+        }
+        
+        .step-circle.completed {
+          background: #28a745;
+          color: white;
+        }
+        
+        .step-line {
+          width: 60px;
+          height: 2px;
+          background: #e9ecef;
+          margin: 0 1rem;
+        }
+        
+        .step-line.completed {
+          background: #28a745;
         }
         
         .file-upload-zone {
@@ -361,11 +396,12 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
       `}</style>
 
       <div className="submission-form">
+        {/* Combined Form */}
         <div className="submission-step">
           <h5 className="mb-3">Submit Your Assignment</h5>
 
           {/* Submission Message */}
-          <div className="mb-3">
+          <div className="mb-4">
             <label className="form-label">
               Submission Message <span className="text-danger">*</span>
             </label>
@@ -379,131 +415,98 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
           </div>
 
           {/* File Upload Section */}
-          <div className="mb-3">
-            <label className="form-label">Upload Files (Optional)</label>
-            {/* Upload Zone */}
-            <div
-              className={`file-upload-zone ${dragActive ? 'drag-active' : ''} mb-3`}
-              onDragEnter={handleDrag}
-              onDragLeave={handleDrag}
-              onDragOver={handleDrag}
-              onDrop={handleDrop}
-              onClick={() => document.getElementById('submission-file-input')?.click()}
-            >
-              <div className="upload-icon mb-3">
-                <i className="fas fa-cloud-upload-alt fa-3x text-primary"></i>
-              </div>
-              <h5 className="mb-2">Drop files here or click to browse</h5>
-              <p className="text-muted mb-0">
-                Supported formats: PDF, DOC, DOCX, TXT, JPG, JPEG, PNG, GIF
-              </p>
-              <p className="text-muted small">Maximum file size: 10MB | Maximum files: 5</p>
+          <div className="mb-4">
+            <label className="form-label">
+              Upload Files <span className="text-danger">*</span>
+            </label>
+            <div>
+              (
+              <div
+                className={`file-upload-zone ${dragActive ? 'drag-active' : ''} mb-3`}
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById('submission-file-input')?.click()}
+              >
+                <div className="upload-icon mb-2">
+                  <i className="fas fa-cloud-upload-alt fa-2x text-primary"></i>
+                </div>
+                <p className="mb-1">Drop files here or click to browse</p>
+                <p className="text-muted small mb-0">
+                  PDF, DOC, DOCX, TXT, JPG, JPEG, PNG, GIF | Max 10MB | Max 5 files
+                </p>
 
-              <input
-                id="submission-file-input"
-                type="file"
-                multiple
-                accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
-                onChange={handleFileInputChange}
-                className="hidden-input"
-                aria-label="Upload submission files"
-                title="Upload files"
-              />
+                <input
+                  id="submission-file-input"
+                  type="file"
+                  multiple
+                  accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif"
+                  onChange={handleFileInputChange}
+                  className="hidden-input"
+                  aria-label="Upload submission files"
+                  title="Upload files"
+                />
+              </div>
             </div>
-
-            {/* Uploaded Files List */}
-            {uploadedFiles.length > 0 && (
-              <div className="uploaded-files mb-3">
-                <h6 className="mb-3">
-                  <i className="fas fa-paperclip me-2"></i>
-                  Uploaded Files ({uploadedFiles.length}/5)
-                </h6>
-
-                {uploadedFiles.map((uploadedFile) => {
-                  const uploadState = uploadStates[uploadedFile.id];
-
-                  return (
-                    <div key={uploadedFile.id} className="file-item">
-                      <div className="file-icon">
-                        {uploadedFile.preview ? (
-                          <img
-                            src={uploadedFile.preview}
-                            alt={uploadedFile.fileName}
-                            className="file-preview-image"
-                          />
-                        ) : (
-                          <i
-                            className={`${getFileIcon(uploadedFile.fileName)} file-icon-large`}
-                          ></i>
-                        )}
-                      </div>
-
-                      <div className="file-info flex-grow-1">
-                        <div className="file-name fw-medium">{uploadedFile.fileName}</div>
-                        <div className="file-size text-muted small">
-                          {formatFileSize(uploadedFile.fileSize)}
-                        </div>
-
-                        {uploadState?.uploading && (
-                          <div className="progress progress-thin mt-1">
-                            <div
-                              className={`progress-bar progress-${
-                                Math.round(uploadState.progress / 10) * 10
-                              }`}
-                              role="progressbar"
-                              aria-label="Upload progress"
-                            ></div>
-                          </div>
-                        )}
-
-                        {uploadState?.error && (
-                          <div className="text-danger small mt-1">
-                            <i className="fas fa-exclamation-triangle me-1"></i>
-                            {uploadState.error}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="file-actions">
-                        {uploadState?.uploading ? (
-                          <div className="text-primary">
-                            <i className="fas fa-spinner fa-spin"></i>
-                          </div>
-                        ) : (
-                          <button
-                            type="button"
-                            className="btn btn-sm btn-outline-danger"
-                            onClick={() => removeFile(uploadedFile.id)}
-                            title="Remove file"
-                          >
-                            <i className="fas fa-times"></i>
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
           </div>
 
-          {/* Submit Button */}
+          {/* Uploaded Files List */}
+          {uploadedFiles.length > 0 && (
+            <div className="uploaded-files mb-3">
+              <h6 className="mb-3">
+                <i className="fas fa-paperclip me-2"></i>
+                Uploaded Files ({uploadedFiles.length}/5)
+              </h6>
+
+              {uploadedFiles.map((uploadedFile) => (
+                <div key={uploadedFile.id} className="file-item">
+                  <div className="file-icon">
+                    {uploadedFile.preview ? (
+                      <img
+                        src={uploadedFile.preview}
+                        alt={uploadedFile.fileName}
+                        className="file-preview-image"
+                      />
+                    ) : (
+                      <i className={`${getFileIcon(uploadedFile.fileName)} file-icon-large`}></i>
+                    )}
+                  </div>
+
+                  <div className="file-info flex-grow-1">
+                    <div className="file-name fw-medium">{uploadedFile.fileName}</div>
+                    <div className="file-size text-muted small">
+                      {formatFileSize(uploadedFile.fileSize)}
+                    </div>
+                  </div>
+
+                  <div className="file-actions">
+                    <button
+                      type="button"
+                      className="btn btn-sm btn-outline-danger"
+                      onClick={() => removeFile(uploadedFile.id)}
+                      title="Remove file"
+                    >
+                      <i className="fas fa-times"></i>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Submit Buttons */}
           <div className="d-flex gap-2 justify-content-end">
             {onCancel && (
-              <button
-                type="button"
-                className="btn btn-light"
-                onClick={onCancel}
-                disabled={isSubmitting}
-              >
+              <button type="button" className="btn btn-light" onClick={onCancel}>
                 Cancel
               </button>
             )}
             <button
               type="button"
               className="btn btn-success"
-              onClick={handleFinalSubmit}
-              disabled={isSubmitting}
+              onClick={handleSubmitAssignment}
+              disabled={isSubmitting || !submissionText.trim() || uploadedFiles.length === 0}
             >
               {isSubmitting ? (
                 <>
@@ -512,7 +515,7 @@ const SubmissionForm: React.FC<SubmissionFormProps> = ({
                 </>
               ) : (
                 <>
-                  <i className="fas fa-check me-2"></i>
+                  <i className="fas fa-paper-plane me-2"></i>
                   Submit Assignment
                 </>
               )}

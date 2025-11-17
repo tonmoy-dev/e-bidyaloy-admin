@@ -6,8 +6,6 @@ export interface AssignmentSubmission {
   student: string;
   student_name?: string;
   student_id?: string;
-  class_name?: string;
-  section_name?: string;
   submission_text: string;
   submitted_at: string;
   is_late?: boolean;

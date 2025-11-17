@@ -6,6 +6,7 @@ export const teacherSchema: yup.ObjectSchema<TeacherModel> = yup.object({
   first_name: yup.string().required('First Name is required'),
   last_name: yup.string().required('Last Name is required'),
   username: yup.string().required('username is required'),
+  password: yup.string().optional().min(6, 'Password must be at least 6 characters'),
   phone: yup.string().required('Phone number is required'),
   email: yup.string().email('Invalid email format').required('Email is required'),
   date_of_birth: yup.string().required('Date of birth is required'),

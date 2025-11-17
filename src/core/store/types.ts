@@ -27,6 +27,10 @@ export interface User {
   updated_at?: string;
   email_otp?: string | null;
   is_email_verified?: boolean;
+  // Student-specific fields
+  class_id?: string;
+  section_id?: string;
+  profile_id?: string;
 }
 
 export interface AuthState {

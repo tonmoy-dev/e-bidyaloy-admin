@@ -12,7 +12,6 @@ import { useTeachers } from '../hooks/useTeachers';
 import type { TeacherModel } from '../models/teacher.model';
 import TeacherModal from '../teacherModal';
 
-
 const TeacherList = () => {
   const routes = all_routes;
   const [currentPage, setCurrentPage] = useState(1);
@@ -70,7 +69,6 @@ const TeacherList = () => {
       overflow-y: auto;
     }
   `;
-   
 
   // API hooks
   const { isLoading, teachers, isError, error, refetch } = useTeachers(currentPage);
@@ -83,6 +81,7 @@ const TeacherList = () => {
     return teachers.results.map((teacher: TeacherModel) => ({
       id: `T${teacher.id?.toString().slice(0, 8) || '00000000'}`,
       name: `${teacher.user?.first_name || ''} ${teacher.user?.last_name || ''}`.trim() || 'N/A',
+      username: teacher.user?.username || 'N/A',
       class: teacher.department || 'N/A',
       subject: teacher.designation || 'N/A',
       email: teacher.user?.email || 'N/A',
@@ -171,6 +170,11 @@ const TeacherList = () => {
         </div>
       ),
       sorter: (a: TableData, b: TableData) => a.name.localeCompare(b.name),
+    },
+    {
+      title: 'Username',
+      dataIndex: 'username',
+      sorter: (a: TableData, b: TableData) => a.username.localeCompare(b.username),
     },
     {
       title: 'Department',

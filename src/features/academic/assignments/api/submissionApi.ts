@@ -1,5 +1,6 @@
 import { API_ENDPOINTS } from '../../../../core/constants/api';
 import { baseApi } from '../../../../core/services/baseApi';
+import type { PaginatedResponse } from '../models/assignment.model';
 import type {
   AssignmentSubmission,
   CreateSubmissionRequest,
@@ -21,17 +22,14 @@ export const submissionApi = baseApi.injectEndpoints({
     // Get submissions by assignment
     getSubmissionsByAssignment: builder.query<AssignmentSubmission[], string>({
       query: (assignmentId) => {
-        const endpoint = API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.LIST({ assignment: assignmentId });
+        const listConfig = API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.LIST({ assignment: assignmentId });
         return {
-          url: endpoint.url,
-          method: endpoint.method,
-          params: endpoint.params, // Include params for query string
+          url: listConfig.url,
+          method: listConfig.method,
+          params: listConfig.params,
         };
       },
-      // Transform paginated response to extract results array
-      transformResponse: (response: { results: AssignmentSubmission[] }) => {
-        return response.results || [];
-      },
+      transformResponse: (response: PaginatedResponse<AssignmentSubmission>) => response.results,
       providesTags: ['Assignment'],
     }),
 
@@ -43,6 +41,28 @@ export const submissionApi = baseApi.injectEndpoints({
       }),
       providesTags: ['Assignment'],
     }),
+
+    // Delete submission
+    deleteSubmission: builder.mutation<void, string>({
+      query: (id) => ({
+        url: API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.DELETE(id).url,
+        method: API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.DELETE(id).method,
+      }),
+      invalidatesTags: ['Assignment'],
+    }),
+
+    // Update submission (for grading)
+    updateSubmission: builder.mutation<
+      AssignmentSubmission,
+      { id: string; data: Partial<AssignmentSubmission> }
+    >({
+      query: ({ id, data }) => ({
+        url: API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.PARTIAL_UPDATE(id).url,
+        method: API_ENDPOINTS.ASSIGNMENT_SUBMISSIONS.PARTIAL_UPDATE(id).method,
+        body: data,
+      }),
+      invalidatesTags: ['Assignment'],
+    }),
   }),
 });
 
@@ -50,4 +70,6 @@ export const {
   useCreateSubmissionMutation,
   useGetSubmissionsByAssignmentQuery,
   useGetSubmissionByIdQuery,
+  useDeleteSubmissionMutation,
+  useUpdateSubmissionMutation,
 } = submissionApi;

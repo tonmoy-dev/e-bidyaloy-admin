@@ -123,33 +123,33 @@ const Assignments = () => {
     {
       title: 'Action',
       align: 'center',
-      render: (record: AssignmentModel) => (
+      render: (record: TableData) => (
         <>
-          <div className="d-flex align-items-center gap-2 justify-content-center">
+          <div className="d-flex gap-2 justify-content-center">
             <DataTableColumnActions
               onEditButtonClick={() => {
-                setSelectedId(record?.id ?? null);
+                setSelectedId(record?.id);
                 setActiveModal('edit');
               }}
               onViewButtonClick={() => {
-                setSelectedId(record?.id ?? null);
+                setSelectedId(record?.id);
                 setActiveModal('view');
               }}
               onDeleteButtonClick={() => {
-                setSelectedId(record?.id ?? null);
+                setSelectedId(record?.id);
                 setActiveModal('delete');
               }}
             />
             <button
-              type="button"
-              className="btn btn-sm btn-primary"
+              className="btn btn-sm btn-success"
+              title="Grade Assignment"
               onClick={() => {
-                setSelectedId(record?.id ?? null);
-                setActiveModal('grade' as ModalType);
+                setSelectedId(record?.id);
+                setActiveModal('grade');
               }}
-              title="Grade Submissions"
             >
-              <i className="fas fa-graduation-cap"></i>
+              <i className="fas fa-award me-1"></i>
+              Grade
             </button>
           </div>
         </>
@@ -356,6 +356,25 @@ const Assignments = () => {
           />
         )}
 
+        {/* Grade Submissions Modal */}
+        {assignmentDetails?.id && (
+          <DataModal
+            show={activeModal === 'grade'}
+            onClose={() => {
+              setActiveModal(null);
+              setSelectedId(null);
+            }}
+            size="xl"
+            modalTitle="Grade Submissions"
+            body={
+              <GradeSubmissionsModal
+                assignmentData={assignmentDetails}
+                onClose={() => setActiveModal(null)}
+              />
+            }
+          />
+        )}
+
         {/* Delete Modal */}
         <DeleteConfirmationModal
           show={activeModal === MODAL_TYPE.DELETE}
@@ -367,20 +386,6 @@ const Assignments = () => {
           title="Delete Assignment"
           message="Do you really want to delete this assignment? This action cannot be undone."
         />
-
-        {/* Grade Submissions Modal */}
-        {assignmentDetails?.id && (activeModal as string) === 'grade' && (
-          <DataModal
-            show={true}
-            onClose={() => {
-              setActiveModal(null);
-              setSelectedId(null);
-            }}
-            size="xl"
-            modalTitle={`Grade Submissions - ${assignmentDetails?.title}`}
-            body={<GradeSubmissionsModal assignmentData={assignmentDetails} />}
-          />
-        )}
       </>
     </div>
   );

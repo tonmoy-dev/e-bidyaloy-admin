@@ -1,33 +1,78 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
-import { useGetSubmissionsByAssignmentQuery } from '../api/submissionApi';
+import {
+  useGetSubmissionsByAssignmentQuery,
+  useUpdateSubmissionMutation,
+} from '../api/submissionApi';
 import type { AssignmentModel } from '../models/assignment.model';
 
 interface GradeSubmissionsModalProps {
   assignmentData: AssignmentModel;
+  onClose: () => void;
 }
 
-const GradeSubmissionsModal = ({ assignmentData }: GradeSubmissionsModalProps) => {
-  const [selectedSubmission, setSelectedSubmission] = useState<string | null>(null);
+const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModalProps) => {
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
+  const [marksObtained, setMarksObtained] = useState('');
+  const [feedback, setFeedback] = useState('');
+  const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(null);
 
   // Fetch submissions for this assignment
-  const { data: submissions, isLoading } = useGetSubmissionsByAssignmentQuery(
+  const { data: submissions = [], isLoading } = useGetSubmissionsByAssignmentQuery(
     assignmentData?.id || '',
-    {
-      skip: !assignmentData?.id,
-    },
+    { skip: !assignmentData?.id },
   );
 
-  // Format file size
-  const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const [updateSubmission, { isLoading: isUpdating }] = useUpdateSubmissionMutation();
+
+  // Get logged-in user info
+  const userStr = localStorage.getItem('user');
+  const user = userStr ? JSON.parse(userStr) : null;
+  const gradedBy = user?.profile_id || user?.id;
+  const gradedByName = user?.name || user?.username || 'Unknown';
+
+  const handleGradeSubmission = async (submissionId: string) => {
+    if (!marksObtained) {
+      toast.error('Please enter marks obtained');
+      return;
+    }
+
+    const marks = parseFloat(marksObtained);
+    const totalMarks = parseFloat(assignmentData?.total_marks?.toString() || '0');
+
+    if (marks > totalMarks) {
+      toast.error(`Marks cannot exceed total marks (${totalMarks})`);
+      return;
+    }
+
+    try {
+      const percentage = totalMarks > 0 ? (marks / totalMarks) * 100 : 0;
+
+      await updateSubmission({
+        id: submissionId,
+        data: {
+          marks_obtained: marksObtained,
+          feedback: feedback || null,
+          graded_by: gradedBy,
+          graded_by_name: gradedByName,
+          graded_at: new Date().toISOString(),
+          status: 'graded',
+          percentage: percentage.toFixed(2),
+        },
+      }).unwrap();
+
+      toast.success('Submission graded successfully');
+
+      // Reset form
+      setSelectedSubmissionId(null);
+      setMarksObtained('');
+      setFeedback('');
+    } catch (error) {
+      console.error('Failed to grade submission:', error);
+      toast.error('Failed to grade submission');
+    }
   };
 
-  // Get file icon
   const getFileIcon = (fileName: string): string => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
@@ -48,242 +93,330 @@ const GradeSubmissionsModal = ({ assignmentData }: GradeSubmissionsModalProps) =
     }
   };
 
-  // Get submission attachments
-  const getSubmissionAttachments = (submissionId: string) => {
-    return (
-      assignmentData?.attachments?.filter(
-        (att) => att.attachment_type === 'submission' && att.submission === submissionId,
-      ) || []
-    );
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   return (
     <>
-      {isLoading ? (
-        <div className="text-center p-4">
-          <div className="spinner-border" role="status">
-            <span className="visually-hidden">Loading...</span>
-          </div>
-        </div>
-      ) : submissions && submissions.length > 0 ? (
-        <div className="row">
-          {submissions.map((submission) => {
-            const submissionAttachments = getSubmissionAttachments(submission.id);
+      <style>{`
+        .submission-card {
+          transition: all 0.2s ease;
+          border-left: 4px solid transparent;
+        }
+        
+        .submission-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          border-left-color: #0d6efd;
+        }
+        
+        .submission-card.graded {
+          border-left-color: #198754;
+        }
+        
+        .attachment-card {
+          transition: all 0.2s ease;
+        }
+        
+        .attachment-card:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .attachment-icon-wrapper {
+          width: 40px;
+          height: 40px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f8f9fa;
+          border-radius: 0.375rem;
+        }
+      `}</style>
 
-            return (
-              <div key={submission.id} className="col-md-12 mb-4">
-                <div
-                  className={`card border ${
-                    selectedSubmission === submission.id ? 'border-primary shadow' : 'border-light'
-                  }`}
-                >
-                  <div className="card-header bg-light">
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="d-flex align-items-center">
-                        <div className="me-3">
-                          <div className="avatar avatar-md">
-                            <span className="avatar-title bg-primary text-white rounded-circle fw-bold">
-                              {submission.student_name?.charAt(0) || 'S'}
-                            </span>
-                          </div>
-                        </div>
-                        <div>
-                          <h6 className="mb-0">{submission.student_name || 'Unknown Student'}</h6>
-                          <div className="text-muted small">
-                            <span className="me-3">
-                              <i className="fas fa-id-card me-1"></i>
-                              Student ID: {submission.student_id || 'N/A'}
-                            </span>
-                            <span className="me-3">
-                              <i className="fas fa-chalkboard-teacher me-1"></i>
-                              Class: {submission.class_name || 'N/A'}
-                            </span>
-                            <span>
-                              <i className="fas fa-users me-1"></i>
-                              Section: {submission.section_name || 'N/A'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="d-flex align-items-center gap-2">
-                        <span
-                          className={`badge ${
-                            submission.status === 'graded'
-                              ? 'badge-soft-success'
-                              : submission.status === 'submitted'
-                              ? 'badge-soft-info'
-                              : 'badge-soft-warning'
-                          }`}
-                        >
-                          <i
-                            className={`fas ${
-                              submission.status === 'graded'
-                                ? 'fa-check-circle'
-                                : submission.status === 'submitted'
-                                ? 'fa-paper-plane'
-                                : 'fa-clock'
-                            } me-1`}
-                          ></i>
-                          {submission.status}
-                        </span>
-                        {submission.marks_obtained !== null &&
-                          submission.marks_obtained !== undefined && (
-                            <span className="badge bg-primary">
-                              {submission.marks_obtained} / {assignmentData?.total_marks}
-                            </span>
-                          )}
-                      </div>
+      <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+        {isLoading ? (
+          <div className="text-center py-4">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : submissions.length > 0 ? (
+          <>
+            <div className="mb-3">
+              <div className="alert alert-info">
+                <i className="fas fa-info-circle me-2"></i>
+                <strong>Assignment:</strong> {assignmentData?.title} |
+                <strong className="ms-2">Total Marks:</strong> {assignmentData?.total_marks}
+              </div>
+            </div>
+
+            {submissions.map((submission) => (
+              <div
+                key={submission.id}
+                className={`card mb-3 submission-card ${
+                  submission.status === 'graded' ? 'graded' : ''
+                }`}
+              >
+                <div className="card-body">
+                  <div className="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                      <h6 className="mb-1">
+                        <i className="fas fa-user me-2"></i>
+                        {submission.student_name || 'Unknown Student'}
+                      </h6>
+                      {submission.student_id && (
+                        <small className="text-muted">ID: {submission.student_id}</small>
+                      )}
+                    </div>
+                    <div className="text-end">
+                      <span
+                        className={`badge ${
+                          submission.status === 'graded'
+                            ? 'bg-success'
+                            : submission.status === 'late'
+                            ? 'bg-warning'
+                            : 'bg-info'
+                        }`}
+                      >
+                        {submission.status}
+                      </span>
+                      {submission.is_late && (
+                        <small className="d-block text-danger mt-1">
+                          <i className="fas fa-clock me-1"></i>
+                          Late Submission
+                        </small>
+                      )}
                     </div>
                   </div>
-                  <div className="card-body">
-                    <div className="row">
-                      {/* Submission Details */}
-                      <div className="col-md-6 mb-3">
-                        <h6 className="text-muted mb-2">
-                          <i className="fas fa-info-circle me-2"></i>
-                          Submission Details
-                        </h6>
-                        <div className="bg-light p-3 rounded">
-                          <div className="mb-2">
-                            <small className="text-muted">Submitted At:</small>
-                            <div className="fw-medium">
-                              {submission.submitted_at
-                                ? new Date(submission.submitted_at).toLocaleString()
-                                : 'N/A'}
-                            </div>
-                          </div>
-                          {submission.graded_at && (
-                            <div className="mb-2">
-                              <small className="text-muted">Graded At:</small>
-                              <div className="fw-medium">
-                                {new Date(submission.graded_at).toLocaleString()}
-                              </div>
-                            </div>
+
+                  <div className="row g-2 mb-3">
+                    <div className="col-md-6">
+                      <small className="text-muted d-block">Submitted Date & Time</small>
+                      <strong>
+                        {submission.submitted_at
+                          ? new Date(submission.submitted_at).toLocaleString()
+                          : 'N/A'}
+                      </strong>
+                    </div>
+                    {submission.marks_obtained !== null && (
+                      <div className="col-md-6">
+                        <small className="text-muted d-block">Current Grade</small>
+                        <strong className="text-primary">
+                          {submission.marks_obtained} / {assignmentData?.total_marks}
+                          {submission.percentage !== null && (
+                            <span className="ms-2 text-muted">({submission.percentage}%)</span>
                           )}
-                        </div>
+                        </strong>
                       </div>
+                    )}
+                  </div>
 
-                      {/* Submission Message */}
-                      {submission.submission_text && (
-                        <div className="col-md-6 mb-3">
-                          <h6 className="text-muted mb-2">
-                            <i className="fas fa-comment me-2"></i>
-                            Student's Message
-                          </h6>
-                          <div className="bg-light p-3 rounded">
-                            <p className="mb-0 submission-text">{submission.submission_text}</p>
-                          </div>
-                        </div>
-                      )}
+                  {submission.submission_text && (
+                    <div className="mb-3">
+                      <small className="text-muted d-block mb-1">Submission Message</small>
+                      <p className="mb-0 bg-light p-2 rounded">{submission.submission_text}</p>
+                    </div>
+                  )}
 
-                      {/* Teacher Feedback */}
-                      {submission.feedback && (
-                        <div className="col-md-12 mb-3">
-                          <h6 className="text-muted mb-2">
-                            <i className="fas fa-comments me-2"></i>
-                            Your Feedback
-                          </h6>
-                          <div className="bg-success bg-opacity-10 border border-success p-3 rounded">
-                            <p className="mb-0 submission-text">{submission.feedback}</p>
-                          </div>
-                        </div>
-                      )}
+                  {/* Attachments */}
+                  {submission.attachments && submission.attachments.length > 0 && (
+                    <div className="mb-3">
+                      <button
+                        className="btn btn-sm btn-outline-secondary mb-2"
+                        onClick={() =>
+                          setExpandedSubmissionId(
+                            expandedSubmissionId === submission.id ? null : submission.id,
+                          )
+                        }
+                      >
+                        <i
+                          className={`fas fa-chevron-${
+                            expandedSubmissionId === submission.id ? 'up' : 'down'
+                          } me-2`}
+                        ></i>
+                        {expandedSubmissionId === submission.id ? 'Hide' : 'Show'} Attachments (
+                        {submission.attachments.length})
+                      </button>
 
-                      {/* Submitted Files */}
-                      {submissionAttachments.length > 0 && (
-                        <div className="col-md-12">
-                          <h6 className="text-muted mb-2">
-                            <i className="fas fa-paperclip me-2"></i>
-                            Submitted Files ({submissionAttachments.length})
-                          </h6>
-                          <div className="row">
-                            {submissionAttachments.map((attachment) => (
-                              <div key={attachment.id} className="col-md-6 mb-2">
-                                <div className="card border-0 bg-light">
-                                  <div className="card-body p-2">
-                                    <div className="d-flex align-items-center">
-                                      <div className="me-2">
-                                        <i
-                                          className={`${getFileIcon(attachment.file_name)} fs-4`}
-                                        ></i>
-                                      </div>
-                                      <div className="flex-grow-1">
-                                        <div
-                                          className="small text-truncate"
-                                          title={attachment.file_name}
-                                        >
-                                          {attachment.file_name}
-                                        </div>
-                                        <div className="text-muted" style={{ fontSize: '0.75rem' }}>
-                                          {formatFileSize(attachment.file_size)}
-                                        </div>
-                                      </div>
-                                      <div className="d-flex gap-1">
-                                        {attachment.file && (
+                      {expandedSubmissionId === submission.id && (
+                        <div className="row g-2">
+                          {submission.attachments.map((attachment) => (
+                            <div key={attachment.id} className="col-md-6">
+                              <div className="card border-0 shadow-sm attachment-card">
+                                <div className="card-body p-2">
+                                  <div className="d-flex align-items-center">
+                                    <div className="attachment-icon-wrapper me-2">
+                                      <i className={getFileIcon(attachment.file_name)}></i>
+                                    </div>
+                                    <div className="flex-grow-1 overflow-hidden">
+                                      <h6
+                                        className="mb-0 text-truncate small"
+                                        title={attachment.file_name}
+                                      >
+                                        {attachment.file_name}
+                                      </h6>
+                                      <small className="text-muted">
+                                        {formatFileSize(attachment.file_size)}
+                                      </small>
+                                    </div>
+                                    <div className="d-flex gap-1">
+                                      {attachment.file && (
+                                        <>
                                           <a
                                             href={attachment.file}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="btn btn-sm btn-outline-primary"
+                                            className="btn btn-xs btn-outline-primary"
                                             title="View"
                                           >
                                             <i className="fas fa-eye"></i>
                                           </a>
-                                        )}
-                                        {attachment.file && (
                                           <a
                                             href={attachment.file}
                                             download={attachment.file_name}
-                                            className="btn btn-sm btn-outline-secondary"
+                                            className="btn btn-xs btn-outline-secondary"
                                             title="Download"
                                           >
                                             <i className="fas fa-download"></i>
                                           </a>
-                                        )}
-                                      </div>
+                                        </>
+                                      )}
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            ))}
-                          </div>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
+                  )}
 
-                    {/* Grade Button */}
-                    <div className="mt-3 text-end">
+                  {/* Grading Form */}
+                  {selectedSubmissionId === submission.id ? (
+                    <div className="border-top pt-3">
+                      <h6 className="mb-3">
+                        <i className="fas fa-edit me-2"></i>
+                        Grade Submission
+                      </h6>
+                      <div className="row g-3">
+                        <div className="col-md-6">
+                          <label className="form-label">
+                            Marks Obtained <span className="text-danger">*</span>
+                          </label>
+                          <input
+                            type="number"
+                            className="form-control"
+                            placeholder={`Enter marks (Max: ${assignmentData?.total_marks})`}
+                            value={marksObtained}
+                            onChange={(e) => setMarksObtained(e.target.value)}
+                            min="0"
+                            max={assignmentData?.total_marks}
+                            step="0.5"
+                          />
+                        </div>
+                        <div className="col-md-12">
+                          <label className="form-label">Feedback</label>
+                          <textarea
+                            className="form-control"
+                            placeholder="Enter feedback for the student..."
+                            value={feedback}
+                            onChange={(e) => setFeedback(e.target.value)}
+                            rows={3}
+                          />
+                        </div>
+                        <div className="col-md-12">
+                          <div className="d-flex gap-2">
+                            <button
+                              className="btn btn-primary"
+                              onClick={() => handleGradeSubmission(submission.id)}
+                              disabled={isUpdating}
+                            >
+                              {isUpdating ? (
+                                <>
+                                  <span
+                                    className="spinner-border spinner-border-sm me-2"
+                                    role="status"
+                                  ></span>
+                                  Saving...
+                                </>
+                              ) : (
+                                <>
+                                  <i className="fas fa-save me-2"></i>
+                                  Save Grade
+                                </>
+                              )}
+                            </button>
+                            <button
+                              className="btn btn-secondary"
+                              onClick={() => {
+                                setSelectedSubmissionId(null);
+                                setMarksObtained('');
+                                setFeedback('');
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="d-flex gap-2">
                       <button
-                        type="button"
-                        className="btn btn-primary"
+                        className="btn btn-sm btn-primary"
                         onClick={() => {
-                          setSelectedSubmission(submission.id);
-                          toast.info('Grading feature coming soon!');
+                          setSelectedSubmissionId(submission.id);
+                          setMarksObtained(submission.marks_obtained?.toString() || '');
+                          setFeedback(submission.feedback || '');
                         }}
                       >
                         <i className="fas fa-edit me-2"></i>
-                        {submission.status === 'graded' ? 'Update Grade' : 'Grade Submission'}
+                        {submission.marks_obtained !== null ? 'Update Grade' : 'Grade Submission'}
                       </button>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Existing Grade Info */}
+                  {submission.marks_obtained !== null && submission.graded_by_name && (
+                    <div className="mt-3 pt-3 border-top">
+                      <small className="text-muted">
+                        <i className="fas fa-user-check me-2"></i>
+                        Graded by <strong>{submission.graded_by_name}</strong>
+                        {submission.graded_at &&
+                          ` on ${new Date(submission.graded_at).toLocaleString()}`}
+                      </small>
+                      {submission.feedback && (
+                        <div className="mt-2">
+                          <small className="text-muted d-block mb-1">Feedback:</small>
+                          <p className="mb-0 bg-light p-2 rounded small">{submission.feedback}</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="alert alert-warning">
-          <i className="fas fa-exclamation-triangle me-2"></i>
-          No submissions found for this assignment yet.
-        </div>
-      )}
+            ))}
+          </>
+        ) : (
+          <div className="alert alert-info">
+            <i className="fas fa-info-circle me-2"></i>
+            No submissions yet for this assignment.
+          </div>
+        )}
+      </div>
 
-      <style>{`
-        .submission-text {
-          white-space: pre-wrap;
-          word-wrap: break-word;
-        }
-      `}</style>
+      <div className="modal-footer">
+        <button type="button" className="btn btn-secondary" onClick={onClose}>
+          Close
+        </button>
+      </div>
     </>
   );
 };

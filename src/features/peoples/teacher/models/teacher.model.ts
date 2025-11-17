@@ -48,6 +48,7 @@ export interface TeacherModel {
   organization_name: string;
   age?: number;
   specializations?: any[];
+  password?: string;
   languages_known?: string[];
   created_at?: string;
   updated_at?: string;
