@@ -1,6 +1,6 @@
 import { Modal } from 'react-bootstrap';
 
-export type ModalType = 'add' | 'edit' | 'view' | 'delete' | null;
+export type ModalType = 'add' | 'edit' | 'view' | 'delete' | 'grade' | null;
 
 interface DataModalProps {
   show: boolean;

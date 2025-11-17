@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { toast } from 'react-toastify';
 import {
+  useDeleteSubmissionMutation,
   useGetSubmissionsByAssignmentQuery,
   useUpdateSubmissionMutation,
 } from '../api/submissionApi';
@@ -16,6 +17,10 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
   const [marksObtained, setMarksObtained] = useState('');
   const [feedback, setFeedback] = useState('');
   const [expandedSubmissionId, setExpandedSubmissionId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [submissionToDelete, setSubmissionToDelete] = useState<string | null>(null);
 
   // Fetch submissions for this assignment
   const { data: submissions = [], isLoading } = useGetSubmissionsByAssignmentQuery(
@@ -24,12 +29,34 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
   );
 
   const [updateSubmission, { isLoading: isUpdating }] = useUpdateSubmissionMutation();
+  const [deleteSubmission, { isLoading: isDeleting }] = useDeleteSubmissionMutation();
 
   // Get logged-in user info
   const userStr = localStorage.getItem('user');
   const user = userStr ? JSON.parse(userStr) : null;
   const gradedBy = user?.profile_id || user?.id;
   const gradedByName = user?.name || user?.username || 'Unknown';
+
+  // Filter submissions based on search and selected student
+  const filteredSubmissions = submissions.filter((submission) => {
+    if (selectedStudentId) {
+      return submission.student === selectedStudentId;
+    }
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      const matchesName = submission.student_name?.toLowerCase().includes(query);
+      const matchesId = submission.student_id?.toLowerCase().includes(query);
+      return matchesName || matchesId;
+    }
+    return true;
+  });
+
+  // Get unique students for dropdown
+  const studentsInDropdown = submissions.map((sub) => ({
+    id: sub.student,
+    name: sub.student_name || 'Unknown',
+    studentId: sub.student_id || 'N/A',
+  }));
 
   const handleGradeSubmission = async (submissionId: string) => {
     if (!marksObtained) {
@@ -57,7 +84,7 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
           graded_by_name: gradedByName,
           graded_at: new Date().toISOString(),
           status: 'graded',
-          percentage: percentage.toFixed(2),
+          percentage: parseFloat(percentage.toFixed(2)),
         },
       }).unwrap();
 
@@ -70,6 +97,17 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
     } catch (error) {
       console.error('Failed to grade submission:', error);
       toast.error('Failed to grade submission');
+    }
+  };
+
+  const handleDeleteSubmission = async (submissionId: string) => {
+    try {
+      await deleteSubmission(submissionId).unwrap();
+      toast.success('Submission deleted successfully');
+      setSubmissionToDelete(null);
+    } catch (error) {
+      console.error('Failed to delete submission:', error);
+      toast.error('Failed to delete submission');
     }
   };
 
@@ -137,9 +175,43 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
           background: #f8f9fa;
           border-radius: 0.375rem;
         }
+
+        .grade-modal-body {
+          max-height: 70vh !important;
+          min-height: 70vh !important;
+          overflow-y: auto !important;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .grade-modal-body .row:first-child {
+          flex-shrink: 0;
+        }
+
+        .grade-modal-content {
+          flex: 1;
+          overflow-y: auto;
+        }
+
+        .grade-dropdown {
+          max-height: 200px !important;
+          overflow-y: auto !important;
+          z-index: 1050 !important;
+        }
+
+        .delete-modal-overlay {
+          display: block;
+          background-color: rgba(0, 0, 0, 0.5);
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          z-index: 2000;
+        }
       `}</style>
 
-      <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+      <div className="modal-body grade-modal-body">
         {isLoading ? (
           <div className="text-center py-4">
             <div className="spinner-border text-primary" role="status">
@@ -147,16 +219,122 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
             </div>
           </div>
         ) : submissions.length > 0 ? (
-          <>
-            <div className="mb-3">
-              <div className="alert alert-info">
-                <i className="fas fa-info-circle me-2"></i>
-                <strong>Assignment:</strong> {assignmentData?.title} |
-                <strong className="ms-2">Total Marks:</strong> {assignmentData?.total_marks}
+          <div className="grade-modal-content">
+            {/* Header Row with Assignment Info and Search Filter */}
+            <div className="row mb-4">
+              {/* Left: Assignment Details */}
+              <div className="col-md-8">
+                <div className="card border-0 bg-light">
+                  <div className="card-body p-3">
+                    <h5 className="mb-2">
+                      <i className="fas fa-file-alt me-2 text-primary"></i>
+                      {assignmentData?.title}
+                    </h5>
+                    <div className="mb-2">
+                      <small className="text-muted d-block mb-1">Instructions:</small>
+                      <p className="mb-0 text-muted small">
+                        {assignmentData?.instructions || 'No instructions provided'}
+                      </p>
+                    </div>
+                    <div className="d-flex align-items-center gap-3">
+                      <span className="badge bg-primary">
+                        <i className="fas fa-star me-1"></i>
+                        Total Marks: {assignmentData?.total_marks}
+                      </span>
+                      <span className="badge bg-info">
+                        <i className="fas fa-users me-1"></i>
+                        {submissions.length} Submission{submissions.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right: Search Filter Dropdown */}
+              <div className="col-md-4">
+                <div className="card border-0 bg-light">
+                  <div className="card-body p-3">
+                    <label className="form-label small fw-bold mb-2">
+                      <i className="fas fa-filter me-2"></i>
+                      Filter by Student
+                    </label>
+                    <div className="position-relative">
+                      <input
+                        type="text"
+                        className="form-control form-control-sm"
+                        placeholder="Search by name or ID..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onFocus={() => setShowDropdown(true)}
+                        onBlur={() => setTimeout(() => setShowDropdown(false), 200)}
+                      />
+                      <i className="fas fa-search position-absolute top-50 end-0 translate-middle-y me-3 text-muted"></i>
+
+                      {/* Dropdown List */}
+                      {showDropdown && studentsInDropdown.length > 0 && (
+                        <div className="position-absolute w-100 mt-1 bg-white border rounded shadow-sm grade-dropdown">
+                          <div className="list-group list-group-flush">
+                            <button
+                              className={`list-group-item list-group-item-action small ${
+                                !selectedStudentId ? 'active' : ''
+                              }`}
+                              onClick={() => {
+                                setSelectedStudentId(null);
+                                setSearchQuery('');
+                              }}
+                            >
+                              <i className="fas fa-users me-2"></i>
+                              All Students ({submissions.length})
+                            </button>
+                            {studentsInDropdown
+                              .filter((student) => {
+                                if (!searchQuery.trim()) return true;
+                                const query = searchQuery.toLowerCase();
+                                return (
+                                  student.name.toLowerCase().includes(query) ||
+                                  student.studentId.toLowerCase().includes(query)
+                                );
+                              })
+                              .map((student) => (
+                                <button
+                                  key={student.id}
+                                  className={`list-group-item list-group-item-action small ${
+                                    selectedStudentId === student.id ? 'active' : ''
+                                  }`}
+                                  onClick={() => {
+                                    setSelectedStudentId(student.id);
+                                    setSearchQuery(`${student.name} - ${student.studentId}`);
+                                  }}
+                                >
+                                  <i className="fas fa-user me-2"></i>
+                                  {student.name} -{' '}
+                                  <span className="text-muted">{student.studentId}</span>
+                                </button>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {selectedStudentId && (
+                      <button
+                        className="btn btn-sm btn-outline-secondary mt-2 w-100"
+                        onClick={() => {
+                          setSelectedStudentId(null);
+                          setSearchQuery('');
+                        }}
+                      >
+                        <i className="fas fa-times me-1"></i>
+                        Clear Filter
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {submissions.map((submission) => (
+            {/* Submission Cards */}
+            {filteredSubmissions.map((submission) => (
               <div
                 key={submission.id}
                 className={`card mb-3 submission-card ${
@@ -192,6 +370,14 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
                           Late Submission
                         </small>
                       )}
+                      <button
+                        className="btn btn-sm btn-danger mt-2"
+                        onClick={() => setSubmissionToDelete(submission.id)}
+                        title="Delete Submission"
+                      >
+                        <i className="fas fa-trash me-1"></i>
+                        Delete
+                      </button>
                     </div>
                   </div>
 
@@ -403,7 +589,15 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
                 </div>
               </div>
             ))}
-          </>
+
+            {/* No results after filtering */}
+            {filteredSubmissions.length === 0 && (
+              <div className="alert alert-warning">
+                <i className="fas fa-exclamation-triangle me-2"></i>
+                No submissions found matching your search criteria.
+              </div>
+            )}
+          </div>
         ) : (
           <div className="alert alert-info">
             <i className="fas fa-info-circle me-2"></i>
@@ -417,6 +611,69 @@ const GradeSubmissionsModal = ({ assignmentData, onClose }: GradeSubmissionsModa
           Close
         </button>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {submissionToDelete && (
+        <div className="delete-modal-overlay" onClick={() => setSubmissionToDelete(null)}>
+          <div className="modal fade show d-block" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <h5 className="modal-title">
+                    <i className="fas fa-exclamation-triangle me-2 text-danger"></i>
+                    Confirm Deletion
+                  </h5>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    onClick={() => setSubmissionToDelete(null)}
+                    title="Close modal"
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <p className="mb-2">
+                    <strong>Are you sure you want to delete this submission?</strong>
+                  </p>
+                  <p className="text-muted small">
+                    This action cannot be undone. The submission and all its attachments will be
+                    permanently deleted.
+                  </p>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={() => setSubmissionToDelete(null)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-danger"
+                    onClick={() => handleDeleteSubmission(submissionToDelete)}
+                    disabled={isDeleting}
+                  >
+                    {isDeleting ? (
+                      <>
+                        <span
+                          className="spinner-border spinner-border-sm me-2"
+                          role="status"
+                        ></span>
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <i className="fas fa-trash me-1"></i>
+                        Delete Submission
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

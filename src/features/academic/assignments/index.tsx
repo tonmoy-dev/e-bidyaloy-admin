@@ -68,6 +68,11 @@ const Assignments = () => {
       render: (record: AssignmentModel) => record?.class_name || 'N/A',
     },
     {
+      title: 'Section',
+      align: 'center',
+      render: (record: AssignmentModel) => record?.section_name || 'N/A',
+    },
+    {
       title: 'Subject',
       align: 'center',
       render: (record: AssignmentModel) => record?.subject_name || 'N/A',
@@ -145,7 +150,7 @@ const Assignments = () => {
               title="Grade Assignment"
               onClick={() => {
                 setSelectedId(record?.id);
-                setActiveModal('grade');
+                setActiveModal(MODAL_TYPE.GRADE as ModalType);
               }}
             >
               <i className="fas fa-award me-1"></i>
@@ -359,7 +364,7 @@ const Assignments = () => {
         {/* Grade Submissions Modal */}
         {assignmentDetails?.id && (
           <DataModal
-            show={activeModal === 'grade'}
+            show={activeModal === MODAL_TYPE.GRADE}
             onClose={() => {
               setActiveModal(null);
               setSelectedId(null);
