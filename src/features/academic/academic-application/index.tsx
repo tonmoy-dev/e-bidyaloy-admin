@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
+import { useAppSelector } from '../../../core/store';
 import PageHeader from '../../../shared/components/layout/PageHeader';
 import DeleteConfirmationModal from '../../../shared/components/modals/DeleteConfirmationModal';
 import DataTable from '../../../shared/components/table/DataTable';
@@ -27,6 +28,9 @@ const AcademicApplication = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [selectedType, setSelectedType] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('');
+
+  // Get user from Redux store
+  const { user } = useAppSelector((state) => state.auth);
 
   const { applications } = useApplication();
   const data = useMemo(() => applications?.results ?? [], [applications]);
@@ -82,6 +86,13 @@ const AcademicApplication = () => {
           <span className="badge badge-soft-danger d-inline-flex align-items-center">
             <i className="ti ti-circle-filled fs-5 me-1"></i>
             Rejected
+          </span>
+        );
+      case 'cancelled':
+        return (
+          <span className="badge badge-soft-danger d-inline-flex align-items-center">
+            <i className="ti ti-circle-filled fs-5 me-1"></i>
+            Cancelled
           </span>
         );
       default:
@@ -167,7 +178,7 @@ const AcademicApplication = () => {
       render: (record: TableData) => (
         <>
           <div className="d-flex align-items-center justify-content-center gap-2">
-            <button
+            {/* <button
               className="btn btn-sm btn-icon btn-light"
               onClick={() => {
                 setSelectedId(record?.id);
@@ -176,7 +187,7 @@ const AcademicApplication = () => {
               title="View"
             >
               <i className="ti ti-eye" />
-            </button>
+            </button> */}
 
             {record?.status === 'pending' && (
               <>
@@ -220,6 +231,10 @@ const AcademicApplication = () => {
               onEditButtonClick={() => {
                 setSelectedId(record?.id);
                 setActiveModal('edit');
+              }}
+              onViewButtonClick={() => {
+                setSelectedId(record?.id);
+                setActiveModal('view');
               }}
               onDeleteButtonClick={() => {
                 setSelectedId(record?.id);
@@ -284,6 +299,11 @@ const AcademicApplication = () => {
 
   const handleApplicationForm = async (formData: FormData, mode: string) => {
     try {
+      // Add applicant ID to formData for create operation
+      if (mode === 'add' && user?.id) {
+        formData.append('applicant', user.id);
+      }
+
       if (mode === 'add') {
         const response = await createApplication(formData);
         if (response?.data) {
