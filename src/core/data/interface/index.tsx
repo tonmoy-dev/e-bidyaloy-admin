@@ -294,6 +294,7 @@ export interface TableData {
   class_teacher: any;
   section_teacher: any;
   is_active: boolean;
+  complaint_type: string;
 }
 export interface status {
   text: string;

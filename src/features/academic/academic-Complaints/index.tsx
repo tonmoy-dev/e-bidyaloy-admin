@@ -17,13 +17,13 @@ import DataTableModal from '../../../shared/components/table/DataTableModal';
 import TooltipOptions from '../../../shared/components/utils/TooltipOptions';
 import { useUserRole } from '../../../shared/hooks/useUserRole';
 import { all_routes } from '../../router/all_routes';
-import ApplicationDetailsView from './components/ApplicationDetailsView';
-import ApplicationForm from './components/ApplicationForm';
-import { useApplicationById } from './hooks/useApplicationById';
-import { useApplicationMutations } from './hooks/useApplicationMutations';
-import { useApplication } from './hooks/useApplications';
+import ComplaintDetailsView from './components/ComplaintDetailsView';
+import ComplaintForm from './components/ComplaintForm';
+import { useComplaintById } from './hooks/useComplaintById';
+import { useComplaintMutations } from './hooks/useComplaintMutations';
+import { useComplaints } from './hooks/useComplaints';
 
-const AcademicApplication = () => {
+const AcademicComplaint = () => {
   const page = 1;
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -36,41 +36,37 @@ const AcademicApplication = () => {
   // Get user role
   const { isAdmin } = useUserRole();
 
-  const { applications } = useApplication();
-  const data = useMemo(() => applications?.results ?? [], [applications]);
+  const { complaints } = useComplaints();
+  const data = useMemo(() => complaints?.results ?? [], [complaints]);
 
   const skipQuery = activeModal === MODAL_TYPE.DELETE;
-  const {
-    createApplication,
-    updateApplication,
-    deleteApplication,
-    approveApplication,
-    rejectApplication,
-  } = useApplicationMutations();
+  const { createComplaint, updateComplaint, deleteComplaint, markComplaintResolved } =
+    useComplaintMutations();
 
-  const { applicationDetails, isError: isApplicationError } = useApplicationById(
+  const { complaintDetails, isError: isComplaintError } = useComplaintById(
     skipQuery ? null : selectedId,
   );
 
   const route = all_routes;
 
   useEffect(() => {
-    if (isApplicationError) {
-      toast.error('Application data not found!');
+    if (isComplaintError) {
+      toast.error('Complaint data not found!');
     }
 
     return () => {
       setActiveModal(null);
       setSelectedId(null);
     };
-  }, [isApplicationError]);
+  }, [isComplaintError]);
 
-  const getApplicationTypeLabel = (type: string) => {
+  const getComplaintTypeLabel = (type: string) => {
     const labels: Record<string, string> = {
-      leave: 'Leave',
-      transfer: 'Transfer',
-      certificate: 'Certificate',
-      complaint: 'Complaint',
+      academic: 'Academic',
+      facility: 'Facility',
+      behavior: 'Behavioral',
+      transport: 'Transport',
+      administrative: 'Administrative',
       other: 'Other',
     };
     return labels[type] || type;
@@ -78,25 +74,25 @@ const AcademicApplication = () => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'approved':
+      case 'resolved':
         return (
           <span className="badge badge-soft-success d-inline-flex align-items-center">
             <i className="ti ti-circle-filled fs-5 me-1"></i>
-            Approved
+            Resolved
           </span>
         );
-      case 'rejected':
+      case 'in_progress':
         return (
-          <span className="badge badge-soft-danger d-inline-flex align-items-center">
+          <span className="badge badge-soft-info d-inline-flex align-items-center">
             <i className="ti ti-circle-filled fs-5 me-1"></i>
-            Rejected
+            In Progress
           </span>
         );
-      case 'cancelled':
+      case 'closed':
         return (
-          <span className="badge badge-soft-danger d-inline-flex align-items-center">
+          <span className="badge badge-soft-secondary d-inline-flex align-items-center">
             <i className="ti ti-circle-filled fs-5 me-1"></i>
-            Cancelled
+            Closed
           </span>
         );
       default:
@@ -120,8 +116,8 @@ const AcademicApplication = () => {
       align: 'left',
       render: (record: TableData) => (
         <div className="d-flex align-items-center">
-          <span className="bg-soft-info text-info avatar avatar-sm me-2 br-5 flex-shrink-0">
-            <i className="ti ti-file-text fs-16" />
+          <span className="bg-soft-danger text-danger avatar avatar-sm me-2 br-5 flex-shrink-0">
+            <i className="ti ti-alert-circle fs-16" />
           </span>
           <div>
             <h6 className="mb-0">{record?.subject || 'N/A'}</h6>
@@ -141,18 +137,18 @@ const AcademicApplication = () => {
       align: 'center',
       render: (record: TableData) => (
         <span className="badge badge-soft-primary">
-          {getApplicationTypeLabel(record?.application_type)}
+          {getComplaintTypeLabel(record?.complaint_type)}
         </span>
       ),
     },
     {
-      title: 'Applicant',
+      title: 'Complainant',
       align: 'center',
       render: (record: TableData) => (
         <div>
-          <p className="mb-0">{record?.applicant_name || 'N/A'}</p>
-          {record?.applicant_email && (
-            <small className="text-muted">{record.applicant_email}</small>
+          <p className="mb-0">{record?.complainant_name || 'N/A'}</p>
+          {record?.complainant_email && (
+            <small className="text-muted">{record.complainant_email}</small>
           )}
         </div>
       ),
@@ -193,42 +189,26 @@ const AcademicApplication = () => {
               <i className="ti ti-eye" />
             </button> */}
 
-            {record?.status === 'pending' && isAdmin && (
-              <>
-                <button
-                  className="btn btn-sm btn-icon btn-success"
-                  onClick={async () => {
-                    try {
-                      const response = await approveApplication(record?.id);
-                      if (response?.data) {
-                        toast.success('Application approved successfully');
-                      }
-                    } catch (error) {
-                      toast.error('Failed to approve application');
+            {record?.status !== 'resolved' && record?.status !== 'closed' && isAdmin && (
+              <button
+                className="btn btn-sm btn-icon btn-success"
+                onClick={async () => {
+                  try {
+                    const response = await markComplaintResolved({
+                      id: record?.id,
+                      response_message: 'Complaint has been resolved.',
+                    });
+                    if (response?.data) {
+                      toast.success('Complaint marked as resolved successfully');
                     }
-                  }}
-                  title="Approve"
-                >
-                  <i className="ti ti-check" />
-                </button>
-
-                <button
-                  className="btn btn-sm btn-icon btn-danger"
-                  onClick={async () => {
-                    try {
-                      const response = await rejectApplication({ id: record?.id });
-                      if (response?.data) {
-                        toast.success('Application rejected successfully');
-                      }
-                    } catch (error) {
-                      toast.error('Failed to reject application');
-                    }
-                  }}
-                  title="Reject"
-                >
-                  <i className="ti ti-x" />
-                </button>
-              </>
+                  } catch (error) {
+                    toast.error('Failed to resolve complaint');
+                  }
+                }}
+                title="Mark as Resolved"
+              >
+                <i className="ti ti-check" />
+              </button>
             )}
 
             <DataTableColumnActions
@@ -255,10 +235,11 @@ const AcademicApplication = () => {
   // Build type filter options
   const typeOptions: FilterOption[] = [
     { label: 'All', value: '' },
-    { label: 'Leave', value: 'leave' },
-    { label: 'Transfer', value: 'transfer' },
-    { label: 'Certificate', value: 'certificate' },
-    { label: 'Complaint', value: 'complaint' },
+    { label: 'Academic', value: 'academic' },
+    { label: 'Facility', value: 'facility' },
+    { label: 'Behavioral', value: 'behavior' },
+    { label: 'Transport', value: 'transport' },
+    { label: 'Administrative', value: 'administrative' },
     { label: 'Other', value: 'other' },
   ];
 
@@ -266,14 +247,15 @@ const AcademicApplication = () => {
   const statusOptions: FilterOption[] = [
     { label: 'All', value: '' },
     { label: 'Pending', value: 'pending' },
-    { label: 'Approved', value: 'approved' },
-    { label: 'Rejected', value: 'rejected' },
+    { label: 'In Progress', value: 'in_progress' },
+    { label: 'Resolved', value: 'resolved' },
+    { label: 'Closed', value: 'closed' },
   ];
 
-  const applicationFilters: FilterConfig[] = [
+  const complaintFilters: FilterConfig[] = [
     {
       key: 'type',
-      label: 'Application Type',
+      label: 'Complaint Type',
       options: typeOptions,
       defaultValue: typeOptions[0],
     },
@@ -289,7 +271,7 @@ const AcademicApplication = () => {
     let filtered = data ?? [];
 
     if (selectedType) {
-      filtered = filtered.filter((r: TableData) => r?.application_type === selectedType);
+      filtered = filtered.filter((r: TableData) => r?.complaint_type === selectedType);
     }
 
     if (selectedStatus) {
@@ -301,25 +283,25 @@ const AcademicApplication = () => {
 
   const sortingOptions = ['Ascending', 'Descending'];
 
-  const handleApplicationForm = async (formData: FormData, mode: string) => {
+  const handleComplaintForm = async (formData: FormData, mode: string) => {
     try {
-      // Add applicant ID to formData for create operation
+      // Add complainant ID to formData for create operation
       if (mode === 'add' && user?.id) {
-        formData.append('applicant', user.id);
+        formData.append('complainant', user.id);
       }
 
       if (mode === 'add') {
-        const response = await createApplication(formData);
+        const response = await createComplaint(formData);
         if (response?.data) {
-          toast.success('Application submitted successfully');
+          toast.success('Complaint submitted successfully');
         }
-      } else if (mode === 'edit' && applicationDetails?.id) {
-        const response = await updateApplication({
-          id: applicationDetails?.id,
+      } else if (mode === 'edit' && complaintDetails?.id) {
+        const response = await updateComplaint({
+          id: complaintDetails?.id,
           data: formData,
         });
         if (response?.data) {
-          toast.success('Application updated successfully');
+          toast.success('Complaint updated successfully');
         }
       }
     } catch (error) {
@@ -328,18 +310,18 @@ const AcademicApplication = () => {
     }
   };
 
-  const handleApplicationDelete = async () => {
+  const handleComplaintDelete = async () => {
     if (!selectedId) return;
     try {
-      const response = await deleteApplication(selectedId);
+      const response = await deleteComplaint(selectedId);
       if (!response?.error) {
-        toast.success('Application deleted successfully');
+        toast.success('Complaint deleted successfully');
         setActiveModal(null);
         setSelectedId(null);
       }
     } catch (error) {
       console.log('error', error);
-      toast.error('Failed to delete application');
+      toast.error('Failed to delete complaint');
     }
   };
 
@@ -350,13 +332,13 @@ const AcademicApplication = () => {
         <div className="content">
           {/* Page Header */}
           <PageHeader
-            title="Application Board"
+            title="Complaint Management"
             breadcrumb={[
               { label: 'Dashboard', path: `${route.adminDashboard}` },
               { label: 'Management', path: '#' },
-              { label: 'Application Board' },
+              { label: 'Complaints' },
             ]}
-            addButtonLabel="Add Application"
+            addButtonLabel="Add Complaint"
             onAddClick={() => {
               setActiveModal('add');
             }}
@@ -370,10 +352,11 @@ const AcademicApplication = () => {
               <DataTableHeader
                 filters={
                   <TableFilter
-                    filters={applicationFilters}
+                    filters={complaintFilters}
                     onApply={(filters) => {
                       const type = filters['type'];
                       const status = filters['status'];
+
                       setSelectedType((type?.value ?? '').toString());
                       setSelectedStatus((status?.value ?? '').toString());
                     }}
@@ -398,26 +381,26 @@ const AcademicApplication = () => {
       </div>
 
       <>
-        {/* Add Application */}
+        {/* Add Complaint */}
         <DataTableModal
           show={activeModal === MODAL_TYPE.ADD}
           onClose={() => setActiveModal(null)}
           size="lg"
-          modalTitle="Add Application"
+          modalTitle="Add Complaint"
           body={
-            <ApplicationForm
+            <ComplaintForm
               mode="add"
               onActiveModal={setActiveModal}
               onSubmit={async (formData) => {
-                await handleApplicationForm(formData, 'add');
+                await handleComplaintForm(formData, 'add');
                 setActiveModal(null);
               }}
             />
           }
         />
 
-        {/* Edit Application */}
-        {applicationDetails?.id && (
+        {/* Edit Complaint */}
+        {complaintDetails?.id && (
           <DataTableModal
             show={activeModal === MODAL_TYPE.EDIT}
             onClose={() => {
@@ -425,14 +408,14 @@ const AcademicApplication = () => {
               setSelectedId(null);
             }}
             size="lg"
-            modalTitle="Update Application"
+            modalTitle="Update Complaint"
             body={
-              <ApplicationForm
+              <ComplaintForm
                 mode="edit"
-                defaultValues={applicationDetails}
+                defaultValues={complaintDetails}
                 onActiveModal={setActiveModal}
                 onSubmit={async (formData) => {
-                  await handleApplicationForm(formData, 'edit');
+                  await handleComplaintForm(formData, 'edit');
                   setActiveModal(null);
                 }}
               />
@@ -440,8 +423,8 @@ const AcademicApplication = () => {
           />
         )}
 
-        {/* View Application */}
-        {applicationDetails?.id && (
+        {/* View Complaint */}
+        {complaintDetails?.id && (
           <DataTableModal
             show={activeModal === MODAL_TYPE.VIEW}
             onClose={() => {
@@ -449,9 +432,9 @@ const AcademicApplication = () => {
               setSelectedId(null);
             }}
             size="lg"
-            modalTitle="Application Details"
-            header={getStatusBadge(applicationDetails?.status || 'pending')}
-            body={<ApplicationDetailsView applicationData={applicationDetails} />}
+            modalTitle="Complaint Details"
+            header={getStatusBadge(complaintDetails?.status || 'pending')}
+            body={<ComplaintDetailsView complaintData={complaintDetails} />}
           />
         )}
 
@@ -462,13 +445,13 @@ const AcademicApplication = () => {
             setActiveModal(null);
             setSelectedId(null);
           }}
-          onConfirm={handleApplicationDelete}
-          title="Delete Application"
-          message="Do you really want to delete this application? This action cannot be undone."
+          onConfirm={handleComplaintDelete}
+          title="Delete Complaint"
+          message="Do you really want to delete this complaint? This action cannot be undone."
         />
       </>
     </div>
   );
 };
 
-export default AcademicApplication;
+export default AcademicComplaint;

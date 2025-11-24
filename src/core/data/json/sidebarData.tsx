@@ -288,6 +288,13 @@ export const SidebarData = [
         showSubRoute: false,
         submenu: false,
       },
+      {
+        label: 'AcademicComplaints',
+        link: routes.academicComplaints,
+        icon: 'ti ti-lifebuoy',
+        showSubRoute: false,
+        submenu: false,
+      },
     ],
   },
   {

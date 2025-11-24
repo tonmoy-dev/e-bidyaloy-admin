@@ -244,6 +244,7 @@ export const all_routes = {
 
   //Academic module
   AcademicApplication: '/academic/academic-application',
+  academicComplaints: '/academic/academic-complaints',
   classSyllabus: '/academic/class-syllabus',
   classGrades: '/academic/grades',
   classSubject: '/academic/class-subject',

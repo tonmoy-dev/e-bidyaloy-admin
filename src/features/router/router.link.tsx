@@ -1,6 +1,7 @@
 import Ribbon from 'antd/es/badge/Ribbon';
 import { Navigate, Route } from 'react-router';
 import AcademicApplication from '../academic/academic-application/index.tsx';
+import AcademicComplaint from '../academic/academic-Complaints/index.tsx';
 import ClassHomeWork from '../academic/class-home-work';
 import ClassRoom from '../academic/class-room';
 import ClassRoutine from '../academic/class-routine';
@@ -793,6 +794,11 @@ export const publicRoutes = [
   {
     path: routes.AcademicApplication,
     element: <AcademicApplication />,
+    route: Route,
+  },
+  {
+    path: routes.academicComplaints,
+    element: <AcademicComplaint />,
     route: Route,
   },
   {
