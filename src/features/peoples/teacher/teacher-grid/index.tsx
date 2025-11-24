@@ -335,7 +335,8 @@ const TeacherGrid = () => {
                                 {user.first_name} {user.last_name}
                               </Link>
                             </h6>
-                            <p>{teacher.department}</p>
+                            <p className="mb-1">{teacher.department}</p>
+                            <p className="text-muted fs-12 mb-0">@{user.username}</p>
                           </div>
                         </div>
                       </div>

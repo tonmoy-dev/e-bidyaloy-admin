@@ -128,6 +128,37 @@ export const API_ENDPOINTS = {
     DETAILS_BY_ID: '/api/v1/exams/',
     SUBJECTS_BY_ID: (id: string) => ({ url: `/api/v1/exams/${id}/subjects/`, method: 'GET' }),
   },
+  ASSIGNMENTS: {
+    LIST: '/api/v1/assignments/',
+    CREATE: '/api/v1/assignments/',
+    UPDATE_BY_ID: '/api/v1/assignments/',
+    DELETE_BY_ID: '/api/v1/assignments/',
+    DETAILS_BY_ID: '/api/v1/assignments/',
+  },
+  ASSIGNMENT_ATTACHMENTS: {
+    LIST: '/api/v1/assignment-attachments/',
+    CREATE: '/api/v1/assignment-attachments/',
+    UPDATE_BY_ID: '/api/v1/assignment-attachments/',
+    DELETE_BY_ID: '/api/v1/assignment-attachments/',
+    DETAILS_BY_ID: '/api/v1/assignment-attachments/',
+  },
+
+  // Assignment Submissions endpoints
+  ASSIGNMENT_SUBMISSIONS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/assignment-submissions/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/assignment-submissions/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/assignment-submissions/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'DELETE' }),
+  },
 
   // Exam Mark endpoints
   EXAM_RESULTS: {
@@ -180,6 +211,13 @@ export const API_ENDPOINTS = {
       url: `/api/v1/notices/${id}/`,
       method: 'DELETE',
     }),
+  },
+  STUDENT_TYPES: {
+    LIST: '/api/v1/student-types/',
+    CREATE: '/api/v1/student-types/',
+    UPDATE_BY_ID: '/api/v1/student-types/',
+    DELETE_BY_ID: '/api/v1/student-types/',
+    DETAILS_BY_ID: '/api/v1/student-types/',
   },
 
   // Applications endpoints

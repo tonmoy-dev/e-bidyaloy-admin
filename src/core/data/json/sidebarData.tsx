@@ -282,6 +282,14 @@ export const SidebarData = [
         ],
       },
       {
+        label: 'Assignments',
+        link: routes.assignments,
+        icon: 'ti ti-clipboard-list',
+        submenuItems: [{ label: 'Student Assignments', link: routes.studentAssignments }],
+        showSubRoute: true,
+        SubMenu: true,
+      },
+      {
         label: 'AcademicApplication',
         link: routes.AcademicApplication,
         icon: 'ti ti-lifebuoy',

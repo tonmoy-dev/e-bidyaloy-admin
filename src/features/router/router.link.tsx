@@ -2,6 +2,8 @@ import Ribbon from 'antd/es/badge/Ribbon';
 import { Navigate, Route } from 'react-router';
 import AcademicApplication from '../academic/academic-application/index.tsx';
 import AcademicComplaint from '../academic/academic-Complaints/index.tsx';
+import Assignments from '../academic/assignments';
+import StudentAssignments from '../academic/assignments/StudentAssignments';
 import ClassHomeWork from '../academic/class-home-work';
 import ClassRoom from '../academic/class-room';
 import ClassRoutine from '../academic/class-routine';
@@ -15,6 +17,7 @@ import ExamAttendance from '../academic/examinations/exam-attendance';
 import ExamResult from '../academic/examinations/exam-results';
 import ExamSchedule from '../academic/examinations/exam-schedule';
 import ExamTypes from '../academic/examinations/exam-type';
+import StudentExams from '../academic/examinations/exam/student-index';
 import { default as Grade, default as Grades } from '../academic/examinations/grade';
 import ScheduleClasses from '../academic/schedule-classes';
 import AccountsIncome from '../accounts/accounts-income';
@@ -843,6 +846,11 @@ export const publicRoutes = [
     route: Route,
   },
   {
+    path: routes.studentExamRoutine,
+    element: <StudentExams />,
+    route: Route,
+  },
+  {
     path: routes.examSchedule,
     element: <ExamSchedule />,
     route: Route,
@@ -890,6 +898,16 @@ export const publicRoutes = [
   {
     path: routes.exams,
     element: <Exams />,
+    route: Route,
+  },
+  {
+    path: routes.assignments,
+    element: <Assignments />,
+    route: Route,
+  },
+  {
+    path: routes.studentAssignments,
+    element: <StudentAssignments />,
     route: Route,
   },
   {
