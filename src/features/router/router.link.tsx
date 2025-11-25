@@ -78,20 +78,6 @@ import FeesAssign from '../management/feescollection/feesAssign';
 import FeesGroup from '../management/feescollection/feesGroup';
 import FeesMaster from '../management/feescollection/feesMaster';
 import FeesTypes from '../management/feescollection/feesTypes';
-import HostelList from '../management/hostel/hostelList';
-import HostelRooms from '../management/hostel/hostelRooms';
-import HostelType from '../management/hostel/hostelType';
-import Books from '../management/library/books';
-import IssueBook from '../management/library/issuesBook';
-import LibraryMember from '../management/library/libraryMember';
-import ReturnBook from '../management/library/returnBook';
-import PlayersList from '../management/sports/playersList';
-import SportsList from '../management/sports/sportsList';
-import TransportAssignVehicle from '../management/transport/transportAssignVehicle';
-import TransportPickupPoints from '../management/transport/transportPickupPoints';
-import TransportRoutes from '../management/transport/transportRoutes';
-import TransportVehicle from '../management/transport/transportVehicle';
-import TransportVehicleDrivers from '../management/transport/transportVehicleDrivers';
 import BlankPage from '../pages/blankPage';
 import ComingSoon from '../pages/comingSoon';
 import Error404 from '../pages/error/error-404';
@@ -991,6 +977,8 @@ export const publicRoutes = [
     element: <GuardianList />,
     route: Route,
   },
+
+  // management routes
   {
     path: routes.feesGroup,
     element: <FeesGroup />,
@@ -1016,76 +1004,78 @@ export const publicRoutes = [
     element: <CollectFees />,
     route: Route,
   },
-  {
-    path: routes.libraryMembers,
-    element: <LibraryMember />,
-    route: Route,
-  },
-  {
-    path: routes.libraryBooks,
-    element: <Books />,
-    route: Route,
-  },
-  {
-    path: routes.libraryIssueBook,
-    element: <IssueBook />,
-    route: Route,
-  },
-  {
-    path: routes.libraryReturn,
-    element: <ReturnBook />,
-    route: Route,
-  },
-  {
-    path: routes.sportsList,
-    element: <SportsList />,
-    route: Route,
-  },
-  {
-    path: routes.playerList,
-    element: <PlayersList />,
-    route: Route,
-  },
-  {
-    path: routes.hostelRoom,
-    element: <HostelRooms />,
-    route: Route,
-  },
-  {
-    path: routes.hostelType,
-    element: <HostelType />,
-    route: Route,
-  },
-  {
-    path: routes.hostelList,
-    element: <HostelList />,
-    route: Route,
-  },
-  {
-    path: routes.transportRoutes,
-    element: <TransportRoutes />,
-    route: Route,
-  },
-  {
-    path: routes.transportAssignVehicle,
-    element: <TransportAssignVehicle />,
-    route: Route,
-  },
-  {
-    path: routes.transportPickupPoints,
-    element: <TransportPickupPoints />,
-    route: Route,
-  },
-  {
-    path: routes.transportVehicleDrivers,
-    element: <TransportVehicleDrivers />,
-    route: Route,
-  },
-  {
-    path: routes.transportVehicle,
-    element: <TransportVehicle />,
-    route: Route,
-  },
+
+  // {
+  //   path: routes.libraryMembers,
+  //   element: <LibraryMember />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.libraryBooks,
+  //   element: <Books />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.libraryIssueBook,
+  //   element: <IssueBook />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.libraryReturn,
+  //   element: <ReturnBook />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.sportsList,
+  //   element: <SportsList />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.playerList,
+  //   element: <PlayersList />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.hostelRoom,
+  //   element: <HostelRooms />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.hostelType,
+  //   element: <HostelType />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.hostelList,
+  //   element: <HostelList />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportRoutes,
+  //   element: <TransportRoutes />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportAssignVehicle,
+  //   element: <TransportAssignVehicle />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportPickupPoints,
+  //   element: <TransportPickupPoints />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportVehicleDrivers,
+  //   element: <TransportVehicleDrivers />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportVehicle,
+  //   element: <TransportVehicle />,
+  //   route: Route,
+  // },
+
   {
     path: routes.approveRequest,
     element: <ApproveRequest />,
