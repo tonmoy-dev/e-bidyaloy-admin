@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import ImageWithBasePath from "../../../../../core/common/imageWithBasePath";
+import { Link } from 'react-router-dom';
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
 
 export interface ProgressItem {
   id: string;
@@ -24,7 +24,7 @@ const ProgressListWidget = ({
   addNewLink,
   addNewModalTarget,
   showImage = false,
-  defaultProgressColor = "bg-primary",
+  defaultProgressColor = 'bg-primary',
 }: ProgressListWidgetProps) => {
   return (
     <div className="card flex-fill">
@@ -32,9 +32,9 @@ const ProgressListWidget = ({
         <h4 className="card-title">{title}</h4>
         {(addNewLink || addNewModalTarget) && (
           <Link
-            to={addNewLink || "#"}
+            to={addNewLink || '#'}
             className="link-primary fw-medium"
-            data-bs-toggle={addNewModalTarget ? "modal" : undefined}
+            data-bs-toggle={addNewModalTarget ? 'modal' : undefined}
             data-bs-target={addNewModalTarget}
           >
             <i className="ti ti-square-plus me-1" />
@@ -46,7 +46,9 @@ const ProgressListWidget = ({
         {items.map((item, index) => (
           <div
             key={item.id}
-            className={`d-flex align-items-center rounded border p-3 ${index === items.length - 1 ? "mb-0" : "mb-3"}`}
+            className={`d-flex align-items-center rounded border p-3 ${
+              index === items.length - 1 ? 'mb-0' : 'mb-3'
+            }`}
           >
             {showImage && item.image && (
               <span className="avatar avatar-md flex-shrink-0 border rounded me-2">
@@ -57,7 +59,9 @@ const ProgressListWidget = ({
               <p className="mb-1">{item.label}</p>
               <div className="progress progress-xs flex-grow-1 mb-1">
                 <div
-                  className={`progress-bar progress-bar-striped progress-bar-animated ${item.progressColor || defaultProgressColor} rounded`}
+                  className={`progress-bar progress-bar-striped progress-bar-animated ${
+                    item.progressColor || defaultProgressColor
+                  } rounded`}
                   role="progressbar"
                   style={{ width: `${item.progress}%` }}
                   aria-valuenow={item.progress}
@@ -74,4 +78,3 @@ const ProgressListWidget = ({
 };
 
 export default ProgressListWidget;
-

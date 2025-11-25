@@ -1,5 +1,5 @@
-import CountUp from "react-countup";
-import ImageWithBasePath from "../../../../../core/common/imageWithBasePath";
+import CountUp from 'react-countup';
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
 
 export interface StatCardData {
   title: string;
@@ -30,7 +30,7 @@ interface StatCardProps {
   className?: string;
 }
 
-const StatCard = ({ data, className = "" }: StatCardProps) => {
+const StatCard = ({ data, className = '' }: StatCardProps) => {
   return (
     <div className={`card flex-fill animate-card border-0 ${className}`}>
       <div className="card-body">
@@ -45,9 +45,7 @@ const StatCard = ({ data, className = "" }: StatCardProps) => {
               <h2 className="counter">
                 <CountUp end={data.value} />
               </h2>
-              {data.badge && (
-                <span className={`badge ${data.badge.color}`}>{data.badge.text}</span>
-              )}
+              {data.badge && <span className={`badge ${data.badge.color}`}>{data.badge.text}</span>}
             </div>
             <p>{data.title}</p>
           </div>
@@ -56,16 +54,14 @@ const StatCard = ({ data, className = "" }: StatCardProps) => {
           <div className="d-flex align-items-center justify-content-between border-top mt-3 pt-3">
             {data.footer.active && (
               <p className="mb-0">
-                {data.footer.active.label} :{" "}
+                {data.footer.active.label} :{' '}
                 <span className="text-dark fw-semibold">{data.footer.active.value}</span>
               </p>
             )}
-            {data.footer.active && data.footer.inactive && (
-              <span className="text-light">|</span>
-            )}
+            {data.footer.active && data.footer.inactive && <span className="text-light">|</span>}
             {data.footer.inactive && (
               <p>
-                {data.footer.inactive.label} :{" "}
+                {data.footer.inactive.label} :{' '}
                 <span className="text-dark fw-semibold">{data.footer.inactive.value}</span>
               </p>
             )}
@@ -77,4 +73,3 @@ const StatCard = ({ data, className = "" }: StatCardProps) => {
 };
 
 export default StatCard;
-

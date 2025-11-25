@@ -1,6 +1,6 @@
-import { Link } from "react-router-dom";
-import ImageWithBasePath from "../../../../core/common/imageWithBasePath";
-import type { ProfileCardData } from "../types/dashboard.types";
+import { Link } from 'react-router-dom';
+import ImageWithBasePath from '../../../../../core/common/imageWithBasePath';
+import type { ProfileCardData } from '../types/dashboard.types';
 
 interface ProfileCardProps {
   data: ProfileCardData;
@@ -11,9 +11,9 @@ interface ProfileCardProps {
 
 const ProfileCard = ({
   data,
-  className = "card bg-dark position-relative flex-fill",
+  className = 'card bg-dark position-relative flex-fill',
   showEditButton = false,
-  editButtonText = "Edit Profile",
+  editButtonText = 'Edit Profile',
 }: ProfileCardProps) => {
   return (
     <div className={className}>
@@ -24,9 +24,7 @@ const ProfileCard = ({
           </div>
           <div className="d-block">
             {data.badge && (
-              <span className="badge bg-transparent-primary text-primary mb-1">
-                {data.badge}
-              </span>
+              <span className="badge bg-transparent-primary text-primary mb-1">{data.badge}</span>
             )}
             <h3 className="text-truncate text-white mb-1">{data.name}</h3>
             {data.additionalInfo && data.additionalInfo.length > 0 && (
@@ -35,9 +33,7 @@ const ProfileCard = ({
                   <span
                     key={index}
                     className={
-                      index < data.additionalInfo!.length - 1
-                        ? "border-end me-2 pe-2"
-                        : ""
+                      index < data.additionalInfo!.length - 1 ? 'border-end me-2 pe-2' : ''
                     }
                   >
                     {info.label} : {info.value}
@@ -55,16 +51,10 @@ const ProfileCard = ({
           </div>
         )}
         <div className="student-card-bg">
-          <ImageWithBasePath
-            src="assets/img/bg/circle-shape.png"
-            alt="Bg"
-          />
+          <ImageWithBasePath src="assets/img/bg/circle-shape.png" alt="Bg" />
           <ImageWithBasePath src="assets/img/bg/shape-02.png" alt="Bg" />
           <ImageWithBasePath src="assets/img/bg/shape-04.png" alt="Bg" />
-          <ImageWithBasePath
-            src="assets/img/bg/blue-polygon.png"
-            alt="Bg"
-          />
+          <ImageWithBasePath src="assets/img/bg/blue-polygon.png" alt="Bg" />
         </div>
       </div>
     </div>
@@ -72,4 +62,3 @@ const ProfileCard = ({
 };
 
 export default ProfileCard;
-

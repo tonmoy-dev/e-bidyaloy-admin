@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import ImageWithBasePath from '../../../../../core/common/imageWithBasePath';
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
 
 export interface ActivityItem {
   id: string;
@@ -60,7 +60,9 @@ const StudentActivityWidget = ({
         {activities.map((activity, index) => (
           <div
             key={activity.id}
-            className={`d-flex align-items-center overflow-hidden p-3 ${index === activities.length - 1 ? 'mb-0' : 'mb-3'} border rounded`}
+            className={`d-flex align-items-center overflow-hidden p-3 ${
+              index === activities.length - 1 ? 'mb-0' : 'mb-3'
+            } border rounded`}
           >
             <span className="avatar avatar-lg flex-shrink-0 rounded me-2">
               <ImageWithBasePath src={activity.image} alt={activity.title} />
@@ -79,4 +81,3 @@ const StudentActivityWidget = ({
 };
 
 export default StudentActivityWidget;
-

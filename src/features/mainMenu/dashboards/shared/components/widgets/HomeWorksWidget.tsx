@@ -1,7 +1,8 @@
-import { Link } from "react-router-dom";
-import ImageWithBasePath from "../../../../../core/common/imageWithBasePath";
-import type { Homework } from "../../types/dashboard.types";
-import CircleProgress from "../../../../studentDashboard/circleProgress";
+import { Link } from 'react-router-dom';
+
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
+import CircleProgress from '../../../../studentDashboard/circleProgress';
+import type { Homework } from '../../types/dashboard.types';
 
 interface HomeWorksWidgetProps {
   title?: string;
@@ -13,27 +14,27 @@ interface HomeWorksWidgetProps {
 }
 
 const HomeWorksWidget = ({
-  title = "Home Works",
+  title = 'Home Works',
   homeworks,
-  subjectFilter = "All Subject",
+  subjectFilter = 'All Subject',
   onSubjectFilterChange,
   subjectOptions = [
-    { label: "All Subject", value: "All Subject" },
-    { label: "Physics", value: "Physics" },
-    { label: "Chemistry", value: "Chemistry" },
-    { label: "Maths", value: "Maths" },
+    { label: 'All Subject', value: 'All Subject' },
+    { label: 'Physics', value: 'Physics' },
+    { label: 'Chemistry', value: 'Chemistry' },
+    { label: 'Maths', value: 'Maths' },
   ],
   showProgress = false,
 }: HomeWorksWidgetProps) => {
   const getSubjectColor = (subject: string) => {
     const colors: Record<string, string> = {
-      Physics: "text-info",
-      Chemistry: "text-success",
-      Maths: "text-danger",
-      English: "text-skyblue",
-      Engish: "text-skyblue",
+      Physics: 'text-info',
+      Chemistry: 'text-success',
+      Maths: 'text-danger',
+      English: 'text-skyblue',
+      Engish: 'text-skyblue',
     };
-    return colors[subject] || "text-primary";
+    return colors[subject] || 'text-primary';
   };
 
   return (
@@ -42,11 +43,7 @@ const HomeWorksWidget = ({
         <h4 className="card-titile">{title}</h4>
         {onSubjectFilterChange && (
           <div className="dropdown">
-            <Link
-              to="#"
-              className="bg-white dropdown-toggle"
-              data-bs-toggle="dropdown"
-            >
+            <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
               <i className="ti ti-book-2 me-2" />
               {subjectFilter}
             </Link>
@@ -74,22 +71,19 @@ const HomeWorksWidget = ({
           {homeworks.map((homework, index) => (
             <li
               key={homework.id}
-              className={`list-group-item py-3 px-0 ${
-                index === 0 ? "pt-0" : ""
-              } ${index === homeworks.length - 1 ? "pb-0" : ""}`}
+              className={`list-group-item py-3 px-0 ${index === 0 ? 'pt-0' : ''} ${
+                index === homeworks.length - 1 ? 'pb-0' : ''
+              }`}
             >
               <div className="d-flex align-items-center justify-content-between flex-wrap">
                 <div className="d-flex align-items-center overflow-hidden mb-3">
-                  <Link
-                    to="#"
-                    className="avatar avatar-xl flex-shrink-0 me-2"
-                  >
+                  <Link to="#" className="avatar avatar-xl flex-shrink-0 me-2">
                     <ImageWithBasePath src={homework.image} alt="img" />
                   </Link>
                   <div className="overflow-hidden">
                     <p
                       className={`d-flex align-items-center ${getSubjectColor(
-                        homework.subject
+                        homework.subject,
                       )} mb-1`}
                     >
                       <i className="ti ti-tag me-2" />
@@ -100,10 +94,7 @@ const HomeWorksWidget = ({
                     </h6>
                     <div className="d-flex align-items-center flex-wrap">
                       <div className="d-flex align-items-center border-end me-1 pe-1">
-                        <Link
-                          to="#"
-                          className="avatar avatar-xs flex-shrink-0 me-2"
-                        >
+                        <Link to="#" className="avatar avatar-xs flex-shrink-0 me-2">
                           <ImageWithBasePath
                             src={homework.teacherImage}
                             className="rounded-circle"
@@ -129,4 +120,3 @@ const HomeWorksWidget = ({
 };
 
 export default HomeWorksWidget;
-

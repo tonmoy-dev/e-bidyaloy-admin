@@ -1,44 +1,40 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { all_routes } from "../../router/all_routes";
-import ImageWithBasePath from "../../../core/common/imageWithBasePath";
-import AdminDashboardModal from "../adminDashboard/adminDashboardModal";
-import ReactApexChart from "react-apexcharts";
-import type { Nullable } from "primereact/ts-helpers";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import dayjs from "dayjs";
-import { DatePicker } from "antd";
-import {
-  SchedulesWidget,
-  AttendanceWidget,
-  LeaveStatusWidget,
-} from "../dashboards/shared/components/widgets";
-import ProfileCard from "../dashboards/shared/components/ProfileCard";
+import { Calendar, DatePicker } from 'antd';
+import dayjs from 'dayjs';
+import type { Nullable } from 'primereact/ts-helpers';
+import { useState } from 'react';
+import ReactApexChart from 'react-apexcharts';
+import { Link } from 'react-router-dom';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick-theme.css';
+import 'slick-carousel/slick/slick.css';
+import ImageWithBasePath from '../../../core/common/imageWithBasePath';
+import { all_routes } from '../../router/all_routes';
+import AdminDashboardModal from '../adminDashboard/adminDashboardModal';
+import ProfileCard from '../dashboards/shared/components/ProfileCard';
+import { LeaveStatusWidget } from '../dashboards/shared/components/widgets';
 import type {
-  Event,
-  AttendanceStats,
   AttendanceChartData,
+  AttendanceStats,
+  Event,
   Leave,
   ProfileCardData,
-} from "../dashboards/shared/types/dashboard.types";
+} from '../dashboards/shared/types/dashboard.types';
 
 const TeacherDashboard = () => {
   const routes = all_routes;
   const [date, setDate] = useState<Nullable<Date>>(null);
-  const [attendanceDateRange, setAttendanceDateRange] = useState<string>("This Week");
-  const [leaveDateRange, setLeaveDateRange] = useState<string>("This Month");
+  const [attendanceDateRange, setAttendanceDateRange] = useState<string>('This Week');
+  const [leaveDateRange, setLeaveDateRange] = useState<string>('This Month');
 
   // Sample data - will be replaced with dynamic data later
   const profileData: ProfileCardData = {
-    id: "T594651",
-    name: "Henriques Morgan",
-    image: "assets/img/teachers/teacher-05.jpg",
-    badge: "#T594651",
+    id: 'T594651',
+    name: 'Henriques Morgan',
+    image: 'assets/img/teachers/teacher-05.jpg',
+    badge: '#T594651',
     additionalInfo: [
-      { label: "Classes", value: "I-A, V-B" },
-      { label: "Subject", value: "Physics" },
+      { label: 'Classes', value: 'I-A, V-B' },
+      { label: 'Subject', value: 'Physics' },
     ],
     editLink: routes.editTeacher,
   };
@@ -52,92 +48,92 @@ const TeacherDashboard = () => {
 
   const attendanceChartData: AttendanceChartData = {
     series: [60, 5, 15, 20],
-    labels: ["Present", "Late", "Half Day", "Absent"],
-    colors: ["#1ABE17", "#1170E4", "#E9EDF4", "#E82646"],
+    labels: ['Present', 'Late', 'Half Day', 'Absent'],
+    colors: ['#1ABE17', '#1170E4', '#E9EDF4', '#E82646'],
   };
 
   const events: Event[] = [
     {
-      id: "1",
-      title: "Vacation Meeting",
-      date: "07 July 2024",
-      endDate: "07 July 2024",
-      time: "09:10 AM - 10:50 PM",
-      borderColor: "danger",
-      icon: "ti ti-vacuum-cleaner fs-24",
-      iconBgColor: "bg-danger-transparent",
+      id: '1',
+      title: 'Vacation Meeting',
+      date: '07 July 2024',
+      endDate: '07 July 2024',
+      time: '09:10 AM - 10:50 PM',
+      borderColor: 'danger',
+      icon: 'ti ti-vacuum-cleaner fs-24',
+      iconBgColor: 'bg-danger-transparent',
       participants: [
-        { id: "1", image: "assets/img/parents/parent-11.jpg" },
-        { id: "2", image: "assets/img/parents/parent-13.jpg" },
+        { id: '1', image: 'assets/img/parents/parent-11.jpg' },
+        { id: '2', image: 'assets/img/parents/parent-13.jpg' },
       ],
     },
     {
-      id: "2",
-      title: "Parents, Teacher Meet",
-      date: "15 July 2024",
-      time: "09:10AM - 10:50PM",
-      borderColor: "skyblue",
-      icon: "ti ti-user-edit text-info fs-20",
-      iconBgColor: "bg-teal-transparent",
+      id: '2',
+      title: 'Parents, Teacher Meet',
+      date: '15 July 2024',
+      time: '09:10AM - 10:50PM',
+      borderColor: 'skyblue',
+      icon: 'ti ti-user-edit text-info fs-20',
+      iconBgColor: 'bg-teal-transparent',
       participants: [
-        { id: "1", image: "assets/img/parents/parent-01.jpg" },
-        { id: "2", image: "assets/img/parents/parent-07.jpg" },
-        { id: "3", image: "assets/img/parents/parent-02.jpg" },
+        { id: '1', image: 'assets/img/parents/parent-01.jpg' },
+        { id: '2', image: 'assets/img/parents/parent-07.jpg' },
+        { id: '3', image: 'assets/img/parents/parent-02.jpg' },
       ],
     },
     {
-      id: "3",
-      title: "Staff Meeting",
-      date: "10 July 2024",
-      time: "09:10AM - 10:50PM",
-      borderColor: "info",
-      icon: "ti ti-users-group fs-20",
-      iconBgColor: "bg-info-transparent",
+      id: '3',
+      title: 'Staff Meeting',
+      date: '10 July 2024',
+      time: '09:10AM - 10:50PM',
+      borderColor: 'info',
+      icon: 'ti ti-users-group fs-20',
+      iconBgColor: 'bg-info-transparent',
       participants: [
-        { id: "1", image: "assets/img/parents/parent-05.jpg" },
-        { id: "2", image: "assets/img/parents/parent-06.jpg" },
-        { id: "3", image: "assets/img/parents/parent-07.jpg" },
+        { id: '1', image: 'assets/img/parents/parent-05.jpg' },
+        { id: '2', image: 'assets/img/parents/parent-06.jpg' },
+        { id: '3', image: 'assets/img/parents/parent-07.jpg' },
       ],
     },
     {
-      id: "4",
-      title: "Admission Camp",
-      date: "12 July 2024",
-      time: "09:10 AM - 10:50 PM",
-      borderColor: "secondary",
-      icon: "ti ti-campfire fs-24",
-      iconBgColor: "bg-secondary-transparent",
+      id: '4',
+      title: 'Admission Camp',
+      date: '12 July 2024',
+      time: '09:10 AM - 10:50 PM',
+      borderColor: 'secondary',
+      icon: 'ti ti-campfire fs-24',
+      iconBgColor: 'bg-secondary-transparent',
       participants: [
-        { id: "1", image: "assets/img/parents/parent-11.jpg" },
-        { id: "2", image: "assets/img/parents/parent-13.jpg" },
+        { id: '1', image: 'assets/img/parents/parent-11.jpg' },
+        { id: '2', image: 'assets/img/parents/parent-13.jpg' },
       ],
     },
   ];
 
   const leaves: Leave[] = [
     {
-      id: "1",
-      type: "Emergency",
-      date: "15 Jun 2024",
-      status: "Pending",
+      id: '1',
+      type: 'Emergency',
+      date: '15 Jun 2024',
+      status: 'Pending',
     },
     {
-      id: "2",
-      type: "Medical",
-      date: "15 Jun 2024",
-      status: "Approved",
+      id: '2',
+      type: 'Medical',
+      date: '15 Jun 2024',
+      status: 'Approved',
     },
     {
-      id: "3",
-      type: "Medical",
-      date: "16 Jun 2024",
-      status: "Declined",
+      id: '3',
+      type: 'Medical',
+      date: '16 Jun 2024',
+      status: 'Declined',
     },
     {
-      id: "4",
-      type: "Not Well",
-      date: "16 Jun 2024",
-      status: "Approved",
+      id: '4',
+      type: 'Not Well',
+      date: '16 Jun 2024',
+      status: 'Approved',
     },
   ];
   function SampleNextArrow(props: any) {
@@ -145,10 +141,10 @@ const TeacherDashboard = () => {
     return (
       <div
         className="slick-nav slick-nav-next class-slides"
-        style={{ ...style, display: "flex", top: "-72%", left: "22%" }}
+        style={{ ...style, display: 'flex', top: '-72%', left: '22%' }}
         onClick={onClick}
       >
-        <i className="fas fa-chevron-right" style={{ fontSize: "12px" }}></i>
+        <i className="fas fa-chevron-right" style={{ fontSize: '12px' }}></i>
       </div>
     );
   }
@@ -158,10 +154,10 @@ const TeacherDashboard = () => {
     return (
       <div
         className="slick-nav slick-nav-prev class-slides"
-        style={{ ...style, display: "flex", top: "-72%", left: "17%" }}
+        style={{ ...style, display: 'flex', top: '-72%', left: '17%' }}
         onClick={onClick}
       >
-        <i className="fas fa-chevron-left" style={{ fontSize: "12px" }}></i>
+        <i className="fas fa-chevron-left" style={{ fontSize: '12px' }}></i>
       </div>
     );
   }
@@ -261,7 +257,7 @@ const TeacherDashboard = () => {
   const [studentDonutChart] = useState<any>({
     chart: {
       height: 90,
-      type: "donut",
+      type: 'donut',
       toolbar: {
         show: false,
       },
@@ -279,7 +275,7 @@ const TeacherDashboard = () => {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: "50%",
+        columnWidth: '50%',
       },
     },
     dataLabels: {
@@ -287,9 +283,9 @@ const TeacherDashboard = () => {
     },
 
     series: [95, 5],
-    labels: ["Completed", "Pending"],
+    labels: ['Completed', 'Pending'],
     legend: { show: false },
-    colors: ["#1ABE17", "#E82646"],
+    colors: ['#1ABE17', '#E82646'],
     responsive: [
       {
         breakpoint: 480,
@@ -298,7 +294,7 @@ const TeacherDashboard = () => {
             width: 100,
           },
           legend: {
-            position: "bottom",
+            position: 'bottom',
           },
         },
       },
@@ -307,7 +303,7 @@ const TeacherDashboard = () => {
   const [attendance_chart] = useState<any>({
     chart: {
       height: 290,
-      type: "donut",
+      type: 'donut',
       toolbar: {
         show: false,
       },
@@ -315,7 +311,7 @@ const TeacherDashboard = () => {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: "50%",
+        columnWidth: '50%',
       },
     },
     dataLabels: {
@@ -323,8 +319,8 @@ const TeacherDashboard = () => {
     },
 
     series: [60, 5, 15, 20],
-    labels: ["Present", "Late", "Half Day", "Absent"],
-    colors: ["#1ABE17", "#1170E4", "#E9EDF4", "#E82646"],
+    labels: ['Present', 'Late', 'Half Day', 'Absent'],
+    colors: ['#1ABE17', '#1170E4', '#E9EDF4', '#E82646'],
     responsive: [
       {
         breakpoint: 480,
@@ -333,19 +329,19 @@ const TeacherDashboard = () => {
             width: 200,
           },
           legend: {
-            position: "left",
+            position: 'left',
           },
         },
       },
     ],
     legend: {
-      position: "bottom",
+      position: 'bottom',
     },
   });
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0"); // Month is zero-based, so we add 1
-  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1
+  const day = String(today.getDate()).padStart(2, '0');
   const formattedDate = `${month}-${day}-${year}`;
   const defaultValue = dayjs(formattedDate);
 
@@ -380,8 +376,7 @@ const TeacherDashboard = () => {
                   <h1 className="text-white mb-1"> Good Morning Ms.Teena</h1>
                   <p className="text-white mb-3">Have a Good day at work</p>
                   <p className="text-light">
-                    Notice : There is a staff meeting at 9AM today, Dont forget
-                    to Attend!!!
+                    Notice : There is a staff meeting at 9AM today, Dont forget to Attend!!!
                   </p>
                 </div>
               </div>
@@ -422,8 +417,7 @@ const TeacherDashboard = () => {
                             <h4 className="mb-3">Syllabus</h4>
                             <p className="mb-2">
                               <i className="ti ti-circle-filled text-success me-1" />
-                              Completed :{" "}
-                              <span className="fw-semibold">95%</span>
+                              Completed : <span className="fw-semibold">95%</span>
                             </p>
                             <p>
                               <i className="ti ti-circle-filled text-danger me-1" />
@@ -455,8 +449,8 @@ const TeacherDashboard = () => {
                     <DatePicker
                       className="form-control datetimepicker border-0"
                       format={{
-                        format: "DD-MM-YYYY",
-                        type: "mask",
+                        format: 'DD-MM-YYYY',
+                        type: 'mask',
                       }}
                       defaultValue={defaultValue}
                       placeholder="16 May 2024"
@@ -467,10 +461,7 @@ const TeacherDashboard = () => {
                   </div>
                 </div>
                 <div className="card-body">
-                  <Slider
-                    {...settings}
-                    className="owl-carousel owl-theme task-slider"
-                  >
+                  <Slider {...settings} className="owl-carousel owl-theme task-slider">
                     <div className="item">
                       <div className="bg-light-400 rounded p-3">
                         <span className="text-decoration-line-through badge badge-danger badge-lg mb-2">
@@ -527,11 +518,7 @@ const TeacherDashboard = () => {
                     <div className="card-header d-flex align-items-center justify-content-between">
                       <h4 className="card-title">Attendance</h4>
                       <div className="card-dropdown">
-                        <Link
-                          to="#"
-                          className="dropdown-toggle p-2"
-                          data-bs-toggle="dropdown"
-                        >
+                        <Link to="#" className="dropdown-toggle p-2" data-bs-toggle="dropdown">
                           <i className="ti ti-calendar-due" />
                           This Week
                         </Link>
@@ -572,23 +559,17 @@ const TeacherDashboard = () => {
                           <Link to="#" className="badge badge-lg bg-danger">
                             F
                           </Link>
-                          <Link
-                            to="#"
-                            className="badge badge-lg bg-white border text-default"
-                          >
+                          <Link to="#" className="badge badge-lg bg-white border text-default">
                             S
                           </Link>
-                          <Link
-                            to="#"
-                            className="badge badge-lg  bg-white border text-gray-1"
-                          >
+                          <Link to="#" className="badge badge-lg  bg-white border text-gray-1">
                             S
                           </Link>
                         </div>
                       </div>
                       <p className="mb-3">
                         <i className="ti ti-calendar-heart text-primary me-2" />
-                        No of total working days{" "}
+                        No of total working days{' '}
                         <span className="fw-medium text-dark"> 28 Days</span>
                       </p>
                       <div className="border rounded p-3">
@@ -631,10 +612,7 @@ const TeacherDashboard = () => {
                   <div className="card">
                     <div className="card-header d-flex align-items-center justify-content-between">
                       <h4 className="card-title">Best Performers</h4>
-                      <Link
-                        to={routes.studentList}
-                        className="link-primary fw-medium"
-                      >
+                      <Link to={routes.studentList} className="link-primary fw-medium">
                         View All
                       </Link>
                     </div>
@@ -652,10 +630,7 @@ const TeacherDashboard = () => {
                             aria-valuemin={0}
                             aria-valuemax={100}
                           >
-                            <div
-                              className="progress-bar bg-primary"
-                              style={{ width: "80%" }}
-                            >
+                            <div className="progress-bar bg-primary" style={{ width: '80%' }}>
                               <div className="avatar-list-stacked avatar-group-xs d-flex">
                                 <span className="avatar avatar-rounded">
                                   <ImageWithBasePath
@@ -696,10 +671,7 @@ const TeacherDashboard = () => {
                             aria-valuemin={0}
                             aria-valuemax={100}
                           >
-                            <div
-                              className="progress-bar bg-warning"
-                              style={{ width: "54%" }}
-                            >
+                            <div className="progress-bar bg-warning" style={{ width: '54%' }}>
                               <div className="avatar-list-stacked avatar-group-xs d-flex">
                                 <span className="avatar avatar-rounded">
                                   <ImageWithBasePath
@@ -740,10 +712,7 @@ const TeacherDashboard = () => {
                             aria-valuemin={0}
                             aria-valuemax={100}
                           >
-                            <div
-                              className="progress-bar bg-skyblue"
-                              style={{ width: "76%" }}
-                            >
+                            <div className="progress-bar bg-skyblue" style={{ width: '76%' }}>
                               <div className="avatar-list-stacked avatar-group-xs d-flex">
                                 <span className="avatar avatar-rounded">
                                   <ImageWithBasePath
@@ -777,11 +746,7 @@ const TeacherDashboard = () => {
                     <div className="card-header d-flex align-items-center justify-content-between">
                       <h4 className="card-title">Student Progress</h4>
                       <div className="dropdown">
-                        <Link
-                          to="#"
-                          className="bg-white dropdown-toggle"
-                          data-bs-toggle="dropdown"
-                        >
+                        <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
                           <i className="ti ti-calendar me-2" />
                           This Month
                         </Link>
@@ -807,10 +772,7 @@ const TeacherDashboard = () => {
                     <div className="card-body">
                       <div className="d-flex align-items-center justify-content-between p-3 mb-2 border br-5">
                         <div className="d-flex align-items-center overflow-hidden me-2">
-                          <Link
-                            to="#"
-                            className="avatar avatar-lg flex-shrink-0 br-6 me-2"
-                          >
+                          <Link to="#" className="avatar avatar-lg flex-shrink-0 br-6 me-2">
                             <ImageWithBasePath
                               src="assets/img/students/student-09.jpg"
                               alt="student"
@@ -824,19 +786,13 @@ const TeacherDashboard = () => {
                           </div>
                         </div>
                         <div className="d-flex align-items-center">
-                          <ImageWithBasePath
-                            src="assets/img/icons/medal.svg"
-                            alt="icon"
-                          />
+                          <ImageWithBasePath src="assets/img/icons/medal.svg" alt="icon" />
                           <span className="badge badge-success ms-2">98%</span>
                         </div>
                       </div>
                       <div className="d-flex align-items-center justify-content-between p-3 mb-2 border br-5">
                         <div className="d-flex align-items-center overflow-hidden me-2">
-                          <Link
-                            to="#"
-                            className="avatar avatar-lg flex-shrink-0 br-6 me-2"
-                          >
+                          <Link to="#" className="avatar avatar-lg flex-shrink-0 br-6 me-2">
                             <ImageWithBasePath
                               src="assets/img/students/student-12.jpg"
                               alt="student"
@@ -850,19 +806,13 @@ const TeacherDashboard = () => {
                           </div>
                         </div>
                         <div className="d-flex align-items-center">
-                          <ImageWithBasePath
-                            src="assets/img/icons/medal-2.svg"
-                            alt="icon"
-                          />
+                          <ImageWithBasePath src="assets/img/icons/medal-2.svg" alt="icon" />
                           <span className="badge badge-success ms-2">98%</span>
                         </div>
                       </div>
                       <div className="d-flex align-items-center justify-content-between p-3 mb-0 border rounded">
                         <div className="d-flex align-items-center overflow-hidden me-2">
-                          <Link
-                            to="#"
-                            className="avatar avatar-lg flex-shrink-0 br-6 me-2"
-                          >
+                          <Link to="#" className="avatar avatar-lg flex-shrink-0 br-6 me-2">
                             <ImageWithBasePath
                               src="assets/img/students/student-11.jpg"
                               alt="student"
@@ -1094,18 +1044,12 @@ const TeacherDashboard = () => {
               <div className="card">
                 <div className="card-header d-flex align-items-center justify-content-between">
                   <h4 className="card-title">Syllabus / Lesson Plan</h4>
-                  <Link
-                    to={routes.classSyllabus}
-                    className="link-primary fw-medium"
-                  >
+                  <Link to={routes.classSyllabus} className="link-primary fw-medium">
                     View All
                   </Link>
                 </div>
                 <div className="card-body">
-                  <Slider
-                    {...Syllabus}
-                    className="owl-carousel owl-theme lesson"
-                  >
+                  <Slider {...Syllabus} className="owl-carousel owl-theme lesson">
                     <div className="item">
                       <div className="card mb-0">
                         <div className="card-body">
@@ -1113,14 +1057,12 @@ const TeacherDashboard = () => {
                             Class V, B
                           </div>
                           <div className="border-bottom mb-3">
-                            <h5 className="mb-3">
-                              Introduction Note to Physics on Tech
-                            </h5>
+                            <h5 className="mb-3">Introduction Note to Physics on Tech</h5>
                             <div className="progress progress-xs mb-3">
                               <div
                                 className="progress-bar bg-success"
                                 role="progressbar"
-                                style={{ width: "80%" }}
+                                style={{ width: '80%' }}
                                 aria-valuenow={25}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
@@ -1128,10 +1070,7 @@ const TeacherDashboard = () => {
                             </div>
                           </div>
                           <div className="d-flex align-items-center justify-content-between">
-                            <Link
-                              to={routes.sheduleClasses}
-                              className="fw-medium"
-                            >
+                            <Link to={routes.sheduleClasses} className="fw-medium">
                               <i className="ti ti-edit me-1" />
                               Reschedule
                             </Link>
@@ -1150,14 +1089,12 @@ const TeacherDashboard = () => {
                             Class V, A
                           </div>
                           <div className="border-bottom mb-3">
-                            <h5 className="mb-3">
-                              Biometric &amp; their Working Functionality
-                            </h5>
+                            <h5 className="mb-3">Biometric &amp; their Working Functionality</h5>
                             <div className="progress progress-xs mb-3">
                               <div
                                 className="progress-bar bg-warning"
                                 role="progressbar"
-                                style={{ width: "80%" }}
+                                style={{ width: '80%' }}
                                 aria-valuenow={25}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
@@ -1165,10 +1102,7 @@ const TeacherDashboard = () => {
                             </div>
                           </div>
                           <div className="d-flex align-items-center justify-content-between">
-                            <Link
-                              to={routes.sheduleClasses}
-                              className="fw-medium"
-                            >
+                            <Link to={routes.sheduleClasses} className="fw-medium">
                               <i className="ti ti-edit me-1" />
                               Reschedule
                             </Link>
@@ -1187,14 +1121,12 @@ const TeacherDashboard = () => {
                             Class IV, C
                           </div>
                           <div className="border-bottom mb-3">
-                            <h5 className="mb-3">
-                              Analyze and interpret literary texts skills
-                            </h5>
+                            <h5 className="mb-3">Analyze and interpret literary texts skills</h5>
                             <div className="progress progress-xs mb-3">
                               <div
                                 className="progress-bar bg-info"
                                 role="progressbar"
-                                style={{ width: "80%" }}
+                                style={{ width: '80%' }}
                                 aria-valuenow={25}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
@@ -1202,10 +1134,7 @@ const TeacherDashboard = () => {
                             </div>
                           </div>
                           <div className="d-flex align-items-center justify-content-between">
-                            <Link
-                              to={routes.sheduleClasses}
-                              className="fw-medium"
-                            >
+                            <Link to={routes.sheduleClasses} className="fw-medium">
                               <i className="ti ti-edit me-1" />
                               Reschedule
                             </Link>
@@ -1224,14 +1153,12 @@ const TeacherDashboard = () => {
                             Class V, A
                           </div>
                           <div className="border-bottom mb-3">
-                            <h5 className="mb-3">
-                              Enhance vocabulary and grammar skills
-                            </h5>
+                            <h5 className="mb-3">Enhance vocabulary and grammar skills</h5>
                             <div className="progress progress-xs mb-3">
                               <div
                                 className="progress-bar bg-danger"
                                 role="progressbar"
-                                style={{ width: "30%" }}
+                                style={{ width: '30%' }}
                                 aria-valuenow={25}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
@@ -1239,10 +1166,7 @@ const TeacherDashboard = () => {
                             </div>
                           </div>
                           <div className="d-flex align-items-center justify-content-between">
-                            <Link
-                              to={routes.sheduleClasses}
-                              className="fw-medium"
-                            >
+                            <Link to={routes.sheduleClasses} className="fw-medium">
                               <i className="ti ti-edit me-1" />
                               Reschedule
                             </Link>
@@ -1261,14 +1185,12 @@ const TeacherDashboard = () => {
                             Class VII, A
                           </div>
                           <div className="border-bottom mb-3">
-                            <h5 className="mb-3">
-                              Atomic structure and periodic table skills
-                            </h5>
+                            <h5 className="mb-3">Atomic structure and periodic table skills</h5>
                             <div className="progress progress-xs mb-3">
                               <div
                                 className="progress-bar bg-secondary"
                                 role="progressbar"
-                                style={{ width: "70%" }}
+                                style={{ width: '70%' }}
                                 aria-valuenow={25}
                                 aria-valuemin={0}
                                 aria-valuemax={100}
@@ -1276,10 +1198,7 @@ const TeacherDashboard = () => {
                             </div>
                           </div>
                           <div className="d-flex align-items-center justify-content-between">
-                            <Link
-                              to={routes.sheduleClasses}
-                              className="fw-medium"
-                            >
+                            <Link to={routes.sheduleClasses} className="fw-medium">
                               <i className="ti ti-edit me-1" />
                               Reschedule
                             </Link>
@@ -1305,11 +1224,7 @@ const TeacherDashboard = () => {
                   <h4 className="card-title ">Student Marks</h4>
                   <div className="d-flex align-items-center">
                     <div className="dropdown me-2 ">
-                      <Link
-                        to="#"
-                        className="bg-white dropdown-toggle"
-                        data-bs-toggle="dropdown"
-                      >
+                      <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
                         <i className="ti ti-calendar me-2" />
                         All Classes
                       </Link>
@@ -1332,11 +1247,7 @@ const TeacherDashboard = () => {
                       </ul>
                     </div>
                     <div className="dropdown ">
-                      <Link
-                        to="#"
-                        className="bg-white dropdown-toggle"
-                        data-bs-toggle="dropdown"
-                      >
+                      <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
                         <i className="ti ti-calendar me-2" />
                         All Sections
                       </Link>
@@ -1379,10 +1290,7 @@ const TeacherDashboard = () => {
                           <td>35013</td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <Link
-                                to={routes.studentDetail}
-                                className="avatar avatar-md"
-                              >
+                              <Link to={routes.studentDetail} className="avatar avatar-md">
                                 <ImageWithBasePath
                                   src="assets/img/students/student-01.jpg"
                                   className="img-fluid rounded-circle"
@@ -1408,10 +1316,7 @@ const TeacherDashboard = () => {
                           <td>35013</td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <Link
-                                to={routes.studentDetail}
-                                className="avatar avatar-md"
-                              >
+                              <Link to={routes.studentDetail} className="avatar avatar-md">
                                 <ImageWithBasePath
                                   src="assets/img/students/student-02.jpg"
                                   className="img-fluid rounded-circle"
@@ -1437,10 +1342,7 @@ const TeacherDashboard = () => {
                           <td>35011</td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <Link
-                                to={routes.studentDetail}
-                                className="avatar avatar-md"
-                              >
+                              <Link to={routes.studentDetail} className="avatar avatar-md">
                                 <ImageWithBasePath
                                   src="assets/img/students/student-03.jpg"
                                   className="img-fluid rounded-circle"
@@ -1449,9 +1351,7 @@ const TeacherDashboard = () => {
                               </Link>
                               <div className="ms-2">
                                 <p className="text-dark mb-0">
-                                  <Link to={routes.studentDetail}>
-                                    Kathleen
-                                  </Link>
+                                  <Link to={routes.studentDetail}>Kathleen</Link>
                                 </p>
                               </div>
                             </div>
@@ -1468,10 +1368,7 @@ const TeacherDashboard = () => {
                           <td>35010</td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <Link
-                                to={routes.studentDetail}
-                                className="avatar avatar-md"
-                              >
+                              <Link to={routes.studentDetail} className="avatar avatar-md">
                                 <ImageWithBasePath
                                   src="assets/img/students/student-04.jpg"
                                   className="img-fluid rounded-circle"
@@ -1497,10 +1394,7 @@ const TeacherDashboard = () => {
                           <td>35009</td>
                           <td>
                             <div className="d-flex align-items-center">
-                              <Link
-                                to={routes.studentDetail}
-                                className="avatar avatar-md"
-                              >
+                              <Link to={routes.studentDetail} className="avatar avatar-md">
                                 <ImageWithBasePath
                                   src="assets/img/students/student-05.jpg"
                                   className="img-fluid rounded-circle"
