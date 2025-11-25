@@ -30,14 +30,6 @@ import ExpensesCategory from '../accounts/expenses-category';
 import Invoice from '../accounts/invoice';
 import Events from '../announcements/events';
 import NoticeBoard from '../announcements/notice-board';
-import AudioCall from '../application/call/audioCall';
-import CallHistory from '../application/call/callHistory';
-import Videocall from '../application/call/videoCall';
-import Chat from '../application/chat';
-import Email from '../application/email';
-import FileManager from '../application/fileManager';
-import Notes from '../application/notes';
-import Todo from '../application/todo';
 import EmailVerification from '../auth/emailVerification/emailVerification';
 import EmailVerification2 from '../auth/emailVerification/emailVerification-2';
 import EmailVerification3 from '../auth/emailVerification/emailVerification-3';
@@ -275,21 +267,6 @@ export const publicRoutes = [
     element: <ParentDashboard />,
     route: Route,
   },
-  {
-    path: routes.audioCall,
-    element: <AudioCall />,
-    route: Route,
-  },
-  {
-    path: routes.callHistory,
-    element: <CallHistory />,
-    route: Route,
-  },
-  {
-    path: routes.callHistory,
-    element: <CallHistory />,
-    route: Route,
-  },
 
   {
     path: routes.connectedApps,
@@ -324,10 +301,7 @@ export const publicRoutes = [
     path: routes.membershipTransaction,
     element: <MembershipTransaction />,
   },
-  {
-    path: routes.notes,
-    element: <Notes />,
-  },
+
   {
     path: routes.countries,
     element: <Countries />,
@@ -506,37 +480,59 @@ export const publicRoutes = [
     element: <Preference />,
     route: Route,
   },
-  {
-    path: routes.todo,
-    element: <Todo />,
-    route: Route,
-  },
-  {
-    path: routes.email,
-    element: <Email />,
-    route: Route,
-  },
-  {
-    path: routes.videoCall,
-    element: <Videocall />,
-    route: Route,
-  },
-  {
-    path: routes.chat,
-    element: <Chat />,
-    route: Route,
-  },
+
+  // application routes
+  // {
+  //   path: routes.todo,
+  //   element: <Todo />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.email,
+  //   element: <Email />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.videoCall,
+  //   element: <Videocall />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.chat,
+  //   element: <Chat />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.fileManager,
+  //   element: <FileManager />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.audioCall,
+  //   element: <AudioCall />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.callHistory,
+  //   element: <CallHistory />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.callHistory,
+  //   element: <CallHistory />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.notes,
+  //   element: <Notes />,
+  // },
+
   {
     path: routes.pages,
     element: <Pages />,
     route: Route,
   },
 
-  {
-    path: routes.fileManager,
-    element: <FileManager />,
-    route: Route,
-  },
   {
     path: routes.faq,
     element: <Faq />,
@@ -1006,31 +1002,33 @@ export const publicRoutes = [
     route: Route,
   },
 
-  {
-    path: routes.layoutDefault,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutMini,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutRtl,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutBox,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutDark,
-    element: <AdminDashboard />,
-    route: Route,
-  },
+  // layout routes
+  // {
+  //   path: routes.layoutDefault,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutMini,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutRtl,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutBox,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutDark,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+
   {
     path: routes.guardiansGrid,
     element: <GuardianGrid />,

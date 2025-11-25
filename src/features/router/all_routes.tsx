@@ -157,13 +157,13 @@ export const all_routes = {
   prefixes: '/website-settings/prefixes',
 
   // application routes
-  todo: '/application/todo',
-  email: '/application/email',
-  videoCall: '/application/video-call',
-  chat: '/application/chat',
-  audioCall: '/application/audio-call',
-  callHistory: '/application/call-history',
-  fileManager: '/application/file-manager',
+  // todo: '/application/todo',
+  // email: '/application/email',
+  // videoCall: '/application/video-call',
+  // chat: '/application/chat',
+  // audioCall: '/application/audio-call',
+  // callHistory: '/application/call-history',
+  // fileManager: '/application/file-manager',
 
   //content routes
   pages: '/content/pages',
@@ -287,11 +287,11 @@ export const all_routes = {
   editStaff: '/hrm/edit-staff',
   staffsAttendance: '/hrm/staffs-attendance',
 
-  layoutDefault: '/layout-default',
-  layoutMini: '/layout-mini',
-  layoutRtl: '/layout-rtl',
-  layoutBox: '/layout-box',
-  layoutDark: '/layout-dark',
+  // layoutDefault: '/layout-default',
+  // layoutMini: '/layout-mini',
+  // layoutRtl: '/layout-rtl',
+  // layoutBox: '/layout-box',
+  // layoutDark: '/layout-dark',
 
   // finance & accounts routes
   accountsIncome: '/accounts/accounts-income',
