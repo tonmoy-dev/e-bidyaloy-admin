@@ -3,6 +3,8 @@ import type { AssignedStudent, AssignmentModel } from '../models/assignment.mode
 const AssignmentDetailsView = ({ assignmentData }: { assignmentData: AssignmentModel }) => {
   // Get attachments directly from assignment data
   const attachments = assignmentData?.attachments || [];
+  // Exclude attachments that are student submissions (attachment_type === 'submission')
+  const assignmentAttachments = attachments.filter((att) => att.attachment_type !== 'submission');
 
   return (
     <>
@@ -419,14 +421,14 @@ const AssignmentDetailsView = ({ assignmentData }: { assignmentData: AssignmentM
           </div>
         </div>
         {/* Attachments */}
-        {attachments && attachments.length > 0 ? (
+        {assignmentAttachments && assignmentAttachments.length > 0 ? (
           <div className="col-md-12 mb-4">
             <h5 className="border-bottom pb-2 mb-3">
               <i className="fas fa-paperclip me-2"></i>
-              Assignment Files ({attachments.length})
+              Assignment Files ({assignmentAttachments.length})
             </h5>
             <div className="attachments-grid">
-              {attachments.map((attachment, index) => {
+              {assignmentAttachments.map((attachment, index) => {
                 // Get file icon based on extension
                 const getFileIcon = (fileName: string): string => {
                   const extension = fileName.split('.').pop()?.toLowerCase();

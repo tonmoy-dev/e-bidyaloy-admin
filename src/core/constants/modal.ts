@@ -3,4 +3,5 @@ export const MODAL_TYPE = {
   EDIT: 'edit',
   VIEW: 'view',
   DELETE: 'delete',
+  GRADE: 'grade',
 };

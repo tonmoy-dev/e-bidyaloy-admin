@@ -4,13 +4,13 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import * as yup from 'yup';
 import CommonSelect from '../../../../core/common/commonSelect';
 import {
   ContractTeacher,
   Tgender,
   status,
-} 
-from '../../../../core/common/selectoption/selectoption';
+} from '../../../../core/common/selectoption/selectoption';
 import TagInput from '../../../../core/common/Taginput';
 import { all_routes } from '../../../router/all_routes';
 import { useTeacherById } from '../hooks/useTeacherById';
@@ -48,6 +48,15 @@ const TeacherForm = () => {
   } = useTeacherMutations();
 
   // Form setup
+  const dynamicSchema = isEdit
+    ? teacherSchema
+    : teacherSchema.shape({
+        password: yup
+          .string()
+          .required('Password is required')
+          .min(6, 'Password must be at least 6 characters'),
+      });
+
   const {
     control,
     handleSubmit,
@@ -55,7 +64,7 @@ const TeacherForm = () => {
     watch,
     formState: { errors },
   } = useForm<TeacherModel>({
-    resolver: yupResolver(teacherSchema),
+    resolver: yupResolver(dynamicSchema),
     defaultValues: {
       is_active: true,
       experience_years: 0,
@@ -132,6 +141,8 @@ const TeacherForm = () => {
             date_of_birth: data.date_of_birth,
             hire_date: data.hire_date,
             termination_date: data.termination_date || undefined,
+            // Exclude password from update if empty
+            password: data.password || undefined,
             // Add languages to the data if needed
             languages_known: languagesKnown,
           },
@@ -141,6 +152,8 @@ const TeacherForm = () => {
           ...data,
           date_of_birth: data.date_of_birth,
           hire_date: data.hire_date,
+          // Include password for new teacher creation
+          password: data.password,
           languages_known: languagesKnown,
         });
       }
@@ -293,6 +306,32 @@ const TeacherForm = () => {
                           />
                           {errors.username && (
                             <div className="invalid-feedback">{errors.username.message}</div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Password */}
+                      <div className="col-xxl col-xl-3 col-md-6">
+                        <div className="mb-3">
+                          <label className="form-label">Password {!isEdit && '*'}</label>
+                          <Controller
+                            name="password"
+                            control={control}
+                            render={({ field }) => (
+                              <input
+                                {...field}
+                                type="password"
+                                placeholder={
+                                  isEdit
+                                    ? 'Leave blank to keep current password'
+                                    : 'Min. 6 characters'
+                                }
+                                className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                              />
+                            )}
+                          />
+                          {errors.password && (
+                            <div className="invalid-feedback">{errors.password.message}</div>
                           )}
                         </div>
                       </div>

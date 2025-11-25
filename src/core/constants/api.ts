@@ -13,8 +13,8 @@ export const API_ENDPOINTS = {
     RESET_PASSWORD: '/api/v1/auth/reset-password/',
   },
   USER: {
-    PROFILE: '/user/api/v1/user/profile/',
-    CHANGE_PASSWORD: '/user/api/v1/user/change-password/',
+    PROFILE: 'api/v1/auth/profile/',
+    CHANGE_PASSWORD: '/api/v1/auth/change-password/',
   },
   POKEMON: {
     LIST: '/pokemon',
@@ -153,7 +153,10 @@ export const API_ENDPOINTS = {
     CREATE: () => ({ url: '/api/v1/assignment-submissions/', method: 'POST' }),
     DETAILS: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'GET' }),
     UPDATE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'PUT' }),
-    PARTIAL_UPDATE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'PATCH' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/assignment-submissions/${id}/`,
+      method: 'PATCH',
+    }),
     DELETE: (id: string) => ({ url: `/api/v1/assignment-submissions/${id}/`, method: 'DELETE' }),
   },
 
@@ -215,5 +218,63 @@ export const API_ENDPOINTS = {
     UPDATE_BY_ID: '/api/v1/student-types/',
     DELETE_BY_ID: '/api/v1/student-types/',
     DETAILS_BY_ID: '/api/v1/student-types/',
+  },
+
+  // Applications endpoints
+  APPLICATIONS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/applications/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/applications/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/applications/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/applications/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/applications/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/applications/${id}/`,
+      method: 'DELETE',
+    }),
+    APPROVE: (id: string) => ({
+      url: `/api/v1/applications/${id}/approve/`,
+      method: 'POST',
+    }),
+    REJECT: (id: string) => ({
+      url: `/api/v1/applications/${id}/reject/`,
+      method: 'POST',
+    }),
+  },
+
+  // Complaints endpoints
+  COMPLAINTS: {
+    LIST: (params?: Record<string, unknown>) => ({
+      url: `/api/v1/complaints/`,
+      method: 'GET',
+      params,
+    }),
+    CREATE: () => ({ url: '/api/v1/complaints/', method: 'POST' }),
+    DETAILS: (id: string) => ({ url: `/api/v1/complaints/${id}/`, method: 'GET' }),
+    UPDATE: (id: string) => ({ url: `/api/v1/complaints/${id}/`, method: 'PUT' }),
+    PARTIAL_UPDATE: (id: string) => ({
+      url: `/api/v1/complaints/${id}/`,
+      method: 'PATCH',
+    }),
+    DELETE: (id: string) => ({
+      url: `/api/v1/complaints/${id}/`,
+      method: 'DELETE',
+    }),
+    MARK_RESOLVED: (id: string) => ({
+      url: `/api/v1/complaints/${id}/mark_resolved/`,
+      method: 'POST',
+    }),
+  },
+
+  RESET_PASSWORD: {
+    RESET: '/api/v1/auth/reset-password/',
+    VERIFY: '/api/v1/auth/verify/',
+    SEND_VERIFICATION_CODE: '/api/v1/auth/send-verification-code/',
   },
 };

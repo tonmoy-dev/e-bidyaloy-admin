@@ -1,6 +1,7 @@
 import Ribbon from 'antd/es/badge/Ribbon';
 import { Navigate, Route } from 'react-router';
-import AcademicReason from '../academic/academic-reason';
+import AcademicApplication from '../academic/academic-application/index.tsx';
+import AcademicComplaint from '../academic/academic-Complaints/index.tsx';
 import Assignments from '../academic/assignments';
 import StudentAssignments from '../academic/assignments/StudentAssignments';
 import ClassHomeWork from '../academic/class-home-work';
@@ -29,14 +30,6 @@ import ExpensesCategory from '../accounts/expenses-category';
 import Invoice from '../accounts/invoice';
 import Events from '../announcements/events';
 import NoticeBoard from '../announcements/notice-board';
-import AudioCall from '../application/call/audioCall';
-import CallHistory from '../application/call/callHistory';
-import Videocall from '../application/call/videoCall';
-import Chat from '../application/chat';
-import Email from '../application/email';
-import FileManager from '../application/fileManager';
-import Notes from '../application/notes';
-import Todo from '../application/todo';
 import EmailVerification from '../auth/emailVerification/emailVerification';
 import EmailVerification2 from '../auth/emailVerification/emailVerification-2';
 import EmailVerification3 from '../auth/emailVerification/emailVerification-3';
@@ -59,16 +52,6 @@ import ResetPasswordSuccess3 from '../auth/resetPasswordSuccess/resetPasswordSuc
 import TwoStepVerification from '../auth/twoStepVerification/twoStepVerification';
 import TwoStepVerification2 from '../auth/twoStepVerification/twoStepVerification-2';
 import TwoStepVerification3 from '../auth/twoStepVerification/twoStepVerification-3';
-import AllBlogs from '../content/blog/allBlogs';
-import BlogCategories from '../content/blog/blogCategories';
-import BlogComments from '../content/blog/blogComments';
-import BlogTags from '../content/blog/blogTags';
-import Faq from '../content/faq';
-import Cities from '../content/location/cities';
-import Countries from '../content/location/countries';
-import States from '../content/location/states';
-import Pages from '../content/pages';
-import Testimonials from '../content/testimonials';
 import StaffAttendance from '../hrm/attendance/staff-attendance';
 import StudentAttendance from '../hrm/attendance/student-attendance';
 import TeacherAttendance from '../hrm/attendance/teacher-attendance.tsx';
@@ -95,23 +78,6 @@ import FeesAssign from '../management/feescollection/feesAssign';
 import FeesGroup from '../management/feescollection/feesGroup';
 import FeesMaster from '../management/feescollection/feesMaster';
 import FeesTypes from '../management/feescollection/feesTypes';
-import HostelList from '../management/hostel/hostelList';
-import HostelRooms from '../management/hostel/hostelRooms';
-import HostelType from '../management/hostel/hostelType';
-import Books from '../management/library/books';
-import IssueBook from '../management/library/issuesBook';
-import LibraryMember from '../management/library/libraryMember';
-import ReturnBook from '../management/library/returnBook';
-import PlayersList from '../management/sports/playersList';
-import SportsList from '../management/sports/sportsList';
-import TransportAssignVehicle from '../management/transport/transportAssignVehicle';
-import TransportPickupPoints from '../management/transport/transportPickupPoints';
-import TransportRoutes from '../management/transport/transportRoutes';
-import TransportVehicle from '../management/transport/transportVehicle';
-import TransportVehicleDrivers from '../management/transport/transportVehicleDrivers';
-import MembershipAddon from '../membership/membershipaddon';
-import Membershipplan from '../membership/membershipplan';
-import MembershipTransaction from '../membership/membershiptrasaction';
 import BlankPage from '../pages/blankPage';
 import ComingSoon from '../pages/comingSoon';
 import Error404 from '../pages/error/error-404';
@@ -178,9 +144,6 @@ import Preference from '../settings/websiteSettings/preference';
 import Prefixes from '../settings/websiteSettings/prefixes';
 import Socialauthentication from '../settings/websiteSettings/socialAuthentication';
 import ContactMessages from '../support/contactMessages';
-import TicketDetails from '../support/ticket-details';
-import TicketGrid from '../support/ticket-grid';
-import Tickets from '../support/tickets';
 import ClipBoard from '../uiInterface/advanced-ui/clipboard';
 import Counter from '../uiInterface/advanced-ui/counter';
 import RangeSlides from '../uiInterface/advanced-ui/rangeslider';
@@ -274,32 +237,13 @@ export const publicRoutes = [
     element: <ParentDashboard />,
     route: Route,
   },
-  {
-    path: routes.audioCall,
-    element: <AudioCall />,
-    route: Route,
-  },
-  {
-    path: routes.callHistory,
-    element: <CallHistory />,
-    route: Route,
-  },
-  {
-    path: routes.callHistory,
-    element: <CallHistory />,
-    route: Route,
-  },
 
   {
     path: routes.connectedApps,
     element: <ConnectedApps />,
     route: Route,
   },
-  {
-    path: routes.countries,
-    element: <Countries />,
-    route: Route,
-  },
+
   {
     path: routes.blankPage,
     element: <BlankPage />,
@@ -311,27 +255,20 @@ export const publicRoutes = [
     route: Route,
   },
 
-  {
-    path: routes.membershipplan,
-    element: <Membershipplan />,
-  },
-  {
-    path: routes.membershipAddon,
-    element: <MembershipAddon />,
-  },
-  {
-    path: routes.membershipTransaction,
-    element: <MembershipTransaction />,
-  },
-  {
-    path: routes.notes,
-    element: <Notes />,
-  },
-  {
-    path: routes.countries,
-    element: <Countries />,
-    route: Route,
-  },
+  // membership routes
+  // {
+  //   path: routes.membershipplan,
+  //   element: <Membershipplan />,
+  // },
+  // {
+  //   path: routes.membershipAddon,
+  //   element: <MembershipAddon />,
+  // },
+  // {
+  //   path: routes.membershipTransaction,
+  //   element: <MembershipTransaction />,
+  // },
+
   {
     path: routes.customFields,
     element: <CustomFields />,
@@ -351,11 +288,6 @@ export const publicRoutes = [
   {
     path: routes.deleteRequest,
     element: <DeleteRequest />,
-    route: Route,
-  },
-  {
-    path: routes.cities,
-    element: <Cities />,
     route: Route,
   },
 
@@ -505,53 +437,53 @@ export const publicRoutes = [
     element: <Preference />,
     route: Route,
   },
-  {
-    path: routes.todo,
-    element: <Todo />,
-    route: Route,
-  },
-  {
-    path: routes.email,
-    element: <Email />,
-    route: Route,
-  },
-  {
-    path: routes.videoCall,
-    element: <Videocall />,
-    route: Route,
-  },
-  {
-    path: routes.chat,
-    element: <Chat />,
-    route: Route,
-  },
-  {
-    path: routes.pages,
-    element: <Pages />,
-    route: Route,
-  },
 
-  {
-    path: routes.fileManager,
-    element: <FileManager />,
-    route: Route,
-  },
-  {
-    path: routes.faq,
-    element: <Faq />,
-    route: Route,
-  },
+  // application routes
+  // {
+  //   path: routes.todo,
+  //   element: <Todo />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.email,
+  //   element: <Email />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.videoCall,
+  //   element: <Videocall />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.chat,
+  //   element: <Chat />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.fileManager,
+  //   element: <FileManager />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.audioCall,
+  //   element: <AudioCall />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.callHistory,
+  //   element: <CallHistory />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.callHistory,
+  //   element: <CallHistory />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.notes,
+  //   element: <Notes />,
+  // },
 
-  {
-    path: routes.states,
-    element: <States />,
-    route: Route,
-  },
-  {
-    path: routes.testimonials,
-    element: <Testimonials />,
-    route: Route,
-  },
   {
     path: routes.clipboard,
     element: <ClipBoard />,
@@ -794,8 +726,13 @@ export const publicRoutes = [
     route: Route,
   },
   {
-    path: routes.AcademicReason,
-    element: <AcademicReason />,
+    path: routes.AcademicApplication,
+    element: <AcademicApplication />,
+    route: Route,
+  },
+  {
+    path: routes.academicComplaints,
+    element: <AcademicComplaint />,
     route: Route,
   },
   {
@@ -1000,31 +937,33 @@ export const publicRoutes = [
     route: Route,
   },
 
-  {
-    path: routes.layoutDefault,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutMini,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutRtl,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutBox,
-    element: <AdminDashboard />,
-    route: Route,
-  },
-  {
-    path: routes.layoutDark,
-    element: <AdminDashboard />,
-    route: Route,
-  },
+  // layout routes
+  // {
+  //   path: routes.layoutDefault,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutMini,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutRtl,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutBox,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.layoutDark,
+  //   element: <AdminDashboard />,
+  //   route: Route,
+  // },
+
   {
     path: routes.guardiansGrid,
     element: <GuardianGrid />,
@@ -1035,6 +974,8 @@ export const publicRoutes = [
     element: <GuardianList />,
     route: Route,
   },
+
+  // management routes
   {
     path: routes.feesGroup,
     element: <FeesGroup />,
@@ -1060,76 +1001,78 @@ export const publicRoutes = [
     element: <CollectFees />,
     route: Route,
   },
-  {
-    path: routes.libraryMembers,
-    element: <LibraryMember />,
-    route: Route,
-  },
-  {
-    path: routes.libraryBooks,
-    element: <Books />,
-    route: Route,
-  },
-  {
-    path: routes.libraryIssueBook,
-    element: <IssueBook />,
-    route: Route,
-  },
-  {
-    path: routes.libraryReturn,
-    element: <ReturnBook />,
-    route: Route,
-  },
-  {
-    path: routes.sportsList,
-    element: <SportsList />,
-    route: Route,
-  },
-  {
-    path: routes.playerList,
-    element: <PlayersList />,
-    route: Route,
-  },
-  {
-    path: routes.hostelRoom,
-    element: <HostelRooms />,
-    route: Route,
-  },
-  {
-    path: routes.hostelType,
-    element: <HostelType />,
-    route: Route,
-  },
-  {
-    path: routes.hostelList,
-    element: <HostelList />,
-    route: Route,
-  },
-  {
-    path: routes.transportRoutes,
-    element: <TransportRoutes />,
-    route: Route,
-  },
-  {
-    path: routes.transportAssignVehicle,
-    element: <TransportAssignVehicle />,
-    route: Route,
-  },
-  {
-    path: routes.transportPickupPoints,
-    element: <TransportPickupPoints />,
-    route: Route,
-  },
-  {
-    path: routes.transportVehicleDrivers,
-    element: <TransportVehicleDrivers />,
-    route: Route,
-  },
-  {
-    path: routes.transportVehicle,
-    element: <TransportVehicle />,
-    route: Route,
-  },
+
+  // {
+  //   path: routes.libraryMembers,
+  //   element: <LibraryMember />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.libraryBooks,
+  //   element: <Books />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.libraryIssueBook,
+  //   element: <IssueBook />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.libraryReturn,
+  //   element: <ReturnBook />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.sportsList,
+  //   element: <SportsList />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.playerList,
+  //   element: <PlayersList />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.hostelRoom,
+  //   element: <HostelRooms />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.hostelType,
+  //   element: <HostelType />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.hostelList,
+  //   element: <HostelList />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportRoutes,
+  //   element: <TransportRoutes />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportAssignVehicle,
+  //   element: <TransportAssignVehicle />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportPickupPoints,
+  //   element: <TransportPickupPoints />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportVehicleDrivers,
+  //   element: <TransportVehicleDrivers />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.transportVehicle,
+  //   element: <TransportVehicle />,
+  //   route: Route,
+  // },
+
   {
     path: routes.approveRequest,
     element: <ApproveRequest />,
@@ -1347,41 +1290,60 @@ export const publicRoutes = [
     element: <Manageusers />,
     route: Route,
   },
-  {
-    path: routes.allBlogs,
-    element: <AllBlogs />,
-    route: Route,
-  },
-  {
-    path: routes.blogCategories,
-    element: <BlogCategories />,
-    route: Route,
-  },
-  {
-    path: routes.blogComments,
-    element: <BlogComments />,
-    route: Route,
-  },
-  {
-    path: routes.blogTags,
-    element: <BlogTags />,
-    route: Route,
-  },
-  {
-    path: routes.tickets,
-    element: <Tickets />,
-    route: Route,
-  },
-  {
-    path: routes.ticketGrid,
-    element: <TicketGrid />,
-    route: Route,
-  },
-  {
-    path: routes.ticketDetails,
-    element: <TicketDetails />,
-    route: Route,
-  },
+
+  // {
+  //   path: routes.allBlogs,
+  //   element: <AllBlogs />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.blogCategories,
+  //   element: <BlogCategories />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.blogComments,
+  //   element: <BlogComments />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.blogTags,
+  //   element: <BlogTags />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.pages,
+  //   element: <Pages />,
+  //   route: Route,
+  // },
+
+  // {
+  //   path: routes.faq,
+  //   element: <Faq />,
+  //   route: Route,
+  // },
+
+  // {
+  //   path: routes.states,
+  //   element: <States />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.testimonials,
+  //   element: <Testimonials />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.countries,
+  //   element: <Countries />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.cities,
+  //   element: <Cities />,
+  //   route: Route,
+  // },
+
   {
     path: routes.feesReport,
     element: <FeesReport />,

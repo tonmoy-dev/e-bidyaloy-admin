@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { MODAL_TYPE } from '../../../core/constants/modal';
 import type { TableData } from '../../../core/data/interface';
+import { useAppSelector } from '../../../core/store';
 import PageHeader from '../../../shared/components/layout/PageHeader';
 import DataTable from '../../../shared/components/table/DataTable';
 import DataTableBody from '../../../shared/components/table/DataTableBody';
@@ -27,6 +28,14 @@ const StudentAssignments = () => {
   const [selectedSubject, setSelectedSubject] = useState<string>('');
   const { assignments } = useAssignments(page);
   const data = assignments?.results;
+
+  // Get logged-in student info
+  const { user } = useAppSelector((state) => state.auth);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const _authUser: any = user;
+  const profileId: string | undefined = _authUser?.profile_id;
+  const studentClass: string | undefined = _authUser?.class_id;
+  const studentSection: string | undefined = _authUser?.section_id;
   const skipQuery = activeModal === MODAL_TYPE.DELETE;
   const { assignmentDetails, isError: isAssignmentError } = useAssignmentById(
     selectedId ?? null,
@@ -145,10 +154,32 @@ const StudentAssignments = () => {
     },
   ];
 
+  // Filter assignments to show only those assigned to the logged-in student
+  const studentAssignments = useMemo(() => {
+    if (!data || !profileId) return [];
+
+    return data.filter((assignment: AssignmentModel) => {
+      // Check based on target_type
+      if (assignment.target_type === 'class') {
+        // Show if student's class matches
+        return assignment.class_assigned === studentClass;
+      } else if (assignment.target_type === 'section') {
+        // Show if student's class and section match
+        return assignment.class_assigned === studentClass && assignment.section === studentSection;
+      } else if (assignment.target_type === 'individual') {
+        // Show if student is in the assigned_students list
+        return assignment.assigned_students?.some((student) => student.student === profileId);
+      }
+      return false;
+    });
+  }, [data, profileId, studentClass, studentSection]);
+
   const filteredData = useMemo(() => {
-    if (!selectedSubject) return data ?? [];
-    return (data ?? []).filter((r: AssignmentModel) => r?.subject_name === selectedSubject);
-  }, [data, selectedSubject]);
+    if (!selectedSubject) return studentAssignments ?? [];
+    return (studentAssignments ?? []).filter(
+      (r: AssignmentModel) => r?.subject_name === selectedSubject,
+    );
+  }, [studentAssignments, selectedSubject]);
 
   const sortingOptions = ['Ascending', 'Descending'];
 
@@ -170,32 +201,46 @@ const StudentAssignments = () => {
           </PageHeader>
 
           {/* Page Table */}
-          <DataTable
-            header={
-              <DataTableHeader
-                filters={
-                  <TableFilter
-                    filters={assignmentFilters}
-                    onApply={(filters) => {
-                      const selected = filters['subject'];
-                      setSelectedSubject((selected?.value ?? '').toString());
-                    }}
-                    onReset={() => {
-                      setSelectedSubject('');
-                    }}
-                  />
-                }
-                sortingOptions={sortingOptions}
-                onApply={() => console.log('Apply clicked')}
-                onReset={() => console.log('Reset clicked')}
-                onSortChange={(sort) => console.log('Sort:', sort)}
-                defaultSort="Ascending"
-              />
-            }
-            footer={<DataTableFooter />}
-          >
-            <DataTableBody columns={columns} dataSource={filteredData} Selection={true} />
-          </DataTable>
+          {filteredData && filteredData.length > 0 ? (
+            <DataTable
+              header={
+                <DataTableHeader
+                  filters={
+                    <TableFilter
+                      filters={assignmentFilters}
+                      onApply={(filters) => {
+                        const selected = filters['subject'];
+                        setSelectedSubject((selected?.value ?? '').toString());
+                      }}
+                      onReset={() => {
+                        setSelectedSubject('');
+                      }}
+                    />
+                  }
+                  sortingOptions={sortingOptions}
+                  onApply={() => console.log('Apply clicked')}
+                  onReset={() => console.log('Reset clicked')}
+                  onSortChange={(sort) => console.log('Sort:', sort)}
+                  defaultSort="Ascending"
+                />
+              }
+              footer={<DataTableFooter />}
+            >
+              <DataTableBody columns={columns} dataSource={filteredData} Selection={true} />
+            </DataTable>
+          ) : (
+            <div className="alert alert-info d-flex align-items-center" role="alert">
+              <i className="fas fa-info-circle me-3 fs-5"></i>
+              <div>
+                <h5 className="alert-heading mb-1">No Assignments Found</h5>
+                <p className="mb-0">
+                  {!studentAssignments || studentAssignments.length === 0
+                    ? 'There are no assignments assigned to you at the moment.'
+                    : 'No assignments match the selected subject filter. Try changing your filter.'}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

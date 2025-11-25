@@ -58,8 +58,14 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       if (skipContentType) {
         headers.delete('skip-content-type');
       } else if (!headers.has('content-type')) {
-        // Default to JSON when caller has not provided a body-specific content type
-        headers.set('content-type', 'application/json');
+        // When body is FormData, let the browser set multipart/form-data automatically
+        const isFormData =
+          typeof args === 'object' && args !== null && args.body instanceof FormData;
+
+        if (!isFormData) {
+          // Default to JSON when caller has not provided a body-specific content type
+          headers.set('content-type', 'application/json');
+        }
       }
 
       return headers;
@@ -169,7 +175,6 @@ const baseQueryWithReauth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
 export const baseApi = createApi({
   reducerPath: 'api',
   baseQuery: baseQueryWithReauth,
-  // Merged tagTypes from both branches (deduplicated)
   tagTypes: [
     'User',
     'Auth',
@@ -190,9 +195,8 @@ export const baseApi = createApi({
     'PaymentGateway',
     'ExamResult',
     'StudentType',
+    'Application',
+    'Complaint',
   ],
   endpoints: () => ({}),
 });
-
-// Export hooks for usage in functional components
-// No hooks to export yet since no endpoints are defined
