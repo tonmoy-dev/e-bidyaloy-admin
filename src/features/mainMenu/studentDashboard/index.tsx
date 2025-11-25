@@ -1,16 +1,36 @@
-import  { useState } from "react";
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { all_routes } from "../../router/all_routes";
 import ImageWithBasePath from "../../../core/common/imageWithBasePath";
 import CircleProgress from "./circleProgress";
 import ReactApexChart from "react-apexcharts";
-import { Calendar } from "primereact/calendar";
 import type { Nullable } from "primereact/ts-helpers";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dayjs from "dayjs";
 import { DatePicker } from "antd";
+import {
+  SchedulesWidget,
+  AttendanceWidget,
+  HomeWorksWidget,
+  LeaveStatusWidget,
+  FeesReminderWidget,
+  NoticeBoardWidget,
+  TodoWidget,
+} from "../dashboards/shared/components/widgets";
+import ProfileCard from "../dashboards/shared/components/ProfileCard";
+import type {
+  Event,
+  AttendanceStats,
+  AttendanceChartData,
+  Homework,
+  Leave,
+  Fee,
+  Notice,
+  TodoItem,
+  ProfileCardData,
+} from "../dashboards/shared/types/dashboard.types";
 
 const StudentDasboard = () => {
   const routes = all_routes;
@@ -21,6 +41,254 @@ const StudentDasboard = () => {
   const formattedDate = `${month}-${day}-${year}`;
   const defaultValue = dayjs(formattedDate);
   const [date, setDate] = useState<Nullable<Date>>(null);
+  const [attendanceDateRange, setAttendanceDateRange] = useState<string>("This Week");
+  const [leaveDateRange, setLeaveDateRange] = useState<string>("This Month");
+  const [todoDateRange, setTodoDateRange] = useState<string>("Today");
+  const [subjectFilter, setSubjectFilter] = useState<string>("All Subject");
+
+  // Sample data - will be replaced with dynamic data later
+  const profileData: ProfileCardData = {
+    id: "ST1234546",
+    name: "Angelo Riana",
+    image: "assets/img/students/student-13.jpg",
+    badge: "#ST1234546",
+    additionalInfo: [
+      { label: "Class", value: "III, C" },
+      { label: "Roll No", value: "36545" },
+    ],
+    editLink: routes.editStudent,
+  };
+
+  const attendanceStats: AttendanceStats = {
+    present: 25,
+    absent: 2,
+    halfDay: 0,
+  };
+
+  const attendanceChartData: AttendanceChartData = {
+    series: [60, 5, 15, 20],
+    labels: ["Present", "Late", "Half Day", "Absent"],
+    colors: ["#1ABE17", "#1170E4", "#E9EDF4", "#E82646"],
+  };
+
+  const events: Event[] = [
+    {
+      id: "1",
+      title: "1st Quarterly",
+      date: "06 May 2024",
+      time: "01:30 - 02:15 PM",
+      borderColor: "danger",
+      icon: "ti ti-calendar-bolt",
+      iconBgColor: "bg-danger-transparent",
+    },
+    {
+      id: "2",
+      title: "2nd Quarterly",
+      date: "07 May 2024",
+      time: "01:30 - 02:15 PM",
+      borderColor: "danger",
+      icon: "ti ti-calendar-bolt",
+      iconBgColor: "bg-danger-transparent",
+    },
+  ];
+
+  const homeworks: Homework[] = [
+    {
+      id: "1",
+      subject: "Physics",
+      title: "Write about Theory of Pendulum",
+      teacherName: "Aaron",
+      teacherImage: "assets/img/teachers/teacher-01.jpg",
+      dueDate: "16 Jun 2024",
+      image: "assets/img/home-work/home-work-01.jpg",
+      progress: 80,
+    },
+    {
+      id: "2",
+      subject: "Chemistry",
+      title: "Chemistry - Change of Elements",
+      teacherName: "Hellana",
+      teacherImage: "assets/img/teachers/teacher-01.jpg",
+      dueDate: "16 Jun 2024",
+      image: "assets/img/home-work/home-work-02.jpg",
+      progress: 65,
+    },
+    {
+      id: "3",
+      subject: "Maths",
+      title: "Maths - Problems to Solve Page 21",
+      teacherName: "Morgan",
+      teacherImage: "assets/img/teachers/teacher-01.jpg",
+      dueDate: "21 Jun 2024",
+      image: "assets/img/home-work/home-work-03.jpg",
+      progress: 30,
+    },
+    {
+      id: "4",
+      subject: "Engish",
+      title: "English - Vocabulary Introduction",
+      teacherName: "Daniel Josua",
+      teacherImage: "assets/img/teachers/teacher-01.jpg",
+      dueDate: "21 Jun 2024",
+      image: "assets/img/home-work/home-work-04.jpg",
+      progress: 10,
+    },
+  ];
+
+  const leaves: Leave[] = [
+    {
+      id: "1",
+      type: "Emergency",
+      date: "15 Jun 2024",
+      status: "Pending",
+    },
+    {
+      id: "2",
+      type: "Medical",
+      date: "15 Jun 2024",
+      status: "Approved",
+    },
+    {
+      id: "3",
+      type: "Medical",
+      date: "16 Jun 2024",
+      status: "Declined",
+    },
+    {
+      id: "4",
+      type: "Fever",
+      date: "16 Jun 2024",
+      status: "Approved",
+    },
+  ];
+
+  const fees: Fee[] = [
+    {
+      id: "1",
+      type: "Transport Fees",
+      amount: "$2500",
+      lastDate: "25 May 2024",
+      icon: "ti ti-bus-stop fs-16",
+      iconBgColor: "bg-info-transparent",
+    },
+    {
+      id: "2",
+      type: "Book Fees",
+      amount: "$2500",
+      lastDate: "25 May 2024",
+      icon: "ti ti-books fs-16",
+      iconBgColor: "bg-success-transparent",
+    },
+    {
+      id: "3",
+      type: "Exam Fees",
+      amount: "$2500",
+      lastDate: "25 May 2024",
+      icon: "ti ti-report-money fs-16",
+      iconBgColor: "bg-info-transparent",
+    },
+    {
+      id: "4",
+      type: "Mess Fees",
+      amount: "$2500",
+      lastDate: "27 May 2024",
+      icon: "ti ti-meat fs-16",
+      iconBgColor: "bg-skyblue-transparent",
+      isDue: true,
+      dueAmount: "$2500 + $150",
+    },
+    {
+      id: "5",
+      type: "Hostel",
+      amount: "$2500",
+      lastDate: "25 May 2024",
+      icon: "ti ti-report-money fs-16",
+      iconBgColor: "bg-danger-transparent",
+    },
+  ];
+
+  const notices: Notice[] = [
+    {
+      id: "1",
+      title: "New Syllabus Instructions",
+      date: "11 Mar 2024",
+      icon: "ti ti-books fs-16",
+      iconBgColor: "bg-primary-transparent",
+    },
+    {
+      id: "2",
+      title: "World Environment Day Program.....!!!",
+      date: "21 Apr 2024",
+      icon: "ti ti-note fs-16",
+      iconBgColor: "bg-success-transparent",
+    },
+    {
+      id: "3",
+      title: "Exam Preparation Notification!",
+      date: "13 Mar 2024",
+      icon: "ti ti-bell-check fs-16",
+      iconBgColor: "bg-danger-transparent",
+    },
+    {
+      id: "4",
+      title: "Online Classes Preparation",
+      date: "24 May 2024",
+      icon: "ti ti-notes fs-16",
+      iconBgColor: "bg-skyblue-transparent",
+    },
+    {
+      id: "5",
+      title: "Exam Time Table Release",
+      date: "24 May 2024",
+      icon: "ti ti-package fs-16",
+      iconBgColor: "bg-warning-transparent",
+    },
+    {
+      id: "6",
+      title: "English Exam Preparation",
+      date: "23 Mar 2024",
+      icon: "ti ti-bell-check fs-16",
+      iconBgColor: "bg-danger-transparent",
+    },
+  ];
+
+  const todos: TodoItem[] = [
+    {
+      id: "1",
+      title: "Send Reminder to Students",
+      time: "01:00 PM",
+      completed: true,
+      status: "Completed",
+    },
+    {
+      id: "2",
+      title: "Create Routine to new staff",
+      time: "04:50 PM",
+      completed: false,
+      status: "Inprogress",
+    },
+    {
+      id: "3",
+      title: "Extra Class Info to Students",
+      time: "04:55 PM",
+      completed: false,
+      status: "Yet to Start",
+    },
+    {
+      id: "4",
+      title: "Fees for Upcoming Academics",
+      time: "04:55 PM",
+      completed: false,
+      status: "Yet to Start",
+    },
+    {
+      id: "5",
+      title: "English - Essay on Visit",
+      time: "05:55 PM",
+      completed: false,
+      status: "Yet to Start",
+    },
+  ];
 
   const [attendance_chart] = useState<any>({
     chart: {
@@ -460,123 +728,30 @@ const StudentDasboard = () => {
                 {/* /Profile */}
                 {/* Attendance */}
                 <div className="col-xl-6 d-flex">
-                  <div className="card flex-fill">
-                    <div className="card-header d-flex align-items-center justify-content-between">
-                      <h4 className="card-title">Attendance</h4>
-                      <div className="card-dropdown">
-                        <Link
-                          to="#"
-                          className="dropdown-toggle p-2"
-                          data-bs-toggle="dropdown"
-                        >
-                          <span>
-                            <i className="ti ti-calendar-due" />
-                          </span>
-                          This Week
-                        </Link>
-                        <div className="dropdown-menu  dropdown-menu-end">
-                          <ul>
-                            <li>
-                              <Link to="#">This Week</Link>
-                            </li>
-                            <li>
-                              <Link to="#">Last Week</Link>
-                            </li>
-                            <li>
-                              <Link to="#">Last Month</Link>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card-body">
-                      <div className="attendance-chart">
-                        <p className="mb-3">
-                          <i className="ti ti-calendar-heart text-primary me-2" />
-                          No of total working days{" "}
-                          <span className="fw-medium text-dark"> 28 Days</span>
-                        </p>
-                        <div className="border rounded p-3">
-                          <div className="row">
-                            <div className="col text-center border-end">
-                              <p className="mb-1">Present</p>
-                              <h5>25</h5>
-                            </div>
-                            <div className="col text-center border-end">
-                              <p className="mb-1">Absent</p>
-                              <h5>2</h5>
-                            </div>
-                            <div className="col text-center">
-                              <p className="mb-1">Halfday</p>
-                              <h5>0</h5>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-center">
-                          <div id="attendance_chart" />
-                          <ReactApexChart
-                            id="attendance_chart"
-                            options={attendance_chart}
-                            series={attendance_chart.series}
-                            type="donut"
-                            height={255}
-                          />
-                        </div>
-                        <div className="bg-light-300 rounded border p-3 mb-0">
-                          <div className="d-flex align-items-center justify-content-between flex-wrap mb-1">
-                            <h6 className="mb-2">Last 7 Days </h6>
-                            <p className="fs-12 mb-2">
-                              14 May 2024 - 21 May 2024
-                            </p>
-                          </div>
-                          <div className="d-flex align-items-center rounded gap-1 flex-wrap">
-                            <Link
-                              to="#"
-                              className="badge badge-lg bg-success text-white"
-                            >
-                              M
-                            </Link>
-                            <Link
-                              to="#"
-                              className="badge badge-lg bg-success text-white"
-                            >
-                              T
-                            </Link>
-                            <Link
-                              to="#"
-                              className="badge badge-lg bg-success text-white"
-                            >
-                              W
-                            </Link>
-                            <Link
-                              to="#"
-                              className="badge badge-lg bg-success text-white"
-                            >
-                              T
-                            </Link>
-                            <Link
-                              to="#"
-                              className="badge badge-lg bg-danger text-white"
-                            >
-                              F
-                            </Link>
-                            <Link
-                              to="#"
-                              className="badge badge-lg bg-white border text-default"
-                            >
-                              S
-                            </Link>
-                            <Link
-                              to="#"
-                              className="badge badge-lg  bg-white border text-gray-1"
-                            >
-                              S
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                  <AttendanceWidget
+                    stats={attendanceStats}
+                    chartData={attendanceChartData}
+                    dateRange={attendanceDateRange}
+                    onDateRangeChange={setAttendanceDateRange}
+                    dateRangeOptions={[
+                      { label: "This Week", value: "This Week" },
+                      { label: "Last Week", value: "Last Week" },
+                      { label: "Last Month", value: "Last Month" },
+                    ]}
+                    totalWorkingDays={28}
+                    showLast7Days={true}
+                    last7DaysData={[
+                      { day: "M", status: "present" },
+                      { day: "T", status: "present" },
+                      { day: "W", status: "present" },
+                      { day: "T", status: "present" },
+                      { day: "F", status: "absent" },
+                      { day: "S", status: "present" },
+                      { day: "S", status: "present" },
+                    ]}
+                    last7DaysRange="14 May 2024 - 21 May 2024"
+                    chartHeight={255}
+                  />
                 </div>
                 {/* /Attendance */}
                 {/* Fees */}
@@ -769,215 +944,12 @@ const StudentDasboard = () => {
             {/* /Performance */}
             {/* Home Works */}
             <div className="col-xxl-5 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header d-flex align-items-center justify-content-between">
-                  <h4 className="card-titile">Home Works</h4>
-                  <div className="dropdown">
-                    <Link
-                      to="#"
-                      className="bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
-                      <i className="ti ti-book-2 me-2" />
-                      All Subject
-                    </Link>
-                    <ul className="dropdown-menu mt-2 p-3">
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          Physics
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          Chemistry
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          Maths
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="card-body py-1">
-                  <ul className="list-group list-group-flush">
-                    <li className="list-group-item py-3 px-0 pb-0">
-                      <div className="d-flex align-items-center justify-content-between flex-wrap">
-                        <div className="d-flex align-items-center overflow-hidden mb-3">
-                          <Link
-                            to="#"
-                            className="avatar avatar-xl flex-shrink-0 me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/home-work/home-work-01.jpg"
-                              alt="img"
-                            />
-                          </Link>
-                          <div className="overflow-hidden">
-                            <p className="d-flex align-items-center text-info mb-1">
-                              <i className="ti ti-tag me-2" />
-                              Physics
-                            </p>
-                            <h6 className="text-truncate mb-1">
-                              <Link to={routes.classHomeWork}>
-                                Write about Theory of Pendulum
-                              </Link>
-                            </h6>
-                            <div className="d-flex align-items-center flex-wrap">
-                              <div className="d-flex align-items-center border-end me-1 pe-1">
-                                <Link
-                                  to={routes.teacherDetails}
-                                  className="avatar avatar-xs flex-shrink-0 me-2"
-                                >
-                                  <ImageWithBasePath
-                                    src="assets/img/teachers/teacher-01.jpg"
-                                    className="rounded-circle"
-                                    alt="teacher"
-                                  />
-                                </Link>
-                                <p className="text-dark">Aaron</p>
-                              </div>
-                              <p>Due by : 16 Jun 2024</p>
-                            </div>
-                          </div>
-                        </div>
-                        <CircleProgress value={80} />
-                      </div>
-                    </li>
-                    <li className="list-group-item py-3 px-0 pb-0">
-                      <div className="d-flex align-items-center justify-content-between flex-wrap">
-                        <div className="d-flex align-items-center overflow-hidden mb-3">
-                          <Link
-                            to="#"
-                            className="avatar avatar-xl flex-shrink-0 me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/home-work/home-work-02.jpg"
-                              alt="img"
-                            />
-                          </Link>
-                          <div className="overflow-hidden">
-                            <p className="d-flex align-items-center text-success mb-1">
-                              <i className="ti ti-tag me-2" />
-                              Chemistry
-                            </p>
-                            <h6 className="text-truncate mb-1">
-                              <Link to={routes.classHomeWork}>
-                                Chemistry - Change of Elements
-                              </Link>
-                            </h6>
-                            <div className="d-flex align-items-center flex-wrap">
-                              <div className="d-flex align-items-center border-end me-1 pe-1">
-                                <Link
-                                  to={routes.teacherDetails}
-                                  className="avatar avatar-xs flex-shrink-0 me-2"
-                                >
-                                  <ImageWithBasePath
-                                    src="assets/img/teachers/teacher-01.jpg"
-                                    className="rounded-circle"
-                                    alt="teacher"
-                                  />
-                                </Link>
-                                <p className="text-dark">Hellana</p>
-                              </div>
-                              <p>Due by : 16 Jun 2024</p>
-                            </div>
-                          </div>
-                        </div>
-
-                        <CircleProgress value={65} />
-                      </div>
-                    </li>
-                    <li className="list-group-item py-3 px-0 pb-0">
-                      <div className="d-flex align-items-center justify-content-between flex-wrap">
-                        <div className="d-flex align-items-center overflow-hidden mb-3">
-                          <Link
-                            to="#"
-                            className="avatar avatar-xl flex-shrink-0 me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/home-work/home-work-03.jpg"
-                              alt="img"
-                            />
-                          </Link>
-                          <div className="overflow-hidden">
-                            <p className="d-flex align-items-center text-danger mb-1">
-                              <i className="ti ti-tag me-2" />
-                              Maths
-                            </p>
-                            <h6 className="text-truncate mb-1">
-                              <Link to={routes.classHomeWork}>
-                                Maths - Problems to Solve Page 21
-                              </Link>
-                            </h6>
-                            <div className="d-flex align-items-center flex-wrap">
-                              <div className="d-flex align-items-center border-end me-1 pe-1">
-                                <Link
-                                  to={routes.teacherDetails}
-                                  className="avatar avatar-xs flex-shrink-0 me-2"
-                                >
-                                  <ImageWithBasePath
-                                    src="assets/img/teachers/teacher-01.jpg"
-                                    className="rounded-circle"
-                                    alt="teacher"
-                                  />
-                                </Link>
-                                <p className="text-dark">Morgan</p>
-                              </div>
-                              <p>Due by : 21 Jun 2024</p>
-                            </div>
-                          </div>
-                        </div>
-                        <CircleProgress value={30} />
-                      </div>
-                    </li>
-                    <li className="list-group-item py-3 px-0 pb-0">
-                      <div className="d-flex align-items-center justify-content-between flex-wrap">
-                        <div className="d-flex align-items-center overflow-hidden mb-3">
-                          <Link
-                            to="#"
-                            className="avatar avatar-xl flex-shrink-0 me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/home-work/home-work-04.jpg"
-                              alt="img"
-                            />
-                          </Link>
-                          <div className="overflow-hidden">
-                            <p className="d-flex align-items-center text-skyblue mb-1">
-                              <i className="ti ti-tag me-2" />
-                              Engish
-                            </p>
-                            <h6 className="text-truncate mb-1">
-                              <Link to={routes.classHomeWork}>
-                                English - Vocabulary Introduction
-                              </Link>
-                            </h6>
-                            <div className="d-flex align-items-center flex-wrap">
-                              <div className="d-flex align-items-center border-end me-1 pe-1">
-                                <Link
-                                  to={routes.teacherDetails}
-                                  className="avatar avatar-xs flex-shrink-0 me-2"
-                                >
-                                  <ImageWithBasePath
-                                    src="assets/img/teachers/teacher-01.jpg"
-                                    className="rounded-circle"
-                                    alt="teacher"
-                                  />
-                                </Link>
-                                <p className="text-dark">Daniel Josua</p>
-                              </div>
-                              <p>Due by : 21 Jun 2024</p>
-                            </div>
-                          </div>
-                        </div>
-                        <CircleProgress value={10} />
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              <HomeWorksWidget
+                homeworks={homeworks}
+                subjectFilter={subjectFilter}
+                onSubjectFilterChange={setSubjectFilter}
+                showProgress={true}
+              />
             </div>
             {/* /Home Works */}
           </div>
@@ -1246,100 +1218,11 @@ const StudentDasboard = () => {
           <div className="row">
             {/* Leave Status */}
             <div className="col-xxl-4 col-xl-6 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Leave Status</h4>
-                  <div className="dropdown">
-                    <Link
-                      to="#"
-                      className="bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
-                      <i className="ti ti-calendar me-2" />
-                      This Month
-                    </Link>
-                    <ul className="dropdown-menu mt-2 p-3">
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          This Month
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          This Year
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          Last Week
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3 mb-3">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-danger-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-brand-socket-io" />
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Emergency Leave</h6>
-                        <p>Date : 15 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-skyblue d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1" />
-                      Pending
-                    </span>
-                  </div>
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3 mb-3">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-info-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-medical-cross" />
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Medical Leave</h6>
-                        <p>Date : 15 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-success d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1" />
-                      Approved
-                    </span>
-                  </div>
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3 mb-3">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-info-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-medical-cross" />
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Medical Leave</h6>
-                        <p>Date : 16 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-danger d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1" />
-                      Declined
-                    </span>
-                  </div>
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3 mb-0">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-danger-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-brand-socket-io" />
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Fever</h6>
-                        <p>Date : 16 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-success d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1" />
-                      Approved
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <LeaveStatusWidget
+                leaves={leaves}
+                dateRange={leaveDateRange}
+                onDateRangeChange={setLeaveDateRange}
+              />
             </div>
             {/* /Leave Status */}
             {/* Exam Result */}
@@ -1495,132 +1378,11 @@ const StudentDasboard = () => {
           <div className="row">
             {/* Notice Board */}
             <div className="col-xxl-4 col-xl-6 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header  d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Notice Board</h4>
-                  <Link to={routes.noticeBoard} className="fw-medium">
-                    View All
-                  </Link>
-                </div>
-                <div className="card-body">
-                  <div className="notice-widget">
-                    <div className="d-flex align-items-center justify-content-between mb-4">
-                      <div className="d-flex align-items-center overflow-hidden me-2">
-                        <span className="bg-primary-transparent avatar avatar-md me-2 rounded-circle flex-shrink-0">
-                          <i className="ti ti-books fs-16" />
-                        </span>
-                        <div className="overflow-hidden">
-                          <h6 className="text-truncate mb-1">
-                            New Syllabus Instructions
-                          </h6>
-                          <p>
-                            <i className="ti ti-calendar me-2" />
-                            Added on : 11 Mar 2024
-                          </p>
-                        </div>
-                      </div>
-                      <Link to={routes.noticeBoard}>
-                        <i className="ti ti-chevron-right fs-16" />
-                      </Link>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-between mb-4">
-                      <div className="d-flex align-items-center overflow-hidden me-2">
-                        <span className="bg-success-transparent avatar avatar-md me-2 rounded-circle flex-shrink-0">
-                          <i className="ti ti-note fs-16" />
-                        </span>
-                        <div className="overflow-hidden">
-                          <h6 className="text-truncate mb-1">
-                            World Environment Day Program.....!!!
-                          </h6>
-                          <p>
-                            <i className="ti ti-calendar me-2" />
-                            Added on : 21 Apr 2024
-                          </p>
-                        </div>
-                      </div>
-                      <Link to={routes.noticeBoard}>
-                        <i className="ti ti-chevron-right fs-16" />
-                      </Link>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-between mb-4">
-                      <div className="d-flex align-items-center overflow-hidden me-2">
-                        <span className="bg-danger-transparent avatar avatar-md me-2 rounded-circle flex-shrink-0">
-                          <i className="ti ti-bell-check fs-16" />
-                        </span>
-                        <div className="overflow-hidden">
-                          <h6 className="text-truncate mb-1">
-                            Exam Preparation Notification!
-                          </h6>
-                          <p>
-                            <i className="ti ti-calendar me-2" />
-                            Added on : 13 Mar 2024
-                          </p>
-                        </div>
-                      </div>
-                      <Link to={routes.noticeBoard}>
-                        <i className="ti ti-chevron-right fs-16" />
-                      </Link>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-between mb-4">
-                      <div className="d-flex align-items-center overflow-hidden me-2">
-                        <span className="bg-skyblue-transparent avatar avatar-md me-2 rounded-circle flex-shrink-0">
-                          <i className="ti ti-notes fs-16" />
-                        </span>
-                        <div className="overflow-hidden">
-                          <h6 className="text-truncate mb-1">
-                            Online Classes Preparation
-                          </h6>
-                          <p>
-                            <i className="ti ti-calendar me-2" />
-                            Added on : 24 May 2024
-                          </p>
-                        </div>
-                      </div>
-                      <Link to={routes.noticeBoard}>
-                        <i className="ti ti-chevron-right fs-16" />
-                      </Link>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-between mb-4">
-                      <div className="d-flex align-items-center overflow-hidden me-2">
-                        <span className="bg-warning-transparent avatar avatar-md me-2 rounded-circle flex-shrink-0">
-                          <i className="ti ti-package fs-16" />
-                        </span>
-                        <div className="overflow-hidden">
-                          <h6 className="text-truncate mb-1">
-                            Exam Time Table Release
-                          </h6>
-                          <p>
-                            <i className="ti ti-calendar me-2" />
-                            Added on : 24 May 2024
-                          </p>
-                        </div>
-                      </div>
-                      <Link to={routes.noticeBoard}>
-                        <i className="ti ti-chevron-right fs-16" />
-                      </Link>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-between mb-0">
-                      <div className="d-flex align-items-center overflow-hidden me-2">
-                        <span className="bg-danger-transparent avatar avatar-md me-2 rounded-circle flex-shrink-0">
-                          <i className="ti ti-bell-check fs-16" />
-                        </span>
-                        <div className="overflow-hidden">
-                          <h6 className="text-truncate mb-1">
-                            English Exam Preparation
-                          </h6>
-                          <p>
-                            <i className="ti ti-calendar me-2" />
-                            Added on : 23 Mar 2024
-                          </p>
-                        </div>
-                      </div>
-                      <Link to={routes.noticeBoard}>
-                        <i className="ti ti-chevron-right fs-16" />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <NoticeBoardWidget
+                notices={notices}
+                viewAllLink={routes.noticeBoard}
+                showDaysRemaining={false}
+              />
             </div>
             {/* /Notice Board */}
             {/* Syllabus */}
@@ -1781,148 +1543,15 @@ const StudentDasboard = () => {
             {/* /Syllabus */}
             {/* Todo */}
             <div className="col-xxl-4 col-xl-12 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header  d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Todo</h4>
-                  <div className="dropdown">
-                    <Link
-                      to="#"
-                      className="bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
-                      <i className="ti ti-calendar me-2" />
-                      Today
-                    </Link>
-                    <ul className="dropdown-menu mt-2 p-3">
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          This Month
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          This Year
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          Last Week
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <ul className="list-group list-group-flush todo-list">
-                    <li className="list-group-item py-3 px-0 pt-0">
-                      <div className="d-sm-flex align-items-center justify-content-between">
-                        <div className="d-flex align-items-center overflow-hidden me-2 todo-strike-content">
-                          <div className="form-check form-check-md me-2">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                              defaultChecked
-                            />
-                          </div>
-                          <div className="overflow-hidden">
-                            <h6 className="mb-1 text-truncate">
-                              Send Reminder to Students
-                            </h6>
-                            <p>01:00 PM</p>
-                          </div>
-                        </div>
-                        <span className="badge badge-soft-success mt-2 mt-sm-0">
-                          Compeleted
-                        </span>
-                      </div>
-                    </li>
-                    <li className="list-group-item py-3 px-0">
-                      <div className="d-sm-flex align-items-center justify-content-between">
-                        <div className="d-flex align-items-center overflow-hidden me-2">
-                          <div className="form-check form-check-md me-2">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                            />
-                          </div>
-                          <div className="overflow-hidden">
-                            <h6 className="mb-1 text-truncate">
-                              Create Routine to new staff
-                            </h6>
-                            <p>04:50 PM</p>
-                          </div>
-                        </div>
-                        <span className="badge badge-soft-skyblue mt-2 mt-sm-0">
-                          Inprogress
-                        </span>
-                      </div>
-                    </li>
-                    <li className="list-group-item py-3 px-0">
-                      <div className="d-sm-flex align-items-center justify-content-between">
-                        <div className="d-flex align-items-center overflow-hidden me-2">
-                          <div className="form-check form-check-md me-2">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                            />
-                          </div>
-                          <div className="overflow-hidden">
-                            <h6 className="mb-1 text-truncate">
-                              Extra Class Info to Students
-                            </h6>
-                            <p>04:55 PM</p>
-                          </div>
-                        </div>
-                        <span className="badge badge-soft-warning mt-2 mt-sm-0">
-                          Yet to Start
-                        </span>
-                      </div>
-                    </li>
-                    <li className="list-group-item py-3 px-0">
-                      <div className="d-sm-flex align-items-center justify-content-between">
-                        <div className="d-flex align-items-center overflow-hidden me-2">
-                          <div className="form-check form-check-md me-2">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                            />
-                          </div>
-                          <div className="overflow-hidden">
-                            <h6 className="mb-1 text-truncate">
-                              Fees for Upcoming Academics
-                            </h6>
-                            <p>04:55 PM</p>
-                          </div>
-                        </div>
-                        <span className="badge badge-soft-warning mt-2 mt-sm-0">
-                          Yet to Start
-                        </span>
-                      </div>
-                    </li>
-                    <li className="list-group-item py-3 px-0 pb-0">
-                      <div className="d-sm-flex align-items-center justify-content-between">
-                        <div className="d-flex align-items-center overflow-hidden me-2">
-                          <div className="form-check form-check-md me-2">
-                            <input
-                              className="form-check-input"
-                              type="checkbox"
-                            />
-                          </div>
-                          <div className="overflow-hidden">
-                            <h6 className="mb-1 text-truncate">
-                              English - Essay on Visit
-                            </h6>
-                            <p>05:55 PM</p>
-                          </div>
-                        </div>
-                        <span className="badge badge-soft-warning mt-2 mt-sm-0">
-                          Yet to Start
-                        </span>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
+              <TodoWidget
+                todos={todos}
+                dateRange={todoDateRange}
+                onDateRangeChange={setTodoDateRange}
+                onToggleComplete={(id) => {
+                  // Handle toggle - will be implemented with dynamic data
+                  console.log("Toggle todo:", id);
+                }}
+              />
             </div>
             {/* /Todo */}
           </div>

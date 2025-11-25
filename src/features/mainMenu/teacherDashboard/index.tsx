@@ -4,17 +4,142 @@ import { all_routes } from "../../router/all_routes";
 import ImageWithBasePath from "../../../core/common/imageWithBasePath";
 import AdminDashboardModal from "../adminDashboard/adminDashboardModal";
 import ReactApexChart from "react-apexcharts";
-import { Calendar } from "primereact/calendar";
 import type { Nullable } from "primereact/ts-helpers";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import dayjs from "dayjs";
 import { DatePicker } from "antd";
+import {
+  SchedulesWidget,
+  AttendanceWidget,
+  LeaveStatusWidget,
+} from "../dashboards/shared/components/widgets";
+import ProfileCard from "../dashboards/shared/components/ProfileCard";
+import type {
+  Event,
+  AttendanceStats,
+  AttendanceChartData,
+  Leave,
+  ProfileCardData,
+} from "../dashboards/shared/types/dashboard.types";
 
 const TeacherDashboard = () => {
   const routes = all_routes;
   const [date, setDate] = useState<Nullable<Date>>(null);
+  const [attendanceDateRange, setAttendanceDateRange] = useState<string>("This Week");
+  const [leaveDateRange, setLeaveDateRange] = useState<string>("This Month");
+
+  // Sample data - will be replaced with dynamic data later
+  const profileData: ProfileCardData = {
+    id: "T594651",
+    name: "Henriques Morgan",
+    image: "assets/img/teachers/teacher-05.jpg",
+    badge: "#T594651",
+    additionalInfo: [
+      { label: "Classes", value: "I-A, V-B" },
+      { label: "Subject", value: "Physics" },
+    ],
+    editLink: routes.editTeacher,
+  };
+
+  const attendanceStats: AttendanceStats = {
+    present: 25,
+    absent: 2,
+    late: 1,
+    halfDay: 0,
+  };
+
+  const attendanceChartData: AttendanceChartData = {
+    series: [60, 5, 15, 20],
+    labels: ["Present", "Late", "Half Day", "Absent"],
+    colors: ["#1ABE17", "#1170E4", "#E9EDF4", "#E82646"],
+  };
+
+  const events: Event[] = [
+    {
+      id: "1",
+      title: "Vacation Meeting",
+      date: "07 July 2024",
+      endDate: "07 July 2024",
+      time: "09:10 AM - 10:50 PM",
+      borderColor: "danger",
+      icon: "ti ti-vacuum-cleaner fs-24",
+      iconBgColor: "bg-danger-transparent",
+      participants: [
+        { id: "1", image: "assets/img/parents/parent-11.jpg" },
+        { id: "2", image: "assets/img/parents/parent-13.jpg" },
+      ],
+    },
+    {
+      id: "2",
+      title: "Parents, Teacher Meet",
+      date: "15 July 2024",
+      time: "09:10AM - 10:50PM",
+      borderColor: "skyblue",
+      icon: "ti ti-user-edit text-info fs-20",
+      iconBgColor: "bg-teal-transparent",
+      participants: [
+        { id: "1", image: "assets/img/parents/parent-01.jpg" },
+        { id: "2", image: "assets/img/parents/parent-07.jpg" },
+        { id: "3", image: "assets/img/parents/parent-02.jpg" },
+      ],
+    },
+    {
+      id: "3",
+      title: "Staff Meeting",
+      date: "10 July 2024",
+      time: "09:10AM - 10:50PM",
+      borderColor: "info",
+      icon: "ti ti-users-group fs-20",
+      iconBgColor: "bg-info-transparent",
+      participants: [
+        { id: "1", image: "assets/img/parents/parent-05.jpg" },
+        { id: "2", image: "assets/img/parents/parent-06.jpg" },
+        { id: "3", image: "assets/img/parents/parent-07.jpg" },
+      ],
+    },
+    {
+      id: "4",
+      title: "Admission Camp",
+      date: "12 July 2024",
+      time: "09:10 AM - 10:50 PM",
+      borderColor: "secondary",
+      icon: "ti ti-campfire fs-24",
+      iconBgColor: "bg-secondary-transparent",
+      participants: [
+        { id: "1", image: "assets/img/parents/parent-11.jpg" },
+        { id: "2", image: "assets/img/parents/parent-13.jpg" },
+      ],
+    },
+  ];
+
+  const leaves: Leave[] = [
+    {
+      id: "1",
+      type: "Emergency",
+      date: "15 Jun 2024",
+      status: "Pending",
+    },
+    {
+      id: "2",
+      type: "Medical",
+      date: "15 Jun 2024",
+      status: "Approved",
+    },
+    {
+      id: "3",
+      type: "Medical",
+      date: "16 Jun 2024",
+      status: "Declined",
+    },
+    {
+      id: "4",
+      type: "Not Well",
+      date: "16 Jun 2024",
+      status: "Approved",
+    },
+  ];
   function SampleNextArrow(props: any) {
     const { style, onClick } = props;
     return (
@@ -268,59 +393,11 @@ const TeacherDashboard = () => {
             <div className="col-xxl-8 col-xl-12">
               <div className="row">
                 <div className="col-xxl-7 col-xl-8 d-flex">
-                  <div className="card bg-dark position-relative flex-fill">
-                    <div className="card-body pb-1">
-                      <div className="d-sm-flex align-items-center justify-content-between row-gap-3">
-                        <div className="d-flex align-items-center overflow-hidden mb-3">
-                          <div className="avatar avatar-xxl rounded flex-shrink-0 border border-2 border-white me-3">
-                            <ImageWithBasePath
-                              src="assets/img/teachers/teacher-05.jpg"
-                              alt="Img"
-                            />
-                          </div>
-                          <div className="overflow-hidden">
-                            <span className="badge bg-transparent-primary text-primary mb-1">
-                              #T594651
-                            </span>
-                            <h3 className="text-white mb-1 text-truncate">
-                              Henriques Morgan{" "}
-                            </h3>
-                            <div className="d-flex align-items-center flex-wrap text-light row-gap-2">
-                              <span className="me-2">Classes : I-A, V-B</span>
-                              <span className="d-flex align-items-center">
-                                <i className="ti ti-circle-filled text-warning fs-7 me-1" />
-                                Physics
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <Link
-                          to={routes.editTeacher}
-                          className="btn btn-primary flex-shrink-0 mb-3"
-                        >
-                          Edit Profile
-                        </Link>
-                      </div>
-                      <div className="student-card-bg">
-                        <ImageWithBasePath
-                          src="assets/img/bg/circle-shape.png"
-                          alt="Bg"
-                        />
-                        <ImageWithBasePath
-                          src="assets/img/bg/shape-02.png"
-                          alt="Bg"
-                        />
-                        <ImageWithBasePath
-                          src="assets/img/bg/shape-04.png"
-                          alt="Bg"
-                        />
-                        <ImageWithBasePath
-                          src="assets/img/bg/blue-polygon.png"
-                          alt="Bg"
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  <ProfileCard
+                    data={profileData}
+                    className="card bg-dark position-relative flex-fill"
+                    showEditButton={true}
+                  />
                 </div>
                 <div className="col-xxl-5 col-xl-4 d-flex">
                   <div className="card flex-fill">
@@ -1454,99 +1531,11 @@ const TeacherDashboard = () => {
             {/* /Student Marks */}
             {/* Leave Status */}
             <div className="col-xxl-4 col-xl-5 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Leave Status</h4>
-                  <div className="dropdown">
-                    <Link
-                      to="#"
-                      className="bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
-                      <i className="ti ti-calendar me-2" />
-                      This Month
-                    </Link>
-                    <ul className="dropdown-menu mt-2 p-3">
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          This Month
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          This Year
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          Last Week
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="card-body">
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3 mb-3">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-danger-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-brand-socket-io" />
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Emergency Leave</h6>
-                        <p>Date : 15 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-skyblue d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1" />
-                      Pending
-                    </span>
-                  </div>
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3 mb-3">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-info-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-medical-cross" />
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Medical Leave</h6>
-                        <p>Date : 15 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-success d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1" />
-                      Approved
-                    </span>
-                  </div>
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3 mb-3">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-info-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-medical-cross" />
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Medical Leave</h6>
-                        <p>Date : 16 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-danger d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1" />
-                      Declined
-                    </span>
-                  </div>
-                  <div className="bg-light-300 d-sm-flex align-items-center justify-content-between p-3">
-                    <div className="d-flex align-items-center mb-2 mb-sm-0">
-                      <div className="avatar avatar-lg bg-danger-transparent flex-shrink-0 me-2">
-                        <i className="ti ti-brand-socket-io"></i>
-                      </div>
-                      <div>
-                        <h6 className="mb-1">Not Well</h6>
-                        <p>Date : 16 Jun 2024</p>
-                      </div>
-                    </div>
-                    <span className="badge bg-success d-inline-flex align-items-center">
-                      <i className="ti ti-circle-filled fs-5 me-1"></i>Approved
-                    </span>
-                  </div>
-                </div>
-              </div>
+              <LeaveStatusWidget
+                leaves={leaves}
+                dateRange={leaveDateRange}
+                onDateRangeChange={setLeaveDateRange}
+              />
             </div>
             {/* /Leave Status */}
           </div>
