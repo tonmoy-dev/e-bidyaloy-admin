@@ -52,16 +52,6 @@ import ResetPasswordSuccess3 from '../auth/resetPasswordSuccess/resetPasswordSuc
 import TwoStepVerification from '../auth/twoStepVerification/twoStepVerification';
 import TwoStepVerification2 from '../auth/twoStepVerification/twoStepVerification-2';
 import TwoStepVerification3 from '../auth/twoStepVerification/twoStepVerification-3';
-import AllBlogs from '../content/blog/allBlogs';
-import BlogCategories from '../content/blog/blogCategories';
-import BlogComments from '../content/blog/blogComments';
-import BlogTags from '../content/blog/blogTags';
-import Faq from '../content/faq';
-import Cities from '../content/location/cities';
-import Countries from '../content/location/countries';
-import States from '../content/location/states';
-import Pages from '../content/pages';
-import Testimonials from '../content/testimonials';
 import StaffAttendance from '../hrm/attendance/staff-attendance';
 import StudentAttendance from '../hrm/attendance/student-attendance';
 import TeacherAttendance from '../hrm/attendance/teacher-attendance.tsx';
@@ -270,11 +260,7 @@ export const publicRoutes = [
     element: <ConnectedApps />,
     route: Route,
   },
-  {
-    path: routes.countries,
-    element: <Countries />,
-    route: Route,
-  },
+
   {
     path: routes.blankPage,
     element: <BlankPage />,
@@ -301,11 +287,6 @@ export const publicRoutes = [
   // },
 
   {
-    path: routes.countries,
-    element: <Countries />,
-    route: Route,
-  },
-  {
     path: routes.customFields,
     element: <CustomFields />,
     route: Route,
@@ -324,11 +305,6 @@ export const publicRoutes = [
   {
     path: routes.deleteRequest,
     element: <DeleteRequest />,
-    route: Route,
-  },
-  {
-    path: routes.cities,
-    element: <Cities />,
     route: Route,
   },
 
@@ -525,28 +501,6 @@ export const publicRoutes = [
   //   element: <Notes />,
   // },
 
-  {
-    path: routes.pages,
-    element: <Pages />,
-    route: Route,
-  },
-
-  {
-    path: routes.faq,
-    element: <Faq />,
-    route: Route,
-  },
-
-  {
-    path: routes.states,
-    element: <States />,
-    route: Route,
-  },
-  {
-    path: routes.testimonials,
-    element: <Testimonials />,
-    route: Route,
-  },
   {
     path: routes.clipboard,
     element: <ClipBoard />,
@@ -1349,26 +1303,60 @@ export const publicRoutes = [
     element: <Manageusers />,
     route: Route,
   },
-  {
-    path: routes.allBlogs,
-    element: <AllBlogs />,
-    route: Route,
-  },
-  {
-    path: routes.blogCategories,
-    element: <BlogCategories />,
-    route: Route,
-  },
-  {
-    path: routes.blogComments,
-    element: <BlogComments />,
-    route: Route,
-  },
-  {
-    path: routes.blogTags,
-    element: <BlogTags />,
-    route: Route,
-  },
+
+  // {
+  //   path: routes.allBlogs,
+  //   element: <AllBlogs />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.blogCategories,
+  //   element: <BlogCategories />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.blogComments,
+  //   element: <BlogComments />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.blogTags,
+  //   element: <BlogTags />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.pages,
+  //   element: <Pages />,
+  //   route: Route,
+  // },
+
+  // {
+  //   path: routes.faq,
+  //   element: <Faq />,
+  //   route: Route,
+  // },
+
+  // {
+  //   path: routes.states,
+  //   element: <States />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.testimonials,
+  //   element: <Testimonials />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.countries,
+  //   element: <Countries />,
+  //   route: Route,
+  // },
+  // {
+  //   path: routes.cities,
+  //   element: <Cities />,
+  //   route: Route,
+  // },
+
   {
     path: routes.tickets,
     element: <Tickets />,

@@ -622,69 +622,71 @@ export const SidebarData = [
   //     },
   //   ],
   // },
-  {
-    label: 'CONTENT',
-    icon: 'ti ti-page-break',
-    submenu: true,
-    showSubRoute: false,
-    submenuItems: [
-      {
-        label: 'Pages',
-        link: routes.pages,
-        showSubRoute: false,
-        icon: 'ti ti-page-break',
-      },
-      {
-        label: 'Blog',
-        icon: 'ti ti-brand-blogger',
-        submenu: true,
-        submenuItems: [
-          { label: 'All Blogs', link: routes.allBlogs },
-          {
-            label: 'Categories',
-            link: routes.blogCategories,
-            icon: 'ti ti-quote',
-          },
-          {
-            label: 'Comments',
-            link: routes.blogComments,
-            icon: 'ti ti-question-mark',
-          },
-          {
-            label: 'Tags',
-            link: routes.blogTags,
-            icon: 'ti ti-question-mark',
-          },
-        ],
-      },
-      {
-        label: 'Location',
-        icon: 'ti ti-map-pin-search',
-        submenu: true,
-        submenuItems: [
-          { label: 'Countries', link: routes.countries },
-          { label: 'States', link: routes.states, icon: 'ti ti-quote' },
-          {
-            label: 'Cities',
-            link: routes.cities,
-            icon: 'ti ti-question-mark',
-          },
-        ],
-      },
-      {
-        label: 'Testimonials',
-        link: routes.testimonials,
-        showSubRoute: false,
-        icon: 'ti ti-quote',
-      },
-      {
-        label: 'FAQ',
-        link: routes.faq,
-        showSubRoute: false,
-        icon: 'ti ti-question-mark',
-      },
-    ],
-  },
+
+  // content routes are not available in the features
+  // {
+  //   label: 'CONTENT',
+  //   icon: 'ti ti-page-break',
+  //   submenu: true,
+  //   showSubRoute: false,
+  //   submenuItems: [
+  //     {
+  //       label: 'Pages',
+  //       link: routes.pages,
+  //       showSubRoute: false,
+  //       icon: 'ti ti-page-break',
+  //     },
+  //     {
+  //       label: 'Blog',
+  //       icon: 'ti ti-brand-blogger',
+  //       submenu: true,
+  //       submenuItems: [
+  //         { label: 'All Blogs', link: routes.allBlogs },
+  //         {
+  //           label: 'Categories',
+  //           link: routes.blogCategories,
+  //           icon: 'ti ti-quote',
+  //         },
+  //         {
+  //           label: 'Comments',
+  //           link: routes.blogComments,
+  //           icon: 'ti ti-question-mark',
+  //         },
+  //         {
+  //           label: 'Tags',
+  //           link: routes.blogTags,
+  //           icon: 'ti ti-question-mark',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       label: 'Location',
+  //       icon: 'ti ti-map-pin-search',
+  //       submenu: true,
+  //       submenuItems: [
+  //         { label: 'Countries', link: routes.countries },
+  //         { label: 'States', link: routes.states, icon: 'ti ti-quote' },
+  //         {
+  //           label: 'Cities',
+  //           link: routes.cities,
+  //           icon: 'ti ti-question-mark',
+  //         },
+  //       ],
+  //     },
+  //     {
+  //       label: 'Testimonials',
+  //       link: routes.testimonials,
+  //       showSubRoute: false,
+  //       icon: 'ti ti-quote',
+  //     },
+  //     {
+  //       label: 'FAQ',
+  //       link: routes.faq,
+  //       showSubRoute: false,
+  //       icon: 'ti ti-question-mark',
+  //     },
+  //   ],
+  // },
   {
     label: 'Support',
     submenuOpen: true,

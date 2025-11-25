@@ -165,18 +165,18 @@ export const all_routes = {
   // callHistory: '/application/call-history',
   // fileManager: '/application/file-manager',
 
-  //content routes
-  pages: '/content/pages',
-  cities: '/content/cities',
-  states: '/content/states',
-  testimonials: '/content/testimonials',
-  countries: '/content/countries',
-  faq: '/content/faq',
-  // blog
-  allBlogs: '/content/all-blogs',
-  blogCategories: '/content/blog-categories',
-  blogComments: '/content/blog-comments',
-  blogTags: '/content/blog-tags',
+  // //content routes
+  // pages: '/content/pages',
+  // cities: '/content/cities',
+  // states: '/content/states',
+  // testimonials: '/content/testimonials',
+  // countries: '/content/countries',
+  // faq: '/content/faq',
+  // // blog
+  // allBlogs: '/content/all-blogs',
+  // blogCategories: '/content/blog-categories',
+  // blogComments: '/content/blog-comments',
+  // blogTags: '/content/blog-tags',
 
   //userManagement routes
   deleteRequest: '/user-management/delete-request',
