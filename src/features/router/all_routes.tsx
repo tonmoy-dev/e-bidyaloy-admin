@@ -281,8 +281,6 @@ export const all_routes = {
 
   approveRequest: '/hrm/approve-request',
   studentAttendance: '/hrm/student-attendance',
-  teacherAttendance: '/hrm/teacher-attendance',
-  staffAttendance: '/hrm/staff-attendance',
   addStaff: '/hrm/add-staff',
   editStaff: '/hrm/edit-staff',
   staffsAttendance: '/hrm/staffs-attendance',

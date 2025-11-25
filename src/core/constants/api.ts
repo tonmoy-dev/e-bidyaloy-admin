@@ -277,4 +277,17 @@ export const API_ENDPOINTS = {
     VERIFY: '/api/v1/auth/verify/',
     SEND_VERIFICATION_CODE: '/api/v1/auth/send-verification-code/',
   },
+
+  ATTENDANCE: {
+    BULK_MARK: {
+      url: '/api/v1/attendance/bulk_mark/',
+      method: 'POST', // for both create & update
+    },
+
+    STUDENT_LIST_WITH_ATTENDANCE: (params?: Record<string, unknown>) => ({
+      url: '/api/v1/students/minimal_list/',
+      method: 'GET',
+      params,
+    }),
+  },
 };

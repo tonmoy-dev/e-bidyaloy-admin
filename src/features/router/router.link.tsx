@@ -70,9 +70,7 @@ import Countries from '../content/location/countries';
 import States from '../content/location/states';
 import Pages from '../content/pages';
 import Testimonials from '../content/testimonials';
-import StaffAttendance from '../hrm/attendance/staff-attendance';
 import StudentAttendance from '../hrm/attendance/student-attendance';
-import TeacherAttendance from '../hrm/attendance/teacher-attendance.tsx';
 import Departments from '../hrm/departments';
 import Designation from '../hrm/designation';
 import Holiday from '../hrm/holidays';
@@ -1144,17 +1142,6 @@ export const publicRoutes = [
   {
     path: routes.studentAttendance,
     element: <StudentAttendance />,
-    route: Route,
-  },
-  {
-    path: routes.teacherAttendance,
-    element: <TeacherAttendance />,
-    route: Route,
-  },
-
-  {
-    path: routes.staffAttendance,
-    element: <StaffAttendance />,
     route: Route,
   },
   {
