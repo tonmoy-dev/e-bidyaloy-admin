@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import ImageWithBasePath from '../../../../../core/common/imageWithBasePath';
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
 
 export interface WelcomeBannerProps {
   greeting: string;
@@ -68,4 +68,3 @@ const WelcomeBanner = ({
 };
 
 export default WelcomeBanner;
-

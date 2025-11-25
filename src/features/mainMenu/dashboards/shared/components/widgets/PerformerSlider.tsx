@@ -1,5 +1,5 @@
-import Slider from "react-slick";
-import ImageWithBasePath from "../../../../../core/common/imageWithBasePath";
+import Slider from 'react-slick';
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
 
 export interface PerformerItem {
   id: string;
@@ -22,7 +22,7 @@ const PerformerSlider = ({
   performers,
   bgColor,
   sliderSettings,
-  className = "",
+  className = '',
 }: PerformerSliderProps) => {
   const defaultSettings = {
     dots: false,
@@ -53,4 +53,3 @@ const PerformerSlider = ({
 };
 
 export default PerformerSlider;
-

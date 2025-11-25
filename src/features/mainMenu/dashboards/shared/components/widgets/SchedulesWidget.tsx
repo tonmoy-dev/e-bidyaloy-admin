@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Calendar } from "primereact/calendar";
-import type { Nullable } from "primereact/ts-helpers";
-import ImageWithBasePath from "../../../../../core/common/imageWithBasePath";
-import type { Event } from "../../types/dashboard.types";
+import { Calendar } from 'primereact/calendar';
+import type { Nullable } from 'primereact/ts-helpers';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
+import type { Event } from '../../types/dashboard.types';
 
 interface SchedulesWidgetProps {
   title?: string;
@@ -15,12 +15,12 @@ interface SchedulesWidgetProps {
 }
 
 const SchedulesWidget = ({
-  title = "Schedules",
+  title = 'Schedules',
   events,
   addNewLink,
   addNewModalTarget,
   showCalendar = true,
-  calendarClassName = "datepickers mb-4 custom-cal-react",
+  calendarClassName = 'datepickers mb-4 custom-cal-react',
 }: SchedulesWidgetProps) => {
   const [date, setDate] = useState<Nullable<Date>>(null);
 
@@ -30,9 +30,9 @@ const SchedulesWidget = ({
         <h4 className="card-title">{title}</h4>
         {(addNewLink || addNewModalTarget) && (
           <Link
-            to={addNewLink || "#"}
+            to={addNewLink || '#'}
             className="link-primary fw-medium me-2"
-            data-bs-toggle={addNewModalTarget ? "modal" : undefined}
+            data-bs-toggle={addNewModalTarget ? 'modal' : undefined}
             data-bs-target={addNewModalTarget}
           >
             <i className="ti ti-square-plus me-1" />
@@ -52,27 +52,23 @@ const SchedulesWidget = ({
         {events.length > 0 && (
           <>
             <h4 className="mb-3">Upcoming Events</h4>
-            <div className={showCalendar ? "event-scroll" : "event-wrapper event-scroll"}>
+            <div className={showCalendar ? 'event-scroll' : 'event-wrapper event-scroll'}>
               {events.map((event) => (
                 <div
                   key={event.id}
                   className={`border-start border-${event.borderColor} border-3 shadow-sm p-3 ${
-                    event.id !== events[events.length - 1].id ? "mb-3" : "mb-0"
+                    event.id !== events[events.length - 1].id ? 'mb-3' : 'mb-0'
                   }`}
                 >
                   <div className="d-flex align-items-center mb-3 pb-3 border-bottom">
-                    <span
-                      className={`avatar p-1 me-2 ${event.iconBgColor} flex-shrink-0`}
-                    >
+                    <span className={`avatar p-1 me-2 ${event.iconBgColor} flex-shrink-0`}>
                       <i className={`${event.icon} fs-20`} />
                     </span>
                     <div className="flex-fill">
                       <h6 className="mb-1">{event.title}</h6>
                       <p className="d-flex align-items-center">
                         <i className="ti ti-calendar me-1" />
-                        {event.endDate
-                          ? `${event.date} - ${event.endDate}`
-                          : event.date}
+                        {event.endDate ? `${event.date} - ${event.endDate}` : event.date}
                       </p>
                     </div>
                   </div>
@@ -108,4 +104,3 @@ const SchedulesWidget = ({
 };
 
 export default SchedulesWidget;
-

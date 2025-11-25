@@ -1,5 +1,5 @@
-import { Link } from "react-router-dom";
-import ImageWithBasePath from "../../../../../core/common/imageWithBasePath";
+import { Link } from 'react-router-dom';
+import ImageWithBasePath from '../../../../../../core/common/imageWithBasePath';
 
 export interface LeaveRequest {
   id: string;
@@ -24,13 +24,13 @@ interface LeaveRequestsWidgetProps {
 }
 
 const LeaveRequestsWidget = ({
-  title = "Leave Requests",
+  title = 'Leave Requests',
   requests,
-  dateRange = "Today",
+  dateRange = 'Today',
   onDateRangeChange,
   dateRangeOptions = [
-    { label: "This Week", value: "This Week" },
-    { label: "Last Week", value: "Last Week" },
+    { label: 'This Week', value: 'This Week' },
+    { label: 'Last Week', value: 'Last Week' },
   ],
 }: LeaveRequestsWidgetProps) => {
   return (
@@ -64,19 +64,22 @@ const LeaveRequestsWidget = ({
       </div>
       <div className="card-body">
         {requests.map((request, index) => (
-          <div key={request.id} className={`card ${index === requests.length - 1 ? "mb-0" : "mb-2"}`}>
+          <div
+            key={request.id}
+            className={`card ${index === requests.length - 1 ? 'mb-0' : 'mb-2'}`}
+          >
             <div className="card-body p-3">
               <div className="d-flex align-items-center justify-content-between mb-3">
                 <div className="d-flex align-items-center overflow-hidden me-2">
                   <Link
-                    to={request.profileLink || "#"}
+                    to={request.profileLink || '#'}
                     className="avatar avatar-lg flex-shrink-0 me-2"
                   >
                     <ImageWithBasePath src={request.image} alt={request.name} />
                   </Link>
                   <div className="overflow-hidden">
                     <h6 className="mb-1 text-truncate">
-                      <Link to={request.profileLink || "#"}>{request.name}</Link>
+                      <Link to={request.profileLink || '#'}>{request.name}</Link>
                       <span className={`badge ${request.leaveTypeBadgeColor} ms-1`}>
                         {request.leaveType}
                       </span>
@@ -128,4 +131,3 @@ const LeaveRequestsWidget = ({
 };
 
 export default LeaveRequestsWidget;
-

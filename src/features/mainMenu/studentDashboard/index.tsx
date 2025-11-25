@@ -1,60 +1,56 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
-import { all_routes } from "../../router/all_routes";
-import ImageWithBasePath from "../../../core/common/imageWithBasePath";
-import CircleProgress from "./circleProgress";
-import ReactApexChart from "react-apexcharts";
-import type { Nullable } from "primereact/ts-helpers";
-import Slider from "react-slick";
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
-import dayjs from "dayjs";
-import { DatePicker } from "antd";
+import { Calendar, DatePicker } from 'antd';
+import dayjs from 'dayjs';
+import type { Nullable } from 'primereact/ts-helpers';
+import { useState } from 'react';
+import ReactApexChart from 'react-apexcharts';
+import { Link } from 'react-router-dom';
+import Slider from 'react-slick';
+import 'slick-carousel/slick/slick-theme.css';
+import 'slick-carousel/slick/slick.css';
+import ImageWithBasePath from '../../../core/common/imageWithBasePath';
+import { all_routes } from '../../router/all_routes';
 import {
-  SchedulesWidget,
   AttendanceWidget,
   HomeWorksWidget,
   LeaveStatusWidget,
-  FeesReminderWidget,
   NoticeBoardWidget,
   TodoWidget,
-} from "../dashboards/shared/components/widgets";
-import ProfileCard from "../dashboards/shared/components/ProfileCard";
+} from '../dashboards/shared/components/widgets';
 import type {
-  Event,
-  AttendanceStats,
   AttendanceChartData,
+  AttendanceStats,
+  Event,
+  Fee,
   Homework,
   Leave,
-  Fee,
   Notice,
-  TodoItem,
   ProfileCardData,
-} from "../dashboards/shared/types/dashboard.types";
+  TodoItem,
+} from '../dashboards/shared/types/dashboard.types';
 
 const StudentDasboard = () => {
   const routes = all_routes;
   const today = new Date();
   const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, "0"); // Month is zero-based, so we add 1
-  const day = String(today.getDate()).padStart(2, "0");
+  const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1
+  const day = String(today.getDate()).padStart(2, '0');
   const formattedDate = `${month}-${day}-${year}`;
   const defaultValue = dayjs(formattedDate);
   const [date, setDate] = useState<Nullable<Date>>(null);
-  const [attendanceDateRange, setAttendanceDateRange] = useState<string>("This Week");
-  const [leaveDateRange, setLeaveDateRange] = useState<string>("This Month");
-  const [todoDateRange, setTodoDateRange] = useState<string>("Today");
-  const [subjectFilter, setSubjectFilter] = useState<string>("All Subject");
+  const [attendanceDateRange, setAttendanceDateRange] = useState<string>('This Week');
+  const [leaveDateRange, setLeaveDateRange] = useState<string>('This Month');
+  const [todoDateRange, setTodoDateRange] = useState<string>('Today');
+  const [subjectFilter, setSubjectFilter] = useState<string>('All Subject');
 
   // Sample data - will be replaced with dynamic data later
   const profileData: ProfileCardData = {
-    id: "ST1234546",
-    name: "Angelo Riana",
-    image: "assets/img/students/student-13.jpg",
-    badge: "#ST1234546",
+    id: 'ST1234546',
+    name: 'Angelo Riana',
+    image: 'assets/img/students/student-13.jpg',
+    badge: '#ST1234546',
     additionalInfo: [
-      { label: "Class", value: "III, C" },
-      { label: "Roll No", value: "36545" },
+      { label: 'Class', value: 'III, C' },
+      { label: 'Roll No', value: '36545' },
     ],
     editLink: routes.editStudent,
   };
@@ -67,233 +63,233 @@ const StudentDasboard = () => {
 
   const attendanceChartData: AttendanceChartData = {
     series: [60, 5, 15, 20],
-    labels: ["Present", "Late", "Half Day", "Absent"],
-    colors: ["#1ABE17", "#1170E4", "#E9EDF4", "#E82646"],
+    labels: ['Present', 'Late', 'Half Day', 'Absent'],
+    colors: ['#1ABE17', '#1170E4', '#E9EDF4', '#E82646'],
   };
 
   const events: Event[] = [
     {
-      id: "1",
-      title: "1st Quarterly",
-      date: "06 May 2024",
-      time: "01:30 - 02:15 PM",
-      borderColor: "danger",
-      icon: "ti ti-calendar-bolt",
-      iconBgColor: "bg-danger-transparent",
+      id: '1',
+      title: '1st Quarterly',
+      date: '06 May 2024',
+      time: '01:30 - 02:15 PM',
+      borderColor: 'danger',
+      icon: 'ti ti-calendar-bolt',
+      iconBgColor: 'bg-danger-transparent',
     },
     {
-      id: "2",
-      title: "2nd Quarterly",
-      date: "07 May 2024",
-      time: "01:30 - 02:15 PM",
-      borderColor: "danger",
-      icon: "ti ti-calendar-bolt",
-      iconBgColor: "bg-danger-transparent",
+      id: '2',
+      title: '2nd Quarterly',
+      date: '07 May 2024',
+      time: '01:30 - 02:15 PM',
+      borderColor: 'danger',
+      icon: 'ti ti-calendar-bolt',
+      iconBgColor: 'bg-danger-transparent',
     },
   ];
 
   const homeworks: Homework[] = [
     {
-      id: "1",
-      subject: "Physics",
-      title: "Write about Theory of Pendulum",
-      teacherName: "Aaron",
-      teacherImage: "assets/img/teachers/teacher-01.jpg",
-      dueDate: "16 Jun 2024",
-      image: "assets/img/home-work/home-work-01.jpg",
+      id: '1',
+      subject: 'Physics',
+      title: 'Write about Theory of Pendulum',
+      teacherName: 'Aaron',
+      teacherImage: 'assets/img/teachers/teacher-01.jpg',
+      dueDate: '16 Jun 2024',
+      image: 'assets/img/home-work/home-work-01.jpg',
       progress: 80,
     },
     {
-      id: "2",
-      subject: "Chemistry",
-      title: "Chemistry - Change of Elements",
-      teacherName: "Hellana",
-      teacherImage: "assets/img/teachers/teacher-01.jpg",
-      dueDate: "16 Jun 2024",
-      image: "assets/img/home-work/home-work-02.jpg",
+      id: '2',
+      subject: 'Chemistry',
+      title: 'Chemistry - Change of Elements',
+      teacherName: 'Hellana',
+      teacherImage: 'assets/img/teachers/teacher-01.jpg',
+      dueDate: '16 Jun 2024',
+      image: 'assets/img/home-work/home-work-02.jpg',
       progress: 65,
     },
     {
-      id: "3",
-      subject: "Maths",
-      title: "Maths - Problems to Solve Page 21",
-      teacherName: "Morgan",
-      teacherImage: "assets/img/teachers/teacher-01.jpg",
-      dueDate: "21 Jun 2024",
-      image: "assets/img/home-work/home-work-03.jpg",
+      id: '3',
+      subject: 'Maths',
+      title: 'Maths - Problems to Solve Page 21',
+      teacherName: 'Morgan',
+      teacherImage: 'assets/img/teachers/teacher-01.jpg',
+      dueDate: '21 Jun 2024',
+      image: 'assets/img/home-work/home-work-03.jpg',
       progress: 30,
     },
     {
-      id: "4",
-      subject: "Engish",
-      title: "English - Vocabulary Introduction",
-      teacherName: "Daniel Josua",
-      teacherImage: "assets/img/teachers/teacher-01.jpg",
-      dueDate: "21 Jun 2024",
-      image: "assets/img/home-work/home-work-04.jpg",
+      id: '4',
+      subject: 'Engish',
+      title: 'English - Vocabulary Introduction',
+      teacherName: 'Daniel Josua',
+      teacherImage: 'assets/img/teachers/teacher-01.jpg',
+      dueDate: '21 Jun 2024',
+      image: 'assets/img/home-work/home-work-04.jpg',
       progress: 10,
     },
   ];
 
   const leaves: Leave[] = [
     {
-      id: "1",
-      type: "Emergency",
-      date: "15 Jun 2024",
-      status: "Pending",
+      id: '1',
+      type: 'Emergency',
+      date: '15 Jun 2024',
+      status: 'Pending',
     },
     {
-      id: "2",
-      type: "Medical",
-      date: "15 Jun 2024",
-      status: "Approved",
+      id: '2',
+      type: 'Medical',
+      date: '15 Jun 2024',
+      status: 'Approved',
     },
     {
-      id: "3",
-      type: "Medical",
-      date: "16 Jun 2024",
-      status: "Declined",
+      id: '3',
+      type: 'Medical',
+      date: '16 Jun 2024',
+      status: 'Declined',
     },
     {
-      id: "4",
-      type: "Fever",
-      date: "16 Jun 2024",
-      status: "Approved",
+      id: '4',
+      type: 'Fever',
+      date: '16 Jun 2024',
+      status: 'Approved',
     },
   ];
 
   const fees: Fee[] = [
     {
-      id: "1",
-      type: "Transport Fees",
-      amount: "$2500",
-      lastDate: "25 May 2024",
-      icon: "ti ti-bus-stop fs-16",
-      iconBgColor: "bg-info-transparent",
+      id: '1',
+      type: 'Transport Fees',
+      amount: '$2500',
+      lastDate: '25 May 2024',
+      icon: 'ti ti-bus-stop fs-16',
+      iconBgColor: 'bg-info-transparent',
     },
     {
-      id: "2",
-      type: "Book Fees",
-      amount: "$2500",
-      lastDate: "25 May 2024",
-      icon: "ti ti-books fs-16",
-      iconBgColor: "bg-success-transparent",
+      id: '2',
+      type: 'Book Fees',
+      amount: '$2500',
+      lastDate: '25 May 2024',
+      icon: 'ti ti-books fs-16',
+      iconBgColor: 'bg-success-transparent',
     },
     {
-      id: "3",
-      type: "Exam Fees",
-      amount: "$2500",
-      lastDate: "25 May 2024",
-      icon: "ti ti-report-money fs-16",
-      iconBgColor: "bg-info-transparent",
+      id: '3',
+      type: 'Exam Fees',
+      amount: '$2500',
+      lastDate: '25 May 2024',
+      icon: 'ti ti-report-money fs-16',
+      iconBgColor: 'bg-info-transparent',
     },
     {
-      id: "4",
-      type: "Mess Fees",
-      amount: "$2500",
-      lastDate: "27 May 2024",
-      icon: "ti ti-meat fs-16",
-      iconBgColor: "bg-skyblue-transparent",
+      id: '4',
+      type: 'Mess Fees',
+      amount: '$2500',
+      lastDate: '27 May 2024',
+      icon: 'ti ti-meat fs-16',
+      iconBgColor: 'bg-skyblue-transparent',
       isDue: true,
-      dueAmount: "$2500 + $150",
+      dueAmount: '$2500 + $150',
     },
     {
-      id: "5",
-      type: "Hostel",
-      amount: "$2500",
-      lastDate: "25 May 2024",
-      icon: "ti ti-report-money fs-16",
-      iconBgColor: "bg-danger-transparent",
+      id: '5',
+      type: 'Hostel',
+      amount: '$2500',
+      lastDate: '25 May 2024',
+      icon: 'ti ti-report-money fs-16',
+      iconBgColor: 'bg-danger-transparent',
     },
   ];
 
   const notices: Notice[] = [
     {
-      id: "1",
-      title: "New Syllabus Instructions",
-      date: "11 Mar 2024",
-      icon: "ti ti-books fs-16",
-      iconBgColor: "bg-primary-transparent",
+      id: '1',
+      title: 'New Syllabus Instructions',
+      date: '11 Mar 2024',
+      icon: 'ti ti-books fs-16',
+      iconBgColor: 'bg-primary-transparent',
     },
     {
-      id: "2",
-      title: "World Environment Day Program.....!!!",
-      date: "21 Apr 2024",
-      icon: "ti ti-note fs-16",
-      iconBgColor: "bg-success-transparent",
+      id: '2',
+      title: 'World Environment Day Program.....!!!',
+      date: '21 Apr 2024',
+      icon: 'ti ti-note fs-16',
+      iconBgColor: 'bg-success-transparent',
     },
     {
-      id: "3",
-      title: "Exam Preparation Notification!",
-      date: "13 Mar 2024",
-      icon: "ti ti-bell-check fs-16",
-      iconBgColor: "bg-danger-transparent",
+      id: '3',
+      title: 'Exam Preparation Notification!',
+      date: '13 Mar 2024',
+      icon: 'ti ti-bell-check fs-16',
+      iconBgColor: 'bg-danger-transparent',
     },
     {
-      id: "4",
-      title: "Online Classes Preparation",
-      date: "24 May 2024",
-      icon: "ti ti-notes fs-16",
-      iconBgColor: "bg-skyblue-transparent",
+      id: '4',
+      title: 'Online Classes Preparation',
+      date: '24 May 2024',
+      icon: 'ti ti-notes fs-16',
+      iconBgColor: 'bg-skyblue-transparent',
     },
     {
-      id: "5",
-      title: "Exam Time Table Release",
-      date: "24 May 2024",
-      icon: "ti ti-package fs-16",
-      iconBgColor: "bg-warning-transparent",
+      id: '5',
+      title: 'Exam Time Table Release',
+      date: '24 May 2024',
+      icon: 'ti ti-package fs-16',
+      iconBgColor: 'bg-warning-transparent',
     },
     {
-      id: "6",
-      title: "English Exam Preparation",
-      date: "23 Mar 2024",
-      icon: "ti ti-bell-check fs-16",
-      iconBgColor: "bg-danger-transparent",
+      id: '6',
+      title: 'English Exam Preparation',
+      date: '23 Mar 2024',
+      icon: 'ti ti-bell-check fs-16',
+      iconBgColor: 'bg-danger-transparent',
     },
   ];
 
   const todos: TodoItem[] = [
     {
-      id: "1",
-      title: "Send Reminder to Students",
-      time: "01:00 PM",
+      id: '1',
+      title: 'Send Reminder to Students',
+      time: '01:00 PM',
       completed: true,
-      status: "Completed",
+      status: 'Completed',
     },
     {
-      id: "2",
-      title: "Create Routine to new staff",
-      time: "04:50 PM",
+      id: '2',
+      title: 'Create Routine to new staff',
+      time: '04:50 PM',
       completed: false,
-      status: "Inprogress",
+      status: 'Inprogress',
     },
     {
-      id: "3",
-      title: "Extra Class Info to Students",
-      time: "04:55 PM",
+      id: '3',
+      title: 'Extra Class Info to Students',
+      time: '04:55 PM',
       completed: false,
-      status: "Yet to Start",
+      status: 'Yet to Start',
     },
     {
-      id: "4",
-      title: "Fees for Upcoming Academics",
-      time: "04:55 PM",
+      id: '4',
+      title: 'Fees for Upcoming Academics',
+      time: '04:55 PM',
       completed: false,
-      status: "Yet to Start",
+      status: 'Yet to Start',
     },
     {
-      id: "5",
-      title: "English - Essay on Visit",
-      time: "05:55 PM",
+      id: '5',
+      title: 'English - Essay on Visit',
+      time: '05:55 PM',
       completed: false,
-      status: "Yet to Start",
+      status: 'Yet to Start',
     },
   ];
 
   const [attendance_chart] = useState<any>({
     chart: {
       height: 255,
-      type: "donut",
+      type: 'donut',
       toolbar: {
         show: false,
       },
@@ -301,7 +297,7 @@ const StudentDasboard = () => {
     plotOptions: {
       bar: {
         horizontal: false,
-        columnWidth: "50%",
+        columnWidth: '50%',
       },
     },
     dataLabels: {
@@ -309,8 +305,8 @@ const StudentDasboard = () => {
     },
 
     series: [60, 5, 15, 20],
-    labels: ["Present", "Late", "Half Day", "Absent"],
-    colors: ["#1ABE17", "#1170E4", "#E9EDF4", "#E82646"],
+    labels: ['Present', 'Late', 'Half Day', 'Absent'],
+    colors: ['#1ABE17', '#1170E4', '#E9EDF4', '#E82646'],
     responsive: [
       {
         breakpoint: 480,
@@ -319,48 +315,42 @@ const StudentDasboard = () => {
             width: 200,
           },
           legend: {
-            position: "bottom",
+            position: 'bottom',
           },
         },
       },
     ],
     legend: {
-      position: "bottom",
+      position: 'bottom',
     },
   });
   const [performance_chart] = useState<any>({
     chart: {
-      type: "area",
+      type: 'area',
       height: 355,
     },
     series: [
       {
-        name: "Avg. Exam Score",
+        name: 'Avg. Exam Score',
         data: [75, 68, 65, 68, 75], // Sample data
       },
       {
-        name: "Avg. Attendance",
+        name: 'Avg. Attendance',
         data: [85, 78, 75, 78, 85], // Sample data
       },
     ],
     xaxis: {
-      categories: [
-        "Quarter 1",
-        "Quarter 2",
-        "Half yearly",
-        "Model",
-        "Final Exam",
-      ],
+      categories: ['Quarter 1', 'Quarter 2', 'Half yearly', 'Model', 'Final Exam'],
     },
     tooltip: {
       y: {
         formatter: function (val: any) {
-          return val + "%";
+          return val + '%';
         },
       },
       shared: true,
       intersect: false,
-      custom: function ({ series,  dataPointIndex, w }: any) {
+      custom: function ({ series, dataPointIndex, w }: any) {
         return `<div class="apexcharts-tooltip">${w.globals.labels[dataPointIndex]}<br>Exam Score: <span style="color: #1E90FF;">${series[0][dataPointIndex]}%</span><br>Attendance: <span style="color: #00BFFF;">${series[1][dataPointIndex]}%</span></div>`;
       },
     },
@@ -368,14 +358,14 @@ const StudentDasboard = () => {
       enabled: false,
     },
     stroke: {
-      curve: "smooth",
+      curve: 'smooth',
     },
     grid: {
       yaxis: {
         axisTicks: {
           show: true,
-          borderType: "solid",
-          color: "#78909C",
+          borderType: 'solid',
+          color: '#78909C',
           width: 6,
           offsetX: 0,
           offsetY: 0,
@@ -384,16 +374,16 @@ const StudentDasboard = () => {
     },
     markers: {
       size: 5,
-      colors: ["#1E90FF", "#00BFFF"],
-      strokeColors: "#fff",
+      colors: ['#1E90FF', '#00BFFF'],
+      strokeColors: '#fff',
       strokeWidth: 2,
       hover: {
         size: 7,
       },
     },
-    colors: ["#3D5EE1", "#6FCCD8"], // Color for the lines
+    colors: ['#3D5EE1', '#6FCCD8'], // Color for the lines
     fill: {
-      type: "gradient",
+      type: 'gradient',
       gradient: {
         shadeIntensity: 1,
         opacityFrom: 0.7,
@@ -402,55 +392,55 @@ const StudentDasboard = () => {
       },
     },
     legend: {
-      position: "bottom",
-      horizontalAlign: "center",
+      position: 'bottom',
+      horizontalAlign: 'center',
     },
   });
   const [exam_result_chart] = useState<any>({
     chart: {
-      type: "bar",
+      type: 'bar',
       height: 310,
     },
     series: [
       {
-        name: "Marks",
+        name: 'Marks',
         data: [100, 92, 90, 82, 90], // Corresponding scores for Maths, Physics, Chemistry, English, Spanish
       },
     ],
     xaxis: {
-      categories: ["Mat", "Phy", "Che", "Eng", "Sci"],
+      categories: ['Mat', 'Phy', 'Che', 'Eng', 'Sci'],
     },
     plotOptions: {
       bar: {
         distributed: true,
-        columnWidth: "50%",
+        columnWidth: '50%',
         colors: {
-          backgroundBarColors: ["#E9EDF4", "#fff"],
+          backgroundBarColors: ['#E9EDF4', '#fff'],
           backgroundBarOpacity: 1,
           backgroundBarRadius: 5,
         },
         dataLabels: {
-          position: "top",
+          position: 'top',
         },
       },
     },
-    colors: ["#E9EDF4", "#3D5EE1", "#E9EDF4", "#E9EDF4", "#E9EDF4"], // Set specific colors for each bar
+    colors: ['#E9EDF4', '#3D5EE1', '#E9EDF4', '#E9EDF4', '#E9EDF4'], // Set specific colors for each bar
     tooltip: {
       y: {
         formatter: function (val: any) {
-          return val + "%";
+          return val + '%';
         },
       },
     },
     dataLabels: {
       enabled: true,
       formatter: function (val: any) {
-        return val + "%";
+        return val + '%';
       },
       offsetY: -20,
       style: {
-        fontSize: "14px",
-        colors: ["#304758"],
+        fontSize: '14px',
+        colors: ['#304758'],
       },
     },
     grid: {
@@ -466,27 +456,27 @@ const StudentDasboard = () => {
     },
   });
   function SampleNextArrow(props: any) {
-    const {  style, onClick } = props;
+    const { style, onClick } = props;
     return (
       <div
         className="slick-nav slick-nav-next class-slides"
-        style={{ ...style, display: "flex", top: "-60px", right: "0" }}
+        style={{ ...style, display: 'flex', top: '-60px', right: '0' }}
         onClick={onClick}
       >
-        <i className="fas fa-chevron-right" style={{ fontSize:"12px"}}></i>
+        <i className="fas fa-chevron-right" style={{ fontSize: '12px' }}></i>
       </div>
     );
   }
 
   function SamplePrevArrow(props: any) {
-    const {  style, onClick } = props;
+    const { style, onClick } = props;
     return (
       <div
         className="slick-nav slick-nav-prev class-slides"
-        style={{ ...style, display: "flex", top: "-60px", right: "30px" }}
+        style={{ ...style, display: 'flex', top: '-60px', right: '30px' }}
         onClick={onClick}
       >
-        <i className="fas fa-chevron-left" style={{ fontSize:"12px"}}></i>
+        <i className="fas fa-chevron-left" style={{ fontSize: '12px' }}></i>
       </div>
     );
   }
@@ -569,22 +559,15 @@ const StudentDasboard = () => {
                       <div className="card-body">
                         <div className="d-flex align-items-center row-gap-3 mb-3">
                           <div className="avatar avatar-xxl rounded flex-shrink-0 me-3">
-                            <ImageWithBasePath
-                              src="assets/img/students/student-13.jpg"
-                              alt="Img"
-                            />
+                            <ImageWithBasePath src="assets/img/students/student-13.jpg" alt="Img" />
                           </div>
                           <div className="d-block">
                             <span className="badge bg-transparent-primary text-primary mb-1">
                               #ST1234546
                             </span>
-                            <h3 className="text-truncate text-white mb-1">
-                              Angelo Riana
-                            </h3>
+                            <h3 className="text-truncate text-white mb-1">Angelo Riana</h3>
                             <div className="d-flex align-items-center flex-wrap row-gap-2 text-gray-2">
-                              <span className="border-end me-2 pe-2">
-                                Class : III, C
-                              </span>
+                              <span className="border-end me-2 pe-2">Class : III, C</span>
                               <span>Roll No : 36545</span>
                             </div>
                           </div>
@@ -602,22 +585,10 @@ const StudentDasboard = () => {
                           </Link>
                         </div>
                         <div className="student-card-bg">
-                          <ImageWithBasePath
-                            src="assets/img/bg/circle-shape.png"
-                            alt="Bg"
-                          />
-                          <ImageWithBasePath
-                            src="assets/img/bg/shape-02.png"
-                            alt="Bg"
-                          />
-                          <ImageWithBasePath
-                            src="assets/img/bg/shape-04.png"
-                            alt="Bg"
-                          />
-                          <ImageWithBasePath
-                            src="assets/img/bg/blue-polygon.png"
-                            alt="Bg"
-                          />
+                          <ImageWithBasePath src="assets/img/bg/circle-shape.png" alt="Bg" />
+                          <ImageWithBasePath src="assets/img/bg/shape-02.png" alt="Bg" />
+                          <ImageWithBasePath src="assets/img/bg/shape-04.png" alt="Bg" />
+                          <ImageWithBasePath src="assets/img/bg/blue-polygon.png" alt="Bg" />
                         </div>
                       </div>
                     </div>
@@ -636,8 +607,8 @@ const StudentDasboard = () => {
                           <DatePicker
                             className="form-control datetimepicker border-0"
                             format={{
-                              format: "DD-MM-YYYY",
-                              type: "mask",
+                              format: 'DD-MM-YYYY',
+                              type: 'mask',
                             }}
                             defaultValue={defaultValue}
                             placeholder="16 May 2024"
@@ -658,9 +629,7 @@ const StudentDasboard = () => {
                                 />
                               </span>
                               <div>
-                                <h6 className="mb-1 text-decoration-line-through">
-                                  English
-                                </h6>
+                                <h6 className="mb-1 text-decoration-line-through">English</h6>
                                 <span>
                                   <i className="ti ti-clock me-2" />
                                   09:00 - 09:45 AM
@@ -683,9 +652,7 @@ const StudentDasboard = () => {
                                 />
                               </span>
                               <div>
-                                <h6 className="mb-1 text-decoration-line-through">
-                                  Chemistry
-                                </h6>
+                                <h6 className="mb-1 text-decoration-line-through">Chemistry</h6>
                                 <span>
                                   <i className="ti ti-clock me-2" />
                                   10:45 - 11:30 AM
@@ -734,20 +701,20 @@ const StudentDasboard = () => {
                     dateRange={attendanceDateRange}
                     onDateRangeChange={setAttendanceDateRange}
                     dateRangeOptions={[
-                      { label: "This Week", value: "This Week" },
-                      { label: "Last Week", value: "Last Week" },
-                      { label: "Last Month", value: "Last Month" },
+                      { label: 'This Week', value: 'This Week' },
+                      { label: 'Last Week', value: 'Last Week' },
+                      { label: 'Last Month', value: 'Last Month' },
                     ]}
                     totalWorkingDays={28}
                     showLast7Days={true}
                     last7DaysData={[
-                      { day: "M", status: "present" },
-                      { day: "T", status: "present" },
-                      { day: "W", status: "present" },
-                      { day: "T", status: "present" },
-                      { day: "F", status: "absent" },
-                      { day: "S", status: "present" },
-                      { day: "S", status: "present" },
+                      { day: 'M', status: 'present' },
+                      { day: 'T', status: 'present' },
+                      { day: 'W', status: 'present' },
+                      { day: 'T', status: 'present' },
+                      { day: 'F', status: 'absent' },
+                      { day: 'S', status: 'present' },
+                      { day: 'S', status: 'present' },
                     ]}
                     last7DaysRange="14 May 2024 - 21 May 2024"
                     chartHeight={255}
@@ -902,11 +869,7 @@ const StudentDasboard = () => {
                 <div className="card-header d-flex align-items-center justify-content-between">
                   <h4 className="card-title">Performance</h4>
                   <div className="dropdown">
-                    <Link
-                      to="#"
-                      className="bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
+                    <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
                       <i className="ti ti-calendar me-2" />
                       2024 - 2025
                     </Link>
@@ -1231,11 +1194,7 @@ const StudentDasboard = () => {
                 <div className="card-header d-flex align-items-center justify-content-between">
                   <h4 className="card-title">Exam Result</h4>
                   <div className="dropdown">
-                    <Link
-                      to="#"
-                      className="bg-white dropdown-toggle"
-                      data-bs-toggle="dropdown"
-                    >
+                    <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
                       <i className="ti ti-calendar me-2" />
                       1st Quarter
                     </Link>
@@ -1255,18 +1214,10 @@ const StudentDasboard = () => {
                 </div>
                 <div className="card-body pb-0">
                   <div className="d-flex align-items-center flex-wrap">
-                    <span className="badge badge-soft-primary badge-md me-1 mb-3">
-                      Mat : 100{" "}
-                    </span>
-                    <span className="badge badge-soft-success badge-md me-1 mb-3">
-                      Phy: 92
-                    </span>
-                    <span className="badge badge-soft-warning badge-md me-1 mb-3">
-                      Che : 90
-                    </span>
-                    <span className="badge badge-soft-danger badge-md mb-3">
-                      Eng : 80
-                    </span>
+                    <span className="badge badge-soft-primary badge-md me-1 mb-3">Mat : 100 </span>
+                    <span className="badge badge-soft-success badge-md me-1 mb-3">Phy: 92</span>
+                    <span className="badge badge-soft-warning badge-md me-1 mb-3">Che : 90</span>
+                    <span className="badge badge-soft-danger badge-md mb-3">Eng : 80</span>
                   </div>
                   <ReactApexChart
                     id="exam-result-chart"
@@ -1341,7 +1292,7 @@ const StudentDasboard = () => {
                       </span>
                       <div className="overflow-hidden">
                         <h6 className="text-truncate mb-1">
-                          Mess Fees{" "}
+                          Mess Fees{' '}
                           <span className="d-inline-flex align-items-center badge badge-soft-danger">
                             <i className="ti ti-circle-filled me-1 fs-5" />
                             Due
@@ -1392,14 +1343,10 @@ const StudentDasboard = () => {
                   <h4 className="card-title">Syllabus</h4>
                 </div>
                 <div className="card-body">
-                  <div
-                    className="alert alert-success d-flex align-items-center mb-24"
-                    role="alert"
-                  >
+                  <div className="alert alert-success d-flex align-items-center mb-24" role="alert">
                     <i className="ti ti-info-square-rounded me-2 fs-14" />
                     <div className="fs-14">
-                      These Result are obtained from the syllabus completion on
-                      the respective Class
+                      These Result are obtained from the syllabus completion on the respective Class
                     </div>
                   </div>
                   <ul className="list-group">
@@ -1413,7 +1360,7 @@ const StudentDasboard = () => {
                             <div
                               className="progress-bar bg-primary rounded"
                               role="progressbar"
-                              style={{ width: "20%" }}
+                              style={{ width: '20%' }}
                               aria-valuenow={30}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -1432,7 +1379,7 @@ const StudentDasboard = () => {
                             <div
                               className="progress-bar bg-secondary rounded"
                               role="progressbar"
-                              style={{ width: "30%" }}
+                              style={{ width: '30%' }}
                               aria-valuenow={30}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -1451,7 +1398,7 @@ const StudentDasboard = () => {
                             <div
                               className="progress-bar bg-info rounded"
                               role="progressbar"
-                              style={{ width: "40%" }}
+                              style={{ width: '40%' }}
                               aria-valuenow={30}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -1470,7 +1417,7 @@ const StudentDasboard = () => {
                             <div
                               className="progress-bar bg-success rounded"
                               role="progressbar"
-                              style={{ width: "50%" }}
+                              style={{ width: '50%' }}
                               aria-valuenow={30}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -1489,7 +1436,7 @@ const StudentDasboard = () => {
                             <div
                               className="progress-bar bg-warning rounded"
                               role="progressbar"
-                              style={{ width: "70%" }}
+                              style={{ width: '70%' }}
                               aria-valuenow={30}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -1508,7 +1455,7 @@ const StudentDasboard = () => {
                             <div
                               className="progress-bar bg-danger rounded"
                               role="progressbar"
-                              style={{ width: "80%" }}
+                              style={{ width: '80%' }}
                               aria-valuenow={30}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -1527,7 +1474,7 @@ const StudentDasboard = () => {
                             <div
                               className="progress-bar bg-primary rounded"
                               role="progressbar"
-                              style={{ width: "85%" }}
+                              style={{ width: '85%' }}
                               aria-valuenow={30}
                               aria-valuemin={0}
                               aria-valuemax={100}
@@ -1549,7 +1496,7 @@ const StudentDasboard = () => {
                 onDateRangeChange={setTodoDateRange}
                 onToggleComplete={(id) => {
                   // Handle toggle - will be implemented with dynamic data
-                  console.log("Toggle todo:", id);
+                  console.log('Toggle todo:', id);
                 }}
               />
             </div>
