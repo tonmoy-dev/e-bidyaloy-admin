@@ -704,124 +704,127 @@ export const SidebarData = [
       },
     ],
   },
-  {
-    label: 'Pages',
-    submenu: true,
-    showSubRoute: false,
-    submenuHdr: 'Authentication',
-    submenuItems: [
-      {
-        label: 'Profile',
-        link: routes.profile,
-        icon: 'ti ti-user',
-        showSubRoute: false,
-        submenu: false,
-      },
 
-      {
-        label: 'Authentication',
-        submenu: true,
-        showSubRoute: false,
-        icon: 'ti ti-lock-square-rounded',
-        submenuItems: [
-          {
-            label: 'Login',
-            submenu: true,
-            showSubRoute: false,
-            submenuItems: [
-              { label: 'Cover', link: routes.login },
-              { label: 'Illustration', link: routes.login },
-              { label: 'Basic', link: routes.login },
-            ],
-          },
-          {
-            label: 'Register',
-            submenu: true,
-            showSubRoute: false,
-            submenuItems: [
-              { label: 'Cover', link: routes.register },
-              { label: 'Illustration', link: routes.register },
-              { label: 'Basic', link: routes.register },
-            ],
-          },
-          {
-            label: 'Forgot Password',
-            submenu: true,
-            showSubRoute: false,
-            submenuItems: [
-              { label: 'Cover', link: routes.forgotPassword },
-              { label: 'Illustration', link: routes.forgotPassword },
-              { label: 'Basic', link: routes.forgotPassword },
-            ],
-          },
-          {
-            label: 'Reset Password',
-            submenu: true,
-            showSubRoute: false,
-            submenuItems: [
-              { label: 'Cover', link: routes.resetPassword },
-              { label: 'Illustration', link: routes.resetPassword },
-              { label: 'Basic', link: routes.resetPassword },
-            ],
-          },
-          {
-            label: 'Email Verfication',
-            submenu: true,
-            showSubRoute: false,
-            submenuItems: [
-              { label: 'Cover', link: routes.emailVerification },
-              { label: 'Illustration', link: routes.emailVerification },
-              { label: 'Basic', link: routes.emailVerification },
-            ],
-          },
-          {
-            label: '2 Step Verification',
-            submenu: true,
-            showSubRoute: false,
-            submenuItems: [
-              { label: 'Cover', link: routes.emailVerification },
-              { label: 'Illustration', link: routes.emailVerification },
-              { label: 'Basic', link: routes.emailVerification },
-            ],
-          },
-          { label: 'Lock Screen', link: routes.lockScreen },
-        ],
-      },
-      {
-        label: 'Error Pages',
-        submenu: true,
-        showSubRoute: false,
-        icon: 'ti ti-error-404',
-        submenuItems: [
-          {
-            label: '404 Error',
-            link: routes.error404,
-            showSubRoute: false,
-          },
-          { label: '500 Error', link: routes.error500, showSubRoute: false },
-        ],
-      },
-      {
-        label: 'Blank Page',
-        link: routes.blankPage,
-        icon: 'ti ti-brand-nuxt',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Coming Soon',
-        link: routes.comingSoon,
-        icon: 'ti ti-file',
-        showSubRoute: false,
-      },
-      {
-        label: 'Under Maintenance',
-        link: routes.underMaintenance,
-        icon: 'ti ti-moon-2',
-        showSubRoute: false,
-      },
-    ],
-  },
+  // pages routes are available in the features
+  // {
+  //   label: 'Pages',
+  //   submenu: true,
+  //   showSubRoute: false,
+  //   submenuHdr: 'Authentication',
+  //   submenuItems: [
+  //     {
+  //       label: 'Profile',
+  //       link: routes.profile,
+  //       icon: 'ti ti-user',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+
+  //     {
+  //       label: 'Authentication',
+  //       submenu: true,
+  //       showSubRoute: false,
+  //       icon: 'ti ti-lock-square-rounded',
+  //       submenuItems: [
+  //         {
+  //           label: 'Login',
+  //           submenu: true,
+  //           showSubRoute: false,
+  //           submenuItems: [
+  //             { label: 'Cover', link: routes.login },
+  //             { label: 'Illustration', link: routes.login },
+  //             { label: 'Basic', link: routes.login },
+  //           ],
+  //         },
+  //         {
+  //           label: 'Register',
+  //           submenu: true,
+  //           showSubRoute: false,
+  //           submenuItems: [
+  //             { label: 'Cover', link: routes.register },
+  //             { label: 'Illustration', link: routes.register },
+  //             { label: 'Basic', link: routes.register },
+  //           ],
+  //         },
+  //         {
+  //           label: 'Forgot Password',
+  //           submenu: true,
+  //           showSubRoute: false,
+  //           submenuItems: [
+  //             { label: 'Cover', link: routes.forgotPassword },
+  //             { label: 'Illustration', link: routes.forgotPassword },
+  //             { label: 'Basic', link: routes.forgotPassword },
+  //           ],
+  //         },
+  //         {
+  //           label: 'Reset Password',
+  //           submenu: true,
+  //           showSubRoute: false,
+  //           submenuItems: [
+  //             { label: 'Cover', link: routes.resetPassword },
+  //             { label: 'Illustration', link: routes.resetPassword },
+  //             { label: 'Basic', link: routes.resetPassword },
+  //           ],
+  //         },
+  //         {
+  //           label: 'Email Verfication',
+  //           submenu: true,
+  //           showSubRoute: false,
+  //           submenuItems: [
+  //             { label: 'Cover', link: routes.emailVerification },
+  //             { label: 'Illustration', link: routes.emailVerification },
+  //             { label: 'Basic', link: routes.emailVerification },
+  //           ],
+  //         },
+  //         {
+  //           label: '2 Step Verification',
+  //           submenu: true,
+  //           showSubRoute: false,
+  //           submenuItems: [
+  //             { label: 'Cover', link: routes.emailVerification },
+  //             { label: 'Illustration', link: routes.emailVerification },
+  //             { label: 'Basic', link: routes.emailVerification },
+  //           ],
+  //         },
+  //         { label: 'Lock Screen', link: routes.lockScreen },
+  //       ],
+  //     },
+  //     {
+  //       label: 'Error Pages',
+  //       submenu: true,
+  //       showSubRoute: false,
+  //       icon: 'ti ti-error-404',
+  //       submenuItems: [
+  //         {
+  //           label: '404 Error',
+  //           link: routes.error404,
+  //           showSubRoute: false,
+  //         },
+  //         { label: '500 Error', link: routes.error500, showSubRoute: false },
+  //       ],
+  //     },
+  //     {
+  //       label: 'Blank Page',
+  //       link: routes.blankPage,
+  //       icon: 'ti ti-brand-nuxt',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Coming Soon',
+  //       link: routes.comingSoon,
+  //       icon: 'ti ti-file',
+  //       showSubRoute: false,
+  //     },
+  //     {
+  //       label: 'Under Maintenance',
+  //       link: routes.underMaintenance,
+  //       icon: 'ti ti-moon-2',
+  //       showSubRoute: false,
+  //     },
+  //   ],
+  // },
+
   {
     label: 'Settings',
     submenu: true,
