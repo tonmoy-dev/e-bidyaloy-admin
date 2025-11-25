@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import CommonSelect from '../../../core/common/commonSelect';
@@ -40,9 +40,12 @@ const StudentAttendance = () => {
   const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
   const [selectedClass, setSelectedClass] = useState<string>('');
   const [selectedSection, setSelectedSection] = useState<string>('');
-  const [selectedSubject, setSelectedSubject] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [attendanceData, setAttendanceData] = useState<Record<string, AttendanceRecord>>({});
+  const [currentStudentIndex, setCurrentStudentIndex] = useState<number>(0);
+
+  // Refs for student cards
+  const studentCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
 
   // API hooks
   const { data: classes } = useGetClassesWithoutPaginationQuery();
@@ -103,6 +106,7 @@ const StudentAttendance = () => {
         };
       });
       setAttendanceData(initialData);
+      setCurrentStudentIndex(0); // Reset to first student
     }
   }, [students]);
 
@@ -120,6 +124,93 @@ const StudentAttendance = () => {
       });
     }
   }, [isMarkSuccess]);
+
+  // Filter students based on search
+  const filteredStudents = useMemo(() => {
+    if (!students || students.length === 0) return [];
+    if (!searchTerm) return students;
+
+    const lowerSearch = searchTerm.toLowerCase();
+    return students.filter((student: Student) => {
+      const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
+      const rollNo = student.roll_number?.toString().toLowerCase() || '';
+      const studentId = student.student_id?.toLowerCase() || '';
+      return (
+        fullName.includes(lowerSearch) ||
+        rollNo.includes(lowerSearch) ||
+        studentId.includes(lowerSearch)
+      );
+    });
+  }, [students, searchTerm]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      if (!filteredStudents || filteredStudents.length === 0) return;
+
+      const currentStudent = filteredStudents[currentStudentIndex];
+      if (!currentStudent) return;
+
+      let newStatus: AttendanceStatus | null = null;
+
+      switch (e.key.toLowerCase()) {
+        case 'p':
+          newStatus = 'present';
+          break;
+        case 'a':
+          newStatus = 'absent';
+          break;
+        case 'l':
+          newStatus = 'late';
+          break;
+        case 'h':
+          newStatus = 'half_day';
+          break;
+        default:
+          return;
+      }
+
+      if (newStatus) {
+        e.preventDefault();
+        handleAttendanceChange(currentStudent.id, newStatus);
+
+        // Auto-scroll to next student
+        if (currentStudentIndex < filteredStudents.length - 1) {
+          const nextIndex = currentStudentIndex + 1;
+          setCurrentStudentIndex(nextIndex);
+          scrollToStudent(nextIndex);
+        } else {
+          toast.info('All students marked! Ready to save.', {
+            position: 'top-right',
+            autoClose: 2000,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [filteredStudents, currentStudentIndex, attendanceData]);
+
+  // Scroll to student card
+  const scrollToStudent = (index: number) => {
+    const student = filteredStudents[index];
+    if (student && studentCardRefs.current[student.id]) {
+      studentCardRefs.current[student.id]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
+  };
 
   // Handle class change
   const handleClassChange = (value: string) => {
@@ -162,7 +253,6 @@ const StudentAttendance = () => {
     const payload = {
       class_id: selectedClass,
       section_id: selectedSection,
-      subject_id: selectedSubject,
       attendance_date: selectedDate,
       students: Object.values(attendanceData).map((record) => ({
         student_id: record.student_id,
@@ -181,24 +271,6 @@ const StudentAttendance = () => {
       });
     }
   };
-
-  // Filter students based on search
-  const filteredStudents = useMemo(() => {
-    if (!students || students.length === 0) return [];
-    if (!searchTerm) return students;
-
-    const lowerSearch = searchTerm.toLowerCase();
-    return students.filter((student: Student) => {
-      const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
-      const rollNo = student.roll_number?.toString().toLowerCase() || '';
-      const studentId = student.student_id?.toLowerCase() || '';
-      return (
-        fullName.includes(lowerSearch) ||
-        rollNo.includes(lowerSearch) ||
-        studentId.includes(lowerSearch)
-      );
-    });
-  }, [students, searchTerm]);
 
   // Handle quick mark all
   const handleMarkAll = (status: AttendanceStatus) => {
@@ -326,7 +398,7 @@ const StudentAttendance = () => {
             <div className="card-body">
               <div className="row g-3 align-items-end">
                 {/* Date */}
-                <div className="col-lg-2 col-md-6">
+                <div className="col-lg-3 col-md-6">
                   <label className="form-label mb-2">
                     <i className="ti ti-calendar me-1" />
                     Date
@@ -346,7 +418,7 @@ const StudentAttendance = () => {
                 </div>
 
                 {/* Class */}
-                <div className="col-lg-2 col-md-6">
+                <div className="col-lg-3 col-md-6">
                   <label className="form-label mb-2">Class</label>
                   <CommonSelect
                     className="select"
@@ -358,32 +430,16 @@ const StudentAttendance = () => {
                 </div>
 
                 {/* Section */}
-                {/* Section */}
-                <div className="col-lg-2 col-md-6">
+                <div className="col-lg-3 col-md-6">
                   <label className="form-label mb-2">Section</label>
                   <CommonSelect
-                    key={selectedClass} // Add this key prop to force re-render when class changes
+                    key={selectedClass}
                     className="select"
                     options={sectionOptions}
                     value={selectedSection}
                     onChange={(value) => setSelectedSection(value)}
                     disabled={!selectedClass}
                     placeholder="All Sections"
-                  />
-                </div>
-
-                {/* Subject */}
-                <div className="col-lg-3 col-md-6">
-                  <label className="form-label mb-2">Subject</label>
-                  <CommonSelect
-                    className="select"
-                    options={[
-                      { value: '', label: 'Select Subject' },
-                      // Add your subject options here
-                    ]}
-                    value={selectedSubject}
-                    onChange={(value) => setSelectedSubject(value)}
-                    placeholder="Select Subject"
                   />
                 </div>
 
@@ -405,6 +461,37 @@ const StudentAttendance = () => {
             </div>
           </div>
           {/* /Filter Card */}
+
+          {/* Keyboard Shortcuts Info */}
+          {shouldShowStudents && (
+            <div className="card bg-light border-0">
+              <div className="card-body py-2">
+                <div className="d-flex align-items-center gap-3 flex-wrap">
+                  <span className="text-muted small">
+                    <i className="ti ti-keyboard me-1" />
+                    <strong>Keyboard Shortcuts:</strong>
+                  </span>
+                  <span className="badge bg-success-transparent text-success">
+                    <kbd>P</kbd> Present
+                  </span>
+                  <span className="badge bg-danger-transparent text-danger">
+                    <kbd>A</kbd> Absent
+                  </span>
+                  <span className="badge bg-info-transparent text-info">
+                    <kbd>L</kbd> Late
+                  </span>
+                  <span className="badge bg-warning-transparent text-warning">
+                    <kbd>H</kbd> Half Day
+                  </span>
+                  <span className="text-muted small ms-auto">
+                    <i className="ti ti-info-circle me-1" />
+                    Auto-scrolls to next student
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* /Keyboard Shortcuts Info */}
 
           {/* Stats Card - Show when students are loaded */}
           {shouldShowStudents && (
@@ -477,7 +564,7 @@ const StudentAttendance = () => {
                       disabled={!isSaveEnabled}
                       title={
                         !isSaveEnabled
-                          ? 'Please select class, section, subject, and date to save'
+                          ? 'Please select class, section, and date to save'
                           : 'Save attendance'
                       }
                     >
@@ -504,15 +591,24 @@ const StudentAttendance = () => {
           ) : shouldShowStudents ? (
             filteredStudents.length > 0 ? (
               <div className="row">
-                {filteredStudents.map((student: Student) => {
+                {filteredStudents.map((student: Student, index: number) => {
                   const currentStatus = attendanceData[student.id]?.status || 'present';
                   const currentRemarks = attendanceData[student.id]?.remarks || '';
                   const initials = getInitials(student.first_name, student.last_name);
                   const avatarColor = getAvatarColor(currentStatus);
+                  const isCurrentStudent = index === currentStudentIndex;
 
                   return (
-                    <div key={student.id} className="col-12 mb-3">
-                      <div className="card shadow-sm">
+                    <div
+                      key={student.id}
+                      className="col-12 mb-3"
+                      ref={(el) => (studentCardRefs.current[student.id] = el)}
+                    >
+                      <div
+                        className={`card shadow-sm ${
+                          isCurrentStudent ? 'border-primary border-2' : ''
+                        }`}
+                      >
                         <div className="card-body">
                           <div className="row g-3">
                             {/* Student Info & Attendance Buttons */}
@@ -547,6 +643,9 @@ const StudentAttendance = () => {
                                   <div>
                                     <h6 className="mb-1 fw-semibold">
                                       {student.first_name} {student.last_name}
+                                      {isCurrentStudent && (
+                                        <span className="badge bg-primary ms-2 small">Current</span>
+                                      )}
                                     </h6>
                                     <p className="text-muted mb-0 small">
                                       Roll: {student.roll_number || 'N/A'} • Class{' '}
