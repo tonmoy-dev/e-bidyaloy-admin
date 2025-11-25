@@ -22,7 +22,7 @@ export const SidebarData = [
         ],
       },
 
-      // Only Email and Chat are available in the component
+      // Only Email and Chat components are available in the features
       // {
       //   label: 'Application',
       //   icon: 'ti ti-layout-list',
@@ -591,35 +591,37 @@ export const SidebarData = [
       },
     ],
   },
-  {
-    label: 'MEMBERSHIP',
-    submenuOpen: true,
-    showSubRoute: false,
-    submenuHdr: 'Finance & Accounts',
-    submenuItems: [
-      {
-        label: 'Membership Plans',
-        link: routes.membershipplan,
-        icon: 'ti ti-user-plus',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Membership Addons',
-        link: routes.membershipAddon,
-        icon: 'ti ti-cone-plus',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Transactions',
-        link: routes.membershipTransaction,
-        icon: 'ti ti-file-power',
-        showSubRoute: false,
-        submenu: false,
-      },
-    ],
-  },
+
+  // membership components are not available in the features
+  // {
+  //   label: 'MEMBERSHIP',
+  //   submenuOpen: true,
+  //   showSubRoute: false,
+  //   submenuHdr: 'Finance & Accounts',
+  //   submenuItems: [
+  //     {
+  //       label: 'Membership Plans',
+  //       link: routes.membershipplan,
+  //       icon: 'ti ti-user-plus',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Membership Addons',
+  //       link: routes.membershipAddon,
+  //       icon: 'ti ti-cone-plus',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Transactions',
+  //       link: routes.membershipTransaction,
+  //       icon: 'ti ti-file-power',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //   ],
+  // },
   {
     label: 'CONTENT',
     icon: 'ti ti-page-break',

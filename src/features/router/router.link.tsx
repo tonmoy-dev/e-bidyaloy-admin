@@ -102,9 +102,6 @@ import TransportPickupPoints from '../management/transport/transportPickupPoints
 import TransportRoutes from '../management/transport/transportRoutes';
 import TransportVehicle from '../management/transport/transportVehicle';
 import TransportVehicleDrivers from '../management/transport/transportVehicleDrivers';
-import MembershipAddon from '../membership/membershipaddon';
-import Membershipplan from '../membership/membershipplan';
-import MembershipTransaction from '../membership/membershiptrasaction';
 import BlankPage from '../pages/blankPage';
 import ComingSoon from '../pages/comingSoon';
 import Error404 from '../pages/error/error-404';
@@ -289,18 +286,19 @@ export const publicRoutes = [
     route: Route,
   },
 
-  {
-    path: routes.membershipplan,
-    element: <Membershipplan />,
-  },
-  {
-    path: routes.membershipAddon,
-    element: <MembershipAddon />,
-  },
-  {
-    path: routes.membershipTransaction,
-    element: <MembershipTransaction />,
-  },
+  // membership routes
+  // {
+  //   path: routes.membershipplan,
+  //   element: <Membershipplan />,
+  // },
+  // {
+  //   path: routes.membershipAddon,
+  //   element: <MembershipAddon />,
+  // },
+  // {
+  //   path: routes.membershipTransaction,
+  //   element: <MembershipTransaction />,
+  // },
 
   {
     path: routes.countries,

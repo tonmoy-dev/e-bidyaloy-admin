@@ -191,9 +191,9 @@ export const all_routes = {
   ticketDetails: '/support/ticket-details',
 
   // membership routes
-  membershipplan: '/membership-plans',
-  membershipAddon: '/membership-addons',
-  membershipTransaction: '/membership-transactions',
+  // membershipplan: '/membership-plans',
+  // membershipAddon: '/membership-addons',
+  // membershipTransaction: '/membership-transactions',
 
   // Peoples Module
   studentGrid: '/student/student-grid',
