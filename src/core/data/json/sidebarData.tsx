@@ -307,6 +307,8 @@ export const SidebarData = [
       },
     ],
   },
+
+  // Only fees collection is available in the features
   {
     label: 'MANAGEMENT',
     submenuOpen: true,
@@ -697,13 +699,6 @@ export const SidebarData = [
         label: 'Contact Messages',
         link: routes.contactMessages,
         icon: 'ti ti-message',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Tickets',
-        link: routes.tickets,
-        icon: 'ti ti-ticket',
         showSubRoute: false,
         submenu: false,
       },

@@ -144,9 +144,6 @@ import Preference from '../settings/websiteSettings/preference';
 import Prefixes from '../settings/websiteSettings/prefixes';
 import Socialauthentication from '../settings/websiteSettings/socialAuthentication';
 import ContactMessages from '../support/contactMessages';
-import TicketDetails from '../support/ticket-details';
-import TicketGrid from '../support/ticket-grid';
-import Tickets from '../support/tickets';
 import ClipBoard from '../uiInterface/advanced-ui/clipboard';
 import Counter from '../uiInterface/advanced-ui/counter';
 import RangeSlides from '../uiInterface/advanced-ui/rangeslider';
@@ -1347,21 +1344,6 @@ export const publicRoutes = [
   //   route: Route,
   // },
 
-  {
-    path: routes.tickets,
-    element: <Tickets />,
-    route: Route,
-  },
-  {
-    path: routes.ticketGrid,
-    element: <TicketGrid />,
-    route: Route,
-  },
-  {
-    path: routes.ticketDetails,
-    element: <TicketDetails />,
-    route: Route,
-  },
   {
     path: routes.feesReport,
     element: <FeesReport />,

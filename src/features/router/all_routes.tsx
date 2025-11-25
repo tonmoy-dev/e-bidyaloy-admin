@@ -186,9 +186,6 @@ export const all_routes = {
 
   //support routes
   contactMessages: '/support/contact-messages',
-  tickets: '/support/tickets',
-  ticketGrid: '/support/ticket-grid',
-  ticketDetails: '/support/ticket-details',
 
   // membership routes
   // membershipplan: '/membership-plans',
