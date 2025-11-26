@@ -47,13 +47,13 @@ const ProfileCard = ({
           </div>
         </div>
         {customFooter ? (
-          <div className="d-flex align-items-center justify-content-between profile-footer flex-wrap row-gap-3 pt-4">
+          <div className="d-flex align-items-center justify-content-between   flex-wrap row-gap-3 pt-4">
             {customFooter}
           </div>
         ) : (
           showEditButton &&
           data.editLink && (
-            <div className="d-flex align-items-center justify-content-between profile-footer flex-wrap row-gap-3 pt-4">
+            <div className="d-flex align-items-center justify-content-between   flex-wrap row-gap-3 pt-4">
               <Link to={data.editLink} className="btn btn-primary">
                 {editButtonText}
               </Link>
