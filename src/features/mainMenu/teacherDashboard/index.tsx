@@ -11,21 +11,17 @@ import {
   TeacherAttendanceWidget,
   TeacherTodaysClassWidget,
 } from '../dashboards/shared/components/widgets';
-import type { ClassPerformance } from '../dashboards/shared/components/widgets/BestPerformersWidget';
-import type { StudentProgressItem } from '../dashboards/shared/components/widgets/StudentProgressWidget';
-import type { LessonPlanItem } from '../dashboards/shared/components/widgets/TeacherSyllabusSlider';
+import type { ProgressItem } from '../dashboards/shared/components/widgets/ProgressListWidget';
 import type { TeacherClassItem } from '../dashboards/shared/components/widgets/TeacherTodaysClassWidget';
 import type {
   AttendanceStats,
   Event,
-  Leave,
   ProfileCardData,
 } from '../dashboards/shared/types/dashboard.types';
 
 const TeacherDashboard = () => {
   const routes = all_routes;
   const [attendanceDateRange, setAttendanceDateRange] = useState<string>('This Week');
-  const [leaveDateRange, setLeaveDateRange] = useState<string>('This Month');
 
   // Sample data - will be replaced with dynamic data later
   const profileData: ProfileCardData = {
@@ -80,42 +76,6 @@ const TeacherDashboard = () => {
     },
   ];
 
-  const bestPerformers: ClassPerformance[] = [
-    {
-      id: '1',
-      className: 'Class IV, C',
-      progress: 80,
-      progressColor: 'bg-primary',
-      studentImages: [
-        'assets/img/students/student-01.jpg',
-        'assets/img/students/student-02.jpg',
-        'assets/img/students/student-03.jpg',
-      ],
-    },
-    {
-      id: '2',
-      className: 'Class III, B',
-      progress: 54,
-      progressColor: 'bg-warning',
-      studentImages: [
-        'assets/img/profiles/avatar-27.jpg',
-        'assets/img/students/student-05.jpg',
-        'assets/img/students/student-06.jpg',
-      ],
-    },
-    {
-      id: '3',
-      className: 'Class V, A',
-      progress: 76,
-      progressColor: 'bg-skyblue',
-      studentImages: [
-        'assets/img/profiles/avatar-27.jpg',
-        'assets/img/students/student-05.jpg',
-        'assets/img/students/student-06.jpg',
-      ],
-    },
-  ];
-
   // Class Routine data
   const classRoutineItems: ProgressItem[] = [
     {
@@ -138,88 +98,6 @@ const TeacherDashboard = () => {
       progress: 80,
       image: 'assets/img/teachers/teacher-03.jpg',
       progressColor: 'bg-success',
-    },
-  ];
-
-  const studentProgress: StudentProgressItem[] = [
-    {
-      id: '1',
-      name: 'Susan Boswell',
-      image: 'assets/img/students/student-09.jpg',
-      class: 'III, B',
-      progress: 98,
-      progressColor: 'badge-success',
-      medalIcon: 'assets/img/icons/medal.svg',
-    },
-    {
-      id: '2',
-      name: 'Richard Mayes',
-      image: 'assets/img/students/student-12.jpg',
-      class: 'V, A',
-      progress: 98,
-      progressColor: 'badge-success',
-      medalIcon: 'assets/img/icons/medal-2.svg',
-    },
-    {
-      id: '3',
-      name: 'Veronica Randle',
-      image: 'assets/img/students/student-11.jpg',
-      class: 'V, B',
-      progress: 78,
-      progressColor: 'bg-info',
-    },
-  ];
-
-  const lessonPlans: LessonPlanItem[] = [
-    {
-      id: '1',
-      className: 'Class V, B',
-      classNameBgColor: 'bg-success-transparent',
-      title: 'Introduction Note to Physics on Tech',
-      progress: 80,
-      progressColor: 'bg-success',
-      rescheduleLink: routes.sheduleClasses,
-      shareLink: '#',
-    },
-    {
-      id: '2',
-      className: 'Class V, A',
-      classNameBgColor: 'bg-warning-transparent br-5',
-      title: 'Biometric & their Working Functionality',
-      progress: 80,
-      progressColor: 'bg-warning',
-      rescheduleLink: routes.sheduleClasses,
-      shareLink: '#',
-    },
-    {
-      id: '3',
-      className: 'Class IV, C',
-      classNameBgColor: 'bg-info-transparent br-5',
-      title: 'Analyze and interpret literary texts skills',
-      progress: 80,
-      progressColor: 'bg-info',
-      rescheduleLink: routes.sheduleClasses,
-      shareLink: '#',
-    },
-    {
-      id: '4',
-      className: 'Class V, A',
-      classNameBgColor: 'bg-danger-transparent br-5',
-      title: 'Enhance vocabulary and grammar skills',
-      progress: 30,
-      progressColor: 'bg-danger',
-      rescheduleLink: routes.sheduleClasses,
-      shareLink: '#',
-    },
-    {
-      id: '5',
-      className: 'Class VII, A',
-      classNameBgColor: 'bg-secondary-transparent br-5',
-      title: 'Atomic structure and periodic table skills',
-      progress: 70,
-      progressColor: 'bg-secondary',
-      rescheduleLink: routes.sheduleClasses,
-      shareLink: '#',
     },
   ];
 
@@ -281,32 +159,6 @@ const TeacherDashboard = () => {
     },
   ];
 
-  const leaves: Leave[] = [
-    {
-      id: '1',
-      type: 'Emergency',
-      date: '15 Jun 2024',
-      status: 'Pending',
-    },
-    {
-      id: '2',
-      type: 'Medical',
-      date: '15 Jun 2024',
-      status: 'Approved',
-    },
-    {
-      id: '3',
-      type: 'Medical',
-      date: '16 Jun 2024',
-      status: 'Declined',
-    },
-    {
-      id: '4',
-      type: 'Not Well',
-      date: '16 Jun 2024',
-      status: 'Approved',
-    },
-  ];
   function SampleNextArrow(props: any) {
     const { style, onClick } = props;
     return (
@@ -379,98 +231,6 @@ const TeacherDashboard = () => {
       },
     ],
   };
-  const Syllabus = {
-    dots: false,
-    autoplay: false,
-    arrows: false,
-    slidesToShow: 4,
-    margin: 24,
-    speed: 500,
-    responsive: [
-      {
-        breakpoint: 1500,
-        settings: {
-          slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 1400,
-        settings: {
-          slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 992,
-        settings: {
-          slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 800,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 776,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 567,
-        settings: {
-          slidesToShow: 1,
-        },
-      },
-    ],
-  };
-  const [studentDonutChart] = useState<any>({
-    chart: {
-      height: 90,
-      type: 'donut',
-      toolbar: {
-        show: false,
-      },
-      sparkline: {
-        enabled: true,
-      },
-    },
-    grid: {
-      show: false,
-      padding: {
-        left: 0,
-        right: 0,
-      },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '50%',
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-
-    series: [95, 5],
-    labels: ['Completed', 'Pending'],
-    legend: { show: false },
-    colors: ['#1ABE17', '#E82646'],
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 100,
-          },
-          legend: {
-            position: 'bottom',
-          },
-        },
-      },
-    ],
-  });
   const [attendance_chart] = useState<any>({
     chart: {
       height: 290,

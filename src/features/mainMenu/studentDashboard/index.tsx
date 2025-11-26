@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { Link } from 'react-router-dom';
-import 'slick-carousel/slick/slick-theme.css';
-import 'slick-carousel/slick/slick.css';
 import { all_routes } from '../../router/all_routes';
 import {
   AttendanceWidget,
@@ -20,19 +18,13 @@ import type {
   AttendanceChartData,
   AttendanceStats,
   Fee,
-  Homework,
-  Leave,
   Notice,
   ProfileCardData,
-  TodoItem,
 } from '../dashboards/shared/types/dashboard.types';
 
 const StudentDasboard = () => {
   const routes = all_routes;
   const [attendanceDateRange, setAttendanceDateRange] = useState<string>('This Week');
-  const [leaveDateRange, setLeaveDateRange] = useState<string>('This Month');
-  const [todoDateRange, setTodoDateRange] = useState<string>('Today');
-  const [subjectFilter, setSubjectFilter] = useState<string>('All Subject');
 
   // Sample data - will be replaced with dynamic data later
   const profileData: ProfileCardData = {
@@ -140,76 +132,6 @@ const StudentDasboard = () => {
     colors: ['#1ABE17', '#1170E4', '#E9EDF4', '#E82646'],
   };
 
-  const homeworks: Homework[] = [
-    {
-      id: '1',
-      subject: 'Physics',
-      title: 'Write about Theory of Pendulum',
-      teacherName: 'Aaron',
-      teacherImage: 'assets/img/teachers/teacher-01.jpg',
-      dueDate: '16 Jun 2024',
-      image: 'assets/img/home-work/home-work-01.jpg',
-      progress: 80,
-    },
-    {
-      id: '2',
-      subject: 'Chemistry',
-      title: 'Chemistry - Change of Elements',
-      teacherName: 'Hellana',
-      teacherImage: 'assets/img/teachers/teacher-01.jpg',
-      dueDate: '16 Jun 2024',
-      image: 'assets/img/home-work/home-work-02.jpg',
-      progress: 65,
-    },
-    {
-      id: '3',
-      subject: 'Maths',
-      title: 'Maths - Problems to Solve Page 21',
-      teacherName: 'Morgan',
-      teacherImage: 'assets/img/teachers/teacher-01.jpg',
-      dueDate: '21 Jun 2024',
-      image: 'assets/img/home-work/home-work-03.jpg',
-      progress: 30,
-    },
-    {
-      id: '4',
-      subject: 'Engish',
-      title: 'English - Vocabulary Introduction',
-      teacherName: 'Daniel Josua',
-      teacherImage: 'assets/img/teachers/teacher-01.jpg',
-      dueDate: '21 Jun 2024',
-      image: 'assets/img/home-work/home-work-04.jpg',
-      progress: 10,
-    },
-  ];
-
-  const leaves: Leave[] = [
-    {
-      id: '1',
-      type: 'Emergency',
-      date: '15 Jun 2024',
-      status: 'Pending',
-    },
-    {
-      id: '2',
-      type: 'Medical',
-      date: '15 Jun 2024',
-      status: 'Approved',
-    },
-    {
-      id: '3',
-      type: 'Medical',
-      date: '16 Jun 2024',
-      status: 'Declined',
-    },
-    {
-      id: '4',
-      type: 'Fever',
-      date: '16 Jun 2024',
-      status: 'Approved',
-    },
-  ];
-
   const fees: Fee[] = [
     {
       id: '1',
@@ -300,116 +222,6 @@ const StudentDasboard = () => {
     },
   ];
 
-  const todos: TodoItem[] = [
-    {
-      id: '1',
-      title: 'Send Reminder to Students',
-      time: '01:00 PM',
-      completed: true,
-      status: 'Completed',
-    },
-    {
-      id: '2',
-      title: 'Create Routine to new staff',
-      time: '04:50 PM',
-      completed: false,
-      status: 'Inprogress',
-    },
-    {
-      id: '3',
-      title: 'Extra Class Info to Students',
-      time: '04:55 PM',
-      completed: false,
-      status: 'Yet to Start',
-    },
-    {
-      id: '4',
-      title: 'Fees for Upcoming Academics',
-      time: '04:55 PM',
-      completed: false,
-      status: 'Yet to Start',
-    },
-    {
-      id: '5',
-      title: 'English - Essay on Visit',
-      time: '05:55 PM',
-      completed: false,
-      status: 'Yet to Start',
-    },
-  ];
-
-  const [performance_chart] = useState<any>({
-    chart: {
-      type: 'area',
-      height: 355,
-    },
-    series: [
-      {
-        name: 'Avg. Exam Score',
-        data: [75, 68, 65, 68, 75], // Sample data
-      },
-      {
-        name: 'Avg. Attendance',
-        data: [85, 78, 75, 78, 85], // Sample data
-      },
-    ],
-    xaxis: {
-      categories: ['Quarter 1', 'Quarter 2', 'Half yearly', 'Model', 'Final Exam'],
-    },
-    tooltip: {
-      y: {
-        formatter: function (val: any) {
-          return val + '%';
-        },
-      },
-      shared: true,
-      intersect: false,
-      custom: function ({ series, dataPointIndex, w }: any) {
-        return `<div class="apexcharts-tooltip">${w.globals.labels[dataPointIndex]}<br>Exam Score: <span style="color: #1E90FF;">${series[0][dataPointIndex]}%</span><br>Attendance: <span style="color: #00BFFF;">${series[1][dataPointIndex]}%</span></div>`;
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-    stroke: {
-      curve: 'smooth',
-    },
-    grid: {
-      yaxis: {
-        axisTicks: {
-          show: true,
-          borderType: 'solid',
-          color: '#78909C',
-          width: 6,
-          offsetX: 0,
-          offsetY: 0,
-        },
-      },
-    },
-    markers: {
-      size: 5,
-      colors: ['#1E90FF', '#00BFFF'],
-      strokeColors: '#fff',
-      strokeWidth: 2,
-      hover: {
-        size: 7,
-      },
-    },
-    colors: ['#3D5EE1', '#6FCCD8'], // Color for the lines
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shadeIntensity: 1,
-        opacityFrom: 0.7,
-        opacityTo: 0.9,
-        stops: [0, 90, 100],
-      },
-    },
-    legend: {
-      position: 'bottom',
-      horizontalAlign: 'center',
-    },
-  });
   const [exam_result_chart] = useState<any>({
     chart: {
       type: 'bar',
@@ -469,78 +281,6 @@ const StudentDasboard = () => {
       show: false,
     },
   });
-  function SampleNextArrow(props: any) {
-    const { style, onClick } = props;
-    return (
-      <div
-        className="slick-nav slick-nav-next class-slides"
-        style={{ ...style, display: 'flex', top: '-60px', right: '0' }}
-        onClick={onClick}
-      >
-        <i className="fas fa-chevron-right" style={{ fontSize: '12px' }}></i>
-      </div>
-    );
-  }
-
-  function SamplePrevArrow(props: any) {
-    const { style, onClick } = props;
-    return (
-      <div
-        className="slick-nav slick-nav-prev class-slides"
-        style={{ ...style, display: 'flex', top: '-60px', right: '30px' }}
-        onClick={onClick}
-      >
-        <i className="fas fa-chevron-left" style={{ fontSize: '12px' }}></i>
-      </div>
-    );
-  }
-  const profile = {
-    dots: false,
-    autoplay: false,
-    slidesToShow: 5,
-    margin: 24,
-    speed: 500,
-    nextArrow: <SampleNextArrow />,
-    prevArrow: <SamplePrevArrow />,
-    responsive: [
-      {
-        breakpoint: 1500,
-        settings: {
-          slidesToShow: 5,
-        },
-      },
-      {
-        breakpoint: 1400,
-        settings: {
-          slidesToShow: 5,
-        },
-      },
-      {
-        breakpoint: 992,
-        settings: {
-          slidesToShow: 4,
-        },
-      },
-      {
-        breakpoint: 800,
-        settings: {
-          slidesToShow: 3,
-        },
-      },
-      {
-        breakpoint: 776,
-        settings: {
-          slidesToShow: 2,
-        },
-      },
-      {
-        breakpoint: 567,
-        settings: {
-          slidesToShow: 1,
-        },
-      },
-    ],
-  };
   return (
     <>
       {/* Page Wrapper */}

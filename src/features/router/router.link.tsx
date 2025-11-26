@@ -68,7 +68,6 @@ import StaffPayRoll from '../hrm/staff-list/staff-payroll.tsx';
 import StaffsAttendance from '../hrm/staff-list/staffs-attendance';
 import AdminDashboard from '../mainMenu/adminDashboard';
 import Calendar from '../mainMenu/apps/calendar';
-import ParentDashboard from '../mainMenu/parentDashboard';
 import StudentDasboard from '../mainMenu/studentDashboard';
 import TeacherDashboard from '../mainMenu/teacherDashboard';
 import CollectFees from '../management/feescollection/collectFees';
@@ -228,11 +227,6 @@ export const publicRoutes = [
   {
     path: routes.studentDashboard,
     element: <StudentDasboard />,
-    route: Route,
-  },
-  {
-    path: routes.parentDashboard,
-    element: <ParentDashboard />,
     route: Route,
   },
 
