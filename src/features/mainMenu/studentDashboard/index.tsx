@@ -1,25 +1,24 @@
-import { Calendar, DatePicker } from 'antd';
-import dayjs from 'dayjs';
-import type { Nullable } from 'primereact/ts-helpers';
 import { useState } from 'react';
 import ReactApexChart from 'react-apexcharts';
 import { Link } from 'react-router-dom';
-import Slider from 'react-slick';
 import 'slick-carousel/slick/slick-theme.css';
 import 'slick-carousel/slick/slick.css';
-import ImageWithBasePath from '../../../core/common/imageWithBasePath';
 import { all_routes } from '../../router/all_routes';
 import {
   AttendanceWidget,
-  HomeWorksWidget,
-  LeaveStatusWidget,
   NoticeBoardWidget,
-  TodoWidget,
+  StudentFeesReminderWidget,
+  StudentProfileCard,
+  StudentQuickLinks,
+  StudentSchedulesWidget,
+  StudentTodaysClassWidget,
 } from '../dashboards/shared/components/widgets';
+import type { StudentQuickLink } from '../dashboards/shared/components/widgets/StudentQuickLinks';
+import type { ExamItem } from '../dashboards/shared/components/widgets/StudentSchedulesWidget';
+import type { ClassItem } from '../dashboards/shared/components/widgets/StudentTodaysClassWidget';
 import type {
   AttendanceChartData,
   AttendanceStats,
-  Event,
   Fee,
   Homework,
   Leave,
@@ -30,13 +29,6 @@ import type {
 
 const StudentDasboard = () => {
   const routes = all_routes;
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = String(today.getMonth() + 1).padStart(2, '0'); // Month is zero-based, so we add 1
-  const day = String(today.getDate()).padStart(2, '0');
-  const formattedDate = `${month}-${day}-${year}`;
-  const defaultValue = dayjs(formattedDate);
-  const [date, setDate] = useState<Nullable<Date>>(null);
   const [attendanceDateRange, setAttendanceDateRange] = useState<string>('This Week');
   const [leaveDateRange, setLeaveDateRange] = useState<string>('This Month');
   const [todoDateRange, setTodoDateRange] = useState<string>('Today');
@@ -58,35 +50,95 @@ const StudentDasboard = () => {
   const attendanceStats: AttendanceStats = {
     present: 25,
     absent: 2,
+    late: 0,
     halfDay: 0,
   };
+
+  const todaysClasses: ClassItem[] = [
+    {
+      id: '1',
+      subject: 'English',
+      teacherImage: 'assets/img/parents/parent-07.jpg',
+      time: '09:00 - 09:45 AM',
+      status: 'Completed',
+    },
+    {
+      id: '2',
+      subject: 'Chemistry',
+      teacherImage: 'assets/img/parents/parent-02.jpg',
+      time: '10:45 - 11:30 AM',
+      status: 'Completed',
+    },
+    {
+      id: '3',
+      subject: 'Physics',
+      teacherImage: 'assets/img/profiles/avatar-17.jpg',
+      time: '11:30 - 12:15 AM',
+      status: 'Inprogress',
+    },
+  ];
+
+  const quickLinks: StudentQuickLink[] = [
+    {
+      id: '1',
+      title: 'Pay Fees',
+      link: routes.studentFees,
+      icon: 'ti ti-report-money fs-16',
+      borderColor: 'border-primary border-2',
+      bgColor: 'bg-primary',
+    },
+    {
+      id: '2',
+      title: 'Exam Result',
+      link: routes.studentResult,
+      icon: 'ti ti-hexagonal-prism-plus fs-16',
+      borderColor: 'border-success',
+      bgColor: 'bg-success',
+    },
+    {
+      id: '3',
+      title: 'Calendar',
+      link: routes.studentTimeTable,
+      icon: 'ti ti-calendar fs-16',
+      borderColor: 'border-warning',
+      bgColor: 'bg-warning',
+    },
+    {
+      id: '4',
+      title: 'Attendance',
+      link: routes.studentLeaves,
+      icon: 'ti ti-calendar-share fs-16',
+      borderColor: 'border-dark border-2',
+      bgColor: 'bg-dark',
+    },
+  ];
+
+  const exams: ExamItem[] = [
+    {
+      id: '1',
+      title: '1st Quarterly',
+      subject: 'Mathematics',
+      date: '06 May 2024',
+      time: '01:30 - 02:15 PM',
+      roomNo: '15',
+      daysRemaining: '19 Days More',
+    },
+    {
+      id: '2',
+      title: '2nd Quarterly',
+      subject: 'Physics',
+      date: '07 May 2024',
+      time: '01:30 - 02:15 PM',
+      roomNo: '15',
+      daysRemaining: '20 Days More',
+    },
+  ];
 
   const attendanceChartData: AttendanceChartData = {
     series: [60, 5, 15, 20],
     labels: ['Present', 'Late', 'Half Day', 'Absent'],
     colors: ['#1ABE17', '#1170E4', '#E9EDF4', '#E82646'],
   };
-
-  const events: Event[] = [
-    {
-      id: '1',
-      title: '1st Quarterly',
-      date: '06 May 2024',
-      time: '01:30 - 02:15 PM',
-      borderColor: 'danger',
-      icon: 'ti ti-calendar-bolt',
-      iconBgColor: 'bg-danger-transparent',
-    },
-    {
-      id: '2',
-      title: '2nd Quarterly',
-      date: '07 May 2024',
-      time: '01:30 - 02:15 PM',
-      borderColor: 'danger',
-      icon: 'ti ti-calendar-bolt',
-      iconBgColor: 'bg-danger-transparent',
-    },
-  ];
 
   const homeworks: Homework[] = [
     {
@@ -286,44 +338,6 @@ const StudentDasboard = () => {
     },
   ];
 
-  const [attendance_chart] = useState<any>({
-    chart: {
-      height: 255,
-      type: 'donut',
-      toolbar: {
-        show: false,
-      },
-    },
-    plotOptions: {
-      bar: {
-        horizontal: false,
-        columnWidth: '50%',
-      },
-    },
-    dataLabels: {
-      enabled: false,
-    },
-
-    series: [60, 5, 15, 20],
-    labels: ['Present', 'Late', 'Half Day', 'Absent'],
-    colors: ['#1ABE17', '#1170E4', '#E9EDF4', '#E82646'],
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200,
-          },
-          legend: {
-            position: 'bottom',
-          },
-        },
-      },
-    ],
-    legend: {
-      position: 'bottom',
-    },
-  });
   const [performance_chart] = useState<any>({
     chart: {
       type: 'area',
@@ -555,141 +569,12 @@ const StudentDasboard = () => {
                 {/* Profile */}
                 <div className="col-xl-6 d-flex">
                   <div className="flex-fill">
-                    <div className="card bg-dark position-relative">
-                      <div className="card-body">
-                        <div className="d-flex align-items-center row-gap-3 mb-3">
-                          <div className="avatar avatar-xxl rounded flex-shrink-0 me-3">
-                            <ImageWithBasePath src="assets/img/students/student-13.jpg" alt="Img" />
-                          </div>
-                          <div className="d-block">
-                            <span className="badge bg-transparent-primary text-primary mb-1">
-                              #ST1234546
-                            </span>
-                            <h3 className="text-truncate text-white mb-1">Angelo Riana</h3>
-                            <div className="d-flex align-items-center flex-wrap row-gap-2 text-gray-2">
-                              <span className="border-end me-2 pe-2">Class : III, C</span>
-                              <span>Roll No : 36545</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="d-flex align-items-center justify-content-between profile-footer flex-wrap row-gap-3 pt-4">
-                          <div className="d-flex align-items-center">
-                            <h6 className="text-white">1st Quarterly</h6>
-                            <span className="badge bg-success d-inline-flex align-items-center ms-2">
-                              <i className="ti ti-circle-filled fs-5 me-1" />
-                              Pass
-                            </span>
-                          </div>
-                          <Link to={routes.editStudent} className="btn btn-primary">
-                            Edit Profile
-                          </Link>
-                        </div>
-                        <div className="student-card-bg">
-                          <ImageWithBasePath src="assets/img/bg/circle-shape.png" alt="Bg" />
-                          <ImageWithBasePath src="assets/img/bg/shape-02.png" alt="Bg" />
-                          <ImageWithBasePath src="assets/img/bg/shape-04.png" alt="Bg" />
-                          <ImageWithBasePath src="assets/img/bg/blue-polygon.png" alt="Bg" />
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card flex-fill">
-                      <div className="card-header d-flex align-items-center justify-content-between">
-                        <h4 className="card-title">Today’s Class</h4>
-                        <div className="d-inline-flex align-items-center class-datepick">
-                          <span className="icon">
-                            <i className="ti ti-chevron-left me-2" />
-                          </span>
-                          {/* <input
-                        type="text"
-                        className="form-control datetimepicker border-0"
-                        placeholder="16 May 2024"
-                      /> */}
-                          <DatePicker
-                            className="form-control datetimepicker border-0"
-                            format={{
-                              format: 'DD-MM-YYYY',
-                              type: 'mask',
-                            }}
-                            defaultValue={defaultValue}
-                            placeholder="16 May 2024"
-                          />
-                          <span className="icon">
-                            <i className="ti ti-chevron-right" />
-                          </span>
-                        </div>
-                      </div>
-                      <div className="card-body">
-                        <div className="card mb-3">
-                          <div className="d-flex align-items-center justify-content-between flex-wrap p-3 pb-1">
-                            <div className="d-flex align-items-center flex-wrap mb-2">
-                              <span className="avatar avatar-lg flex-shrink-0 rounded me-2">
-                                <ImageWithBasePath
-                                  src="assets/img/parents/parent-07.jpg"
-                                  alt="Profile"
-                                />
-                              </span>
-                              <div>
-                                <h6 className="mb-1 text-decoration-line-through">English</h6>
-                                <span>
-                                  <i className="ti ti-clock me-2" />
-                                  09:00 - 09:45 AM
-                                </span>
-                              </div>
-                            </div>
-                            <span className="badge badge-soft-success shadow-none mb-2">
-                              <i className="ti ti-circle-filled fs-8 me-1" />
-                              Completed
-                            </span>
-                          </div>
-                        </div>
-                        <div className="card mb-3">
-                          <div className="d-flex align-items-center justify-content-between flex-wrap p-3 pb-1">
-                            <div className="d-flex align-items-center flex-wrap mb-2">
-                              <span className="avatar avatar-lg flex-shrink-0 rounded me-2">
-                                <ImageWithBasePath
-                                  src="assets/img/parents/parent-02.jpg"
-                                  alt="Profile"
-                                />
-                              </span>
-                              <div>
-                                <h6 className="mb-1 text-decoration-line-through">Chemistry</h6>
-                                <span>
-                                  <i className="ti ti-clock me-2" />
-                                  10:45 - 11:30 AM
-                                </span>
-                              </div>
-                            </div>
-                            <span className="badge badge-soft-success shadow-none mb-2">
-                              <i className="ti ti-circle-filled fs-8 me-1" />
-                              Completed
-                            </span>
-                          </div>
-                        </div>
-                        <div className="card mb-0">
-                          <div className="d-flex align-items-center justify-content-between flex-wrap p-3 pb-1">
-                            <div className="d-flex align-items-center flex-wrap mb-2">
-                              <span className="avatar avatar-lg flex-shrink-0 rounded me-2">
-                                <ImageWithBasePath
-                                  src="assets/img/profiles/avatar-17.jpg"
-                                  alt="Profile"
-                                />
-                              </span>
-                              <div>
-                                <h6 className="mb-1">Physics</h6>
-                                <span>
-                                  <i className="ti ti-clock me-2" />
-                                  11:30 - 12:15 AM
-                                </span>
-                              </div>
-                            </div>
-                            <span className="badge badge-soft-warning shadow-none mb-2">
-                              <i className="ti ti-circle-filled fs-8 me-1" />
-                              Inprogress
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                    <StudentProfileCard
+                      data={profileData}
+                      quarterlyInfo={{ label: '1st Quarterly', badge: 'Pass' }}
+                      editLink={routes.editStudent}
+                    />
+                    <StudentTodaysClassWidget classes={todaysClasses} />
                   </div>
                 </div>
                 {/* /Profile */}
@@ -721,473 +606,27 @@ const StudentDasboard = () => {
                   />
                 </div>
                 {/* /Attendance */}
-                {/* Fees */}
-                <div className="col-xl-12 d-flex">
-                  <div className="row flex-fill">
-                    <div className="col-sm-6 col-xl-3 d-flex">
-                      <Link
-                        to={routes.studentFees}
-                        className="card border-0 border-bottom border-primary border-2 flex-fill animate-card"
-                      >
-                        <div className="card-body">
-                          <div className="d-flex align-items-center">
-                            <span className="avatar avatar-md rounded bg-primary me-2">
-                              <i className="ti ti-report-money fs-16" />
-                            </span>
-                            <h6>Pay Fees</h6>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                    <div className="col-sm-6 col-xl-3 d-flex">
-                      <Link
-                        to={routes.studentResult}
-                        className="card border-0 border-bottom border-success flex-fill animate-card"
-                      >
-                        <div className="card-body">
-                          <div className="d-flex align-items-center">
-                            <span className="avatar avatar-md rounded bg-success me-2">
-                              <i className="ti ti-hexagonal-prism-plus fs-16" />
-                            </span>
-                            <h6>Exam Result</h6>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                    <div className="col-sm-6 col-xl-3 d-flex">
-                      <Link
-                        to={routes.studentTimeTable}
-                        className="card border-0 border-bottom border-warning flex-fill animate-card"
-                      >
-                        <div className="card-body">
-                          <div className="d-flex align-items-center">
-                            <span className="avatar avatar-md rounded bg-warning me-2">
-                              <i className="ti ti-calendar fs-16" />
-                            </span>
-                            <h6>Calendar</h6>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                    <div className="col-sm-6 col-xl-3 d-flex">
-                      <Link
-                        to={routes.studentLeaves}
-                        className="card border-0 border-bottom border-dark border-2 flex-fill animate-card"
-                      >
-                        <div className="card-body">
-                          <div className="d-flex align-items-center">
-                            <span className="avatar avatar-md rounded bg-dark me-2">
-                              <i className="ti ti-calendar-share fs-16" />
-                            </span>
-                            <h6>Attendance</h6>
-                          </div>
-                        </div>
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-                {/* /Fees */}
+                {/* Quick Links */}
+                <StudentQuickLinks links={quickLinks} />
+                {/* /Quick Links */}
               </div>
             </div>
             {/* Schedules */}
             <div className="col-xxl-4 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Schedules</h4>
-                  <Link to={routes.feesAssign} className="link-primary fw-medium">
-                    View All
-                  </Link>
-                </div>
-                <div className="card-body pb-0">
-                  {/* <div className="datepic mb-2" /> */}
-                  <Calendar
-                    className="datepickers mb-2 custom-cal-react"
-                    value={date}
-                    onChange={(e) => setDate(e.value)}
-                    inline
-                  />
-                  <h5 className="mb-3">Exams</h5>
-                  <div className="p-3 pb-0 mb-3 border rounded">
-                    <div className="d-flex align-items-center justify-content-between">
-                      <h5 className="mb-3">1st Quarterly</h5>
-                      <span className="badge badge-soft-danger d-inline-flex align-items-center mb-3">
-                        <i className="ti ti-clock me-1" />
-                        19 Days More
-                      </span>
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="mb-3">
-                        <h6 className="mb-1">Mathematics</h6>
-                        <p>
-                          <i className="ti ti-clock me-1" />
-                          01:30 - 02:15 PM
-                        </p>
-                      </div>
-                      <div className="mb-3 text-end">
-                        <p className="mb-1">
-                          <i className="ti ti-calendar-bolt me-1" />
-                          06 May 2024
-                        </p>
-                        <p className="text-primary">Room No : 15</p>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-3 pb-0 mb-3 border rounded">
-                    <div className="d-flex align-items-center justify-content-between">
-                      <h5 className="mb-3">2nd Quarterly</h5>
-                      <span className="badge badge-soft-danger d-inline-flex align-items-center mb-3">
-                        <i className="ti ti-clock me-1" />
-                        20 Days More
-                      </span>
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center">
-                      <div className="mb-3">
-                        <h6 className="mb-1">Physics</h6>
-                        <p>
-                          <i className="ti ti-clock me-1" />
-                          01:30 - 02:15 PM
-                        </p>
-                      </div>
-                      <div className="mb-3 text-end">
-                        <p className="mb-1">
-                          <i className="ti ti-calendar-bolt me-1" />
-                          07 May 2024
-                        </p>
-                        <p className="text-primary">Room No : 15</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <StudentSchedulesWidget exams={exams} viewAllLink={routes.feesAssign} />
             </div>
             {/* /Schedules */}
           </div>
           <div className="row">
-            {/* Performance */}
-            <div className="col-xxl-7 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Performance</h4>
-                  <div className="dropdown">
-                    <Link to="#" className="bg-white dropdown-toggle" data-bs-toggle="dropdown">
-                      <i className="ti ti-calendar me-2" />
-                      2024 - 2025
-                    </Link>
-                    <ul className="dropdown-menu mt-2 p-3">
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          2024 - 2025
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          2023 - 2024
-                        </Link>
-                      </li>
-                      <li>
-                        <Link to="#" className="dropdown-item rounded-1">
-                          2022 - 2023
-                        </Link>
-                      </li>
-                    </ul>
-                  </div>
-                </div>
-                <div className="card-body pb-0">
-                  <div id="performance_chart" />
-                  <ReactApexChart
-                    id="performance_chart"
-                    options={performance_chart}
-                    series={performance_chart.series}
-                    type="area"
-                    height={355}
-                  />
-                </div>
-              </div>
-            </div>
-            {/* /Performance */}
-            {/* Home Works */}
-            <div className="col-xxl-5 d-flex">
-              <HomeWorksWidget
-                homeworks={homeworks}
-                subjectFilter={subjectFilter}
-                onSubjectFilterChange={setSubjectFilter}
-                showProgress={true}
-              />
-            </div>
-            {/* /Home Works */}
-          </div>
-          <div className="row">
-            {/* Class Faculties */}
-            <div className="col-xl-12">
-              <div className="card flex-fill">
-                <div className="card-header d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Class Faculties</h4>
-                  <div className="owl-nav slide-nav text-end nav-control" />
-                </div>
-                <div className="card-body">
-                  <Slider {...profile} className="teachers-profile-slider owl-carousel">
-                    <div className="card bg-light-100 mb-0">
-                      <div className="card-body">
-                        <div className="d-flex align-items-center mb-3">
-                          <Link
-                            to={routes.teacherDetails}
-                            className="avatar avatar-lg rounded me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/teachers/teacher-06.jpg"
-                              alt="Teacher"
-                            />
-                          </Link>
-                          <div className="overflow-hidden">
-                            <h6 className="mb-1 text-truncate">
-                              <Link to={routes.teacherDetails}>Aaron</Link>
-                            </h6>
-                            <p>Chemistry</p>
-                          </div>
-                        </div>
-                        <div className="row gx-2">
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-mail me-2" />
-                              Email
-                            </Link>
-                          </div>
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-message-chatbot me-2" />
-                              Chat
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card bg-light-100 mb-0">
-                      <div className="card-body">
-                        <div className="d-flex align-items-center mb-3">
-                          <Link
-                            to={routes.teacherDetails}
-                            className="avatar avatar-lg rounded me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/teachers/teacher-03.jpg"
-                              alt="Teacher"
-                            />
-                          </Link>
-                          <div>
-                            <h6 className="mb-1 text-truncate">
-                              <Link to={routes.teacherDetails}>Hellana</Link>
-                            </h6>
-                            <p>English</p>
-                          </div>
-                        </div>
-                        <div className="row gx-2">
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-mail me-2" />
-                              Email
-                            </Link>
-                          </div>
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-message-chatbot me-2" />
-                              Chat
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card bg-light-100 mb-0">
-                      <div className="card-body">
-                        <div className="d-flex align-items-center mb-3">
-                          <Link
-                            to={routes.teacherDetails}
-                            className="avatar avatar-lg rounded me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/teachers/teacher-05.jpg"
-                              alt="Teacher"
-                            />
-                          </Link>
-                          <div>
-                            <h6 className="mb-1 text-truncate">
-                              <Link to={routes.teacherDetails}>Morgan</Link>
-                            </h6>
-                            <p>Physics</p>
-                          </div>
-                        </div>
-                        <div className="row gx-2">
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-mail me-2" />
-                              Email
-                            </Link>
-                          </div>
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-message-chatbot me-2" />
-                              Chat
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card bg-light-100 mb-0">
-                      <div className="card-body">
-                        <div className="d-flex align-items-center mb-3">
-                          <Link
-                            to={routes.teacherDetails}
-                            className="avatar avatar-lg rounded me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/teachers/teacher-02.jpg"
-                              alt="Teacher"
-                            />
-                          </Link>
-                          <div>
-                            <h6 className="mb-1 text-truncate">
-                              <Link to={routes.teacherDetails}>Daniel Josua</Link>
-                            </h6>
-                            <p>Spanish</p>
-                          </div>
-                        </div>
-                        <div className="row gx-2">
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-mail me-2" />
-                              Email
-                            </Link>
-                          </div>
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-message-chatbot me-2" />
-                              Chat
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card bg-light-100 mb-0">
-                      <div className="card-body">
-                        <div className="d-flex align-items-center mb-3">
-                          <Link
-                            to={routes.teacherDetails}
-                            className="avatar avatar-lg rounded me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/teachers/teacher-01.jpg"
-                              alt="Teacher"
-                            />
-                          </Link>
-                          <div>
-                            <h6 className="mb-1 text-truncate">
-                              <Link to={routes.teacherDetails}>Teresa</Link>
-                            </h6>
-                            <p>Maths</p>
-                          </div>
-                        </div>
-                        <div className="row gx-2">
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-mail me-2" />
-                              Email
-                            </Link>
-                          </div>
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-message-chatbot me-2" />
-                              Chat
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="card bg-light-100 mb-0">
-                      <div className="card-body">
-                        <div className="d-flex align-items-center mb-3">
-                          <Link
-                            to={routes.teacherDetails}
-                            className="avatar avatar-lg rounded me-2"
-                          >
-                            <ImageWithBasePath
-                              src="assets/img/teachers/teacher-09.jpg"
-                              alt="Teacher"
-                            />
-                          </Link>
-                          <div>
-                            <h6 className="mb-1 text-truncate">
-                              <Link to={routes.teacherDetails}>Jacquelin</Link>
-                            </h6>
-                            <p>Biology</p>
-                          </div>
-                        </div>
-                        <div className="row gx-2">
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-mail me-2" />
-                              Email
-                            </Link>
-                          </div>
-                          <div className="col-6">
-                            <Link
-                              to="#"
-                              className="btn btn-outline-light bg-white d-flex align-items-center justify-content-center fw-semibold fs-12"
-                            >
-                              <i className="ti ti-message-chatbot me-2" />
-                              Chat
-                            </Link>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Slider>
-                </div>
-              </div>
-            </div>
-            {/* /Class Faculties */}
-          </div>
-          <div className="row">
-            {/* Leave Status */}
+            {/* Notice Board */}
             <div className="col-xxl-4 col-xl-6 d-flex">
-              <LeaveStatusWidget
-                leaves={leaves}
-                dateRange={leaveDateRange}
-                onDateRangeChange={setLeaveDateRange}
+              <NoticeBoardWidget
+                notices={notices}
+                viewAllLink={routes.noticeBoard}
+                showDaysRemaining={false}
               />
             </div>
-            {/* /Leave Status */}
+            {/* /Notice Board */}
             {/* Exam Result */}
             <div className="col-xxl-4 col-xl-6 d-flex">
               <div className="card flex-fill">
@@ -1232,275 +671,9 @@ const StudentDasboard = () => {
             {/* /Exam Result */}
             {/* Fees Reminder */}
             <div className="col-xxl-4 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header d-flex align-items-center justify-content-between">
-                  <h4 className="card-titile">Fees Reminder</h4>
-                  <Link to={routes.feesAssign} className="link-primary fw-medium">
-                    View All
-                  </Link>
-                </div>
-                <div className="card-body py-1">
-                  <div className="d-flex align-items-center justify-content-between py-3">
-                    <div className="d-flex align-items-center overflow-hidden me-2">
-                      <span className="bg-info-transparent avatar avatar-lg me-2 rounded-circle flex-shrink-0">
-                        <i className="ti ti-bus-stop fs-16" />
-                      </span>
-                      <div className="overflow-hidden">
-                        <h6 className="text-truncate mb-1">Transport Fees</h6>
-                        <p>$2500</p>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <h6 className="mb-1">Last Date</h6>
-                      <p>25 May 2024</p>
-                    </div>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between py-3">
-                    <div className="d-flex align-items-center overflow-hidden me-2">
-                      <span className="bg-success-transparent avatar avatar-lg me-2 rounded-circle flex-shrink-0">
-                        <i className="ti ti-books fs-16" />
-                      </span>
-                      <div className="overflow-hidden">
-                        <h6 className="text-truncate mb-1">Book Fees</h6>
-                        <p>$2500</p>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <h6 className="mb-1">Last Date</h6>
-                      <p>25 May 2024</p>
-                    </div>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between py-3">
-                    <div className="d-flex align-items-center overflow-hidden me-2">
-                      <span className="bg-info-transparent avatar avatar-lg me-2 rounded-circle flex-shrink-0">
-                        <i className="ti ti-report-money fs-16" />
-                      </span>
-                      <div className="overflow-hidden">
-                        <h6 className="text-truncate mb-1">Exam Fees</h6>
-                        <p>$2500</p>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <h6 className="mb-1">Last Date</h6>
-                      <p>25 May 2024</p>
-                    </div>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between py-3">
-                    <div className="d-flex align-items-center overflow-hidden me-2">
-                      <span className="bg-skyblue-transparent avatar avatar-lg me-2 rounded-circle flex-shrink-0">
-                        <i className="ti ti-meat fs-16" />
-                      </span>
-                      <div className="overflow-hidden">
-                        <h6 className="text-truncate mb-1">
-                          Mess Fees{' '}
-                          <span className="d-inline-flex align-items-center badge badge-soft-danger">
-                            <i className="ti ti-circle-filled me-1 fs-5" />
-                            Due
-                          </span>
-                        </h6>
-                        <p className="text-danger">$2500 + $150</p>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <h6 className="mb-1">Last Date</h6>
-                      <p>27 May 2024</p>
-                    </div>
-                  </div>
-                  <div className="d-flex align-items-center justify-content-between py-3">
-                    <div className="d-flex align-items-center overflow-hidden me-2">
-                      <span className="bg-danger-transparent avatar avatar-lg me-2 rounded-circle flex-shrink-0">
-                        <i className="ti ti-report-money fs-16" />
-                      </span>
-                      <div className="overflow-hidden">
-                        <h6 className="text-truncate mb-1">Hostel</h6>
-                        <p>$2500</p>
-                      </div>
-                    </div>
-                    <div className="text-end">
-                      <h6 className="mb-1">Last Date</h6>
-                      <p>25 May 2024</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <StudentFeesReminderWidget fees={fees} viewAllLink={routes.feesAssign} />
             </div>
             {/* Fees Reminder */}
-          </div>
-          <div className="row">
-            {/* Notice Board */}
-            <div className="col-xxl-4 col-xl-6 d-flex">
-              <NoticeBoardWidget
-                notices={notices}
-                viewAllLink={routes.noticeBoard}
-                showDaysRemaining={false}
-              />
-            </div>
-            {/* /Notice Board */}
-            {/* Syllabus */}
-            <div className="col-xxl-4 col-xl-6 d-flex">
-              <div className="card flex-fill">
-                <div className="card-header  d-flex align-items-center justify-content-between">
-                  <h4 className="card-title">Syllabus</h4>
-                </div>
-                <div className="card-body">
-                  <div className="alert alert-success d-flex align-items-center mb-24" role="alert">
-                    <i className="ti ti-info-square-rounded me-2 fs-14" />
-                    <div className="fs-14">
-                      These Result are obtained from the syllabus completion on the respective Class
-                    </div>
-                  </div>
-                  <ul className="list-group">
-                    <li className="list-group-item">
-                      <div className="row align-items-center">
-                        <div className="col-sm-4">
-                          <p className="text-dark">Maths</p>
-                        </div>
-                        <div className="col-sm-8">
-                          <div className="progress progress-xs flex-grow-1">
-                            <div
-                              className="progress-bar bg-primary rounded"
-                              role="progressbar"
-                              style={{ width: '20%' }}
-                              aria-valuenow={30}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row align-items-center">
-                        <div className="col-sm-4">
-                          <p className="text-dark">Physics</p>
-                        </div>
-                        <div className="col-sm-8">
-                          <div className="progress progress-xs flex-grow-1">
-                            <div
-                              className="progress-bar bg-secondary rounded"
-                              role="progressbar"
-                              style={{ width: '30%' }}
-                              aria-valuenow={30}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row align-items-center">
-                        <div className="col-sm-4">
-                          <p className="text-dark">Chemistry</p>
-                        </div>
-                        <div className="col-sm-8">
-                          <div className="progress progress-xs flex-grow-1">
-                            <div
-                              className="progress-bar bg-info rounded"
-                              role="progressbar"
-                              style={{ width: '40%' }}
-                              aria-valuenow={30}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row align-items-center">
-                        <div className="col-sm-4">
-                          <p className="text-dark">Botany</p>
-                        </div>
-                        <div className="col-sm-8">
-                          <div className="progress progress-xs flex-grow-1">
-                            <div
-                              className="progress-bar bg-success rounded"
-                              role="progressbar"
-                              style={{ width: '50%' }}
-                              aria-valuenow={30}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row align-items-center">
-                        <div className="col-sm-4">
-                          <p className="text-dark">English</p>
-                        </div>
-                        <div className="col-sm-8">
-                          <div className="progress progress-xs flex-grow-1">
-                            <div
-                              className="progress-bar bg-warning rounded"
-                              role="progressbar"
-                              style={{ width: '70%' }}
-                              aria-valuenow={30}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row align-items-center">
-                        <div className="col-sm-4">
-                          <p className="text-dark">Spanish</p>
-                        </div>
-                        <div className="col-sm-8">
-                          <div className="progress progress-xs flex-grow-1">
-                            <div
-                              className="progress-bar bg-danger rounded"
-                              role="progressbar"
-                              style={{ width: '80%' }}
-                              aria-valuenow={30}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                    <li className="list-group-item">
-                      <div className="row align-items-center">
-                        <div className="col-sm-4">
-                          <p className="text-dark">Japanese</p>
-                        </div>
-                        <div className="col-sm-8">
-                          <div className="progress progress-xs flex-grow-1">
-                            <div
-                              className="progress-bar bg-primary rounded"
-                              role="progressbar"
-                              style={{ width: '85%' }}
-                              aria-valuenow={30}
-                              aria-valuemin={0}
-                              aria-valuemax={100}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            {/* /Syllabus */}
-            {/* Todo */}
-            <div className="col-xxl-4 col-xl-12 d-flex">
-              <TodoWidget
-                todos={todos}
-                dateRange={todoDateRange}
-                onDateRangeChange={setTodoDateRange}
-                onToggleComplete={(id) => {
-                  // Handle toggle - will be implemented with dynamic data
-                  console.log('Toggle todo:', id);
-                }}
-              />
-            </div>
-            {/* /Todo */}
           </div>
         </div>
       </div>

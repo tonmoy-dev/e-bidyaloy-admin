@@ -19,4 +19,10 @@ export { default as EarningsExpensesCards } from "./EarningsExpensesCards";
 export { default as FeesSummaryCards } from "./FeesSummaryCards";
 export { default as ActionLinksCards } from "./ActionLinksCards";
 export { default as WelcomeBanner } from "./WelcomeBanner";
+export { default as TodaysClassWidget } from "./TodaysClassWidget";
+export { default as StudentProfileCard } from "./StudentProfileCard";
+export { default as StudentTodaysClassWidget } from "./StudentTodaysClassWidget";
+export { default as StudentQuickLinks } from "./StudentQuickLinks";
+export { default as StudentSchedulesWidget } from "./StudentSchedulesWidget";
+export { default as StudentFeesReminderWidget } from "./StudentFeesReminderWidget";
 
