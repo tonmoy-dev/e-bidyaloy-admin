@@ -52,9 +52,7 @@ import ResetPasswordSuccess3 from '../auth/resetPasswordSuccess/resetPasswordSuc
 import TwoStepVerification from '../auth/twoStepVerification/twoStepVerification';
 import TwoStepVerification2 from '../auth/twoStepVerification/twoStepVerification-2';
 import TwoStepVerification3 from '../auth/twoStepVerification/twoStepVerification-3';
-import StaffAttendance from '../hrm/attendance/staff-attendance';
-import StudentAttendance from '../hrm/attendance/student-attendance';
-import TeacherAttendance from '../hrm/attendance/teacher-attendance.tsx';
+import ResponsiveStudentAttendance from '../hrm/attendance/ResponsiveStudentAttendance.tsx';
 import Departments from '../hrm/departments';
 import Designation from '../hrm/designation';
 import Holiday from '../hrm/holidays';
@@ -1080,18 +1078,7 @@ export const publicRoutes = [
   },
   {
     path: routes.studentAttendance,
-    element: <StudentAttendance />,
-    route: Route,
-  },
-  {
-    path: routes.teacherAttendance,
-    element: <TeacherAttendance />,
-    route: Route,
-  },
-
-  {
-    path: routes.staffAttendance,
-    element: <StaffAttendance />,
+    element: <ResponsiveStudentAttendance />,
     route: Route,
   },
   {
