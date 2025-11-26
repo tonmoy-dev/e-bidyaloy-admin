@@ -70,7 +70,7 @@ import Countries from '../content/location/countries';
 import States from '../content/location/states';
 import Pages from '../content/pages';
 import Testimonials from '../content/testimonials';
-import StudentAttendance from '../hrm/attendance/student-attendance';
+import ResponsiveStudentAttendance from '../hrm/attendance/ResponsiveStudentAttendance.tsx';
 import Departments from '../hrm/departments';
 import Designation from '../hrm/designation';
 import Holiday from '../hrm/holidays';
@@ -1141,7 +1141,7 @@ export const publicRoutes = [
   },
   {
     path: routes.studentAttendance,
-    element: <StudentAttendance />,
+    element: <ResponsiveStudentAttendance />,
     route: Route,
   },
   {
