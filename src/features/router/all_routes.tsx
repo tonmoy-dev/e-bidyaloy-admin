@@ -157,26 +157,26 @@ export const all_routes = {
   prefixes: '/website-settings/prefixes',
 
   // application routes
-  todo: '/application/todo',
-  email: '/application/email',
-  videoCall: '/application/video-call',
-  chat: '/application/chat',
-  audioCall: '/application/audio-call',
-  callHistory: '/application/call-history',
-  fileManager: '/application/file-manager',
+  // todo: '/application/todo',
+  // email: '/application/email',
+  // videoCall: '/application/video-call',
+  // chat: '/application/chat',
+  // audioCall: '/application/audio-call',
+  // callHistory: '/application/call-history',
+  // fileManager: '/application/file-manager',
 
-  //content routes
-  pages: '/content/pages',
-  cities: '/content/cities',
-  states: '/content/states',
-  testimonials: '/content/testimonials',
-  countries: '/content/countries',
-  faq: '/content/faq',
-  // blog
-  allBlogs: '/content/all-blogs',
-  blogCategories: '/content/blog-categories',
-  blogComments: '/content/blog-comments',
-  blogTags: '/content/blog-tags',
+  // //content routes
+  // pages: '/content/pages',
+  // cities: '/content/cities',
+  // states: '/content/states',
+  // testimonials: '/content/testimonials',
+  // countries: '/content/countries',
+  // faq: '/content/faq',
+  // // blog
+  // allBlogs: '/content/all-blogs',
+  // blogCategories: '/content/blog-categories',
+  // blogComments: '/content/blog-comments',
+  // blogTags: '/content/blog-tags',
 
   //userManagement routes
   deleteRequest: '/user-management/delete-request',
@@ -186,14 +186,11 @@ export const all_routes = {
 
   //support routes
   contactMessages: '/support/contact-messages',
-  tickets: '/support/tickets',
-  ticketGrid: '/support/ticket-grid',
-  ticketDetails: '/support/ticket-details',
 
   // membership routes
-  membershipplan: '/membership-plans',
-  membershipAddon: '/membership-addons',
-  membershipTransaction: '/membership-transactions',
+  // membershipplan: '/membership-plans',
+  // membershipAddon: '/membership-addons',
+  // membershipTransaction: '/membership-transactions',
 
   // Peoples Module
   studentGrid: '/student/student-grid',
@@ -227,20 +224,21 @@ export const all_routes = {
   feesMaster: '/management/fees-master',
   feesAssign: '/management/fees-assign',
   collectFees: '/management/collect-fees',
-  libraryMembers: '/management/library-members',
-  libraryIssueBook: '/management/library-issue-book',
-  libraryBooks: '/management/library-books',
-  libraryReturn: '/management/library-return',
-  playerList: '/management/players',
-  sportsList: '/management/sports',
-  hostelList: '/management/hostel-list',
-  hostelType: '/management/hostel-type',
-  hostelRoom: '/management/hostel-rooms',
-  transportAssignVehicle: '/management/transport-assign-vehicle',
-  transportVehicle: '/management/transport-vehicle',
-  transportVehicleDrivers: '/management/transport-vehicle-drivers',
-  transportPickupPoints: '/management/transport-pickup-points',
-  transportRoutes: '/management/transport-routes',
+
+  // libraryMembers: '/management/library-members',
+  // libraryIssueBook: '/management/library-issue-book',
+  // libraryBooks: '/management/library-books',
+  // libraryReturn: '/management/library-return',
+  // playerList: '/management/players',
+  // sportsList: '/management/sports',
+  // hostelList: '/management/hostel-list',
+  // hostelType: '/management/hostel-type',
+  // hostelRoom: '/management/hostel-rooms',
+  // transportAssignVehicle: '/management/transport-assign-vehicle',
+  // transportVehicle: '/management/transport-vehicle',
+  // transportVehicleDrivers: '/management/transport-vehicle-drivers',
+  // transportPickupPoints: '/management/transport-pickup-points',
+  // transportRoutes: '/management/transport-routes',
 
   // Academic module
   AcademicReason: '/academic/academic-reason',
@@ -285,11 +283,11 @@ export const all_routes = {
   editStaff: '/hrm/edit-staff',
   staffsAttendance: '/hrm/staffs-attendance',
 
-  layoutDefault: '/layout-default',
-  layoutMini: '/layout-mini',
-  layoutRtl: '/layout-rtl',
-  layoutBox: '/layout-box',
-  layoutDark: '/layout-dark',
+  // layoutDefault: '/layout-default',
+  // layoutMini: '/layout-mini',
+  // layoutRtl: '/layout-rtl',
+  // layoutBox: '/layout-box',
+  // layoutDark: '/layout-dark',
 
   // finance & accounts routes
   accountsIncome: '/accounts/accounts-income',
