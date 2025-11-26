@@ -197,6 +197,7 @@ export const baseApi = createApi({
     'StudentType',
     'Application',
     'Complaint',
+    'Attendance',
   ],
   endpoints: () => ({}),
 });

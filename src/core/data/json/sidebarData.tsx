@@ -421,11 +421,7 @@ export const SidebarData = [
         submenu: true,
         showSubRoute: false,
 
-        submenuItems: [
-          { label: 'Student Attendance', link: routes.studentAttendance },
-          { label: 'Teacher Attendance', link: routes.teacherAttendance },
-          { label: 'Staff Attendance', link: routes.staffAttendance },
-        ],
+        submenuItems: [{ label: 'Student Attendance', link: routes.studentAttendance }],
       },
       {
         label: 'Leaves',

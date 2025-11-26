@@ -1,156 +1,370 @@
-import  { useRef, useState } from "react";
-import PredefinedDateRanges from "../../../core/common/datePicker";
-import CommonSelect from "../../../core/common/commonSelect";
-import {
-  AdmissionNumber,
-  classSection,
-  RollNumber,
-  studentclass,
-  studentName,
-} from "../../../core/common/selectoption/selectoption";
-import { studentAttendance } from "../../../core/data/json/student_attendance";
-import type { TableData } from "../../../core/data/interface";
-import Table from "../../../core/common/dataTable/index";
-import ImageWithBasePath from "../../../core/common/imageWithBasePath";
-import { Link } from "react-router-dom";
-import { all_routes } from "../../router/all_routes";
-import TooltipOption from "../../../core/common/tooltipOption";
+import dayjs from 'dayjs';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import CommonSelect from '../../../core/common/commonSelect';
+import ImageWithBasePath from '../../../core/common/imageWithBasePath';
+import TooltipOption from '../../../core/common/tooltipOption';
+import { useGetClassesWithoutPaginationQuery } from '../../academic/examinations/exam-results/api/examResultApi';
+import { all_routes } from '../../router/all_routes';
+import { useAttendance } from './hook/useAttendance';
+import { useAttendanceMutations } from './hook/useAttendanceMutations';
+
+type AttendanceStatus = 'present' | 'late' | 'absent' | 'holiday' | 'half_day';
+
+interface AttendanceRecord {
+  student_id: string;
+  status: AttendanceStatus;
+  remarks?: string;
+}
+
+interface Student {
+  id: string;
+  student_id: string;
+  first_name: string;
+  last_name: string;
+  class_assigned: string;
+  class_name: string;
+  section: string;
+  section_name: string;
+  roll_number: string;
+  status: string;
+  type: string | null;
+  profile_image?: string;
+}
 
 const StudentAttendance = () => {
   const routes = all_routes;
-  const data = studentAttendance;
 
-  const [] = useState(
-    data.map(() => "Present") // Default to 'Present' for each row
+  // State management
+  const [selectedDate, setSelectedDate] = useState<string>(dayjs().format('YYYY-MM-DD'));
+  const [selectedClass, setSelectedClass] = useState<string>('');
+  const [selectedSection, setSelectedSection] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [attendanceData, setAttendanceData] = useState<Record<string, AttendanceRecord>>({});
+  const [currentStudentIndex, setCurrentStudentIndex] = useState<number>(0);
+
+  // Refs for student cards
+  const studentCardRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  // API hooks
+  const { data: classes } = useGetClassesWithoutPaginationQuery();
+  const { bulkMarkAttendance, isMarking, isMarkSuccess } = useAttendanceMutations();
+
+  // Build query params
+  const queryParams = useMemo(() => {
+    const params: Record<string, string> = {};
+    if (selectedClass) params.class_assigned = selectedClass;
+    if (selectedSection) params.section = selectedSection;
+    if (selectedDate) params.date = selectedDate;
+    return params;
+  }, [selectedClass, selectedSection, selectedDate]);
+
+  // Fetch students based on filters
+  const { students, isLoading, isFetching, refetch } = useAttendance(
+    Object.keys(queryParams).length > 0 ? queryParams : undefined,
   );
-  const dropdownMenuRef = useRef<HTMLDivElement | null>(null);
-  const handleApplyClick = () => {
-    if (dropdownMenuRef.current) {
-      dropdownMenuRef.current.classList.remove("show");
+
+  // Get sections for selected class
+  const sections = useMemo(() => {
+    if (!selectedClass || !classes) return [];
+    const selectedClassData = classes.find((c) => c.id === selectedClass);
+    return selectedClassData?.sections || [];
+  }, [selectedClass, classes]);
+
+  // Class options for dropdown
+  const classOptions = useMemo(() => {
+    return [
+      { value: '', label: 'All Classes' },
+      ...(classes?.map((cls) => ({
+        value: cls.id,
+        label: cls.name,
+      })) || []),
+    ];
+  }, [classes]);
+
+  // Section options for dropdown
+  const sectionOptions = useMemo(() => {
+    return [
+      { value: '', label: 'All Sections' },
+      ...sections.map((section) => ({
+        value: section.id,
+        label: section.name,
+      })),
+    ];
+  }, [sections]);
+
+  // Initialize attendance data when students load
+  useEffect(() => {
+    if (students && students.length > 0) {
+      const initialData: Record<string, AttendanceRecord> = {};
+      students.forEach((student: Student) => {
+        initialData[student.id] = attendanceData[student.id] || {
+          student_id: student.id,
+          status: 'present',
+          remarks: '',
+        };
+      });
+      setAttendanceData(initialData);
+      setCurrentStudentIndex(0); // Reset to first student
+    }
+  }, [students]);
+
+  // Reset section when class changes
+  useEffect(() => {
+    setSelectedSection('');
+  }, [selectedClass]);
+
+  // Show success toast when attendance is marked successfully
+  useEffect(() => {
+    if (isMarkSuccess) {
+      toast.success('Attendance saved successfully!', {
+        position: 'top-right',
+        autoClose: 3000,
+      });
+    }
+  }, [isMarkSuccess]);
+
+  // Filter students based on search
+  const filteredStudents = useMemo(() => {
+    if (!students || students.length === 0) return [];
+    if (!searchTerm) return students;
+
+    const lowerSearch = searchTerm.toLowerCase();
+    return students.filter((student: Student) => {
+      const fullName = `${student.first_name} ${student.last_name}`.toLowerCase();
+      const rollNo = student.roll_number?.toString().toLowerCase() || '';
+      const studentId = student.student_id?.toLowerCase() || '';
+      return (
+        fullName.includes(lowerSearch) ||
+        rollNo.includes(lowerSearch) ||
+        studentId.includes(lowerSearch)
+      );
+    });
+  }, [students, searchTerm]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input field
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement ||
+        e.target instanceof HTMLSelectElement
+      ) {
+        return;
+      }
+
+      if (!filteredStudents || filteredStudents.length === 0) return;
+
+      const currentStudent = filteredStudents[currentStudentIndex];
+      if (!currentStudent) return;
+
+      let newStatus: AttendanceStatus | null = null;
+
+      switch (e.key.toLowerCase()) {
+        case 'p':
+          newStatus = 'present';
+          break;
+        case 'a':
+          newStatus = 'absent';
+          break;
+        case 'l':
+          newStatus = 'late';
+          break;
+        case 'h':
+          newStatus = 'half_day';
+          break;
+        default:
+          return;
+      }
+
+      if (newStatus) {
+        e.preventDefault();
+        handleAttendanceChange(currentStudent.id, newStatus);
+
+        // Auto-scroll to next student
+        if (currentStudentIndex < filteredStudents.length - 1) {
+          const nextIndex = currentStudentIndex + 1;
+          setCurrentStudentIndex(nextIndex);
+          scrollToStudent(nextIndex);
+        } else {
+          toast.info('All students marked! Ready to save.', {
+            position: 'top-right',
+            autoClose: 2000,
+          });
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [filteredStudents, currentStudentIndex, attendanceData]);
+
+  // Scroll to student card
+  const scrollToStudent = (index: number) => {
+    const student = filteredStudents[index];
+    if (student && studentCardRefs.current[student.id]) {
+      studentCardRefs.current[student.id]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
     }
   };
-  // Handle state change for each row
 
-  const columns = [
-    {
-      title: "AdmissionNo",
-      dataIndex: "admissionNo",
-      render: ( record: any) => (
-        <>
-          <Link to="#" className="link-primary">
-            {record.admissionNo}
-          </Link>
-        </>
-      ),
-      sorter: (a: TableData, b: TableData) =>
-        a.admissionNo.length - b.admissionNo.length,
-    },
-    {
-      title: "Roll No",
-      dataIndex: "rollNo",
-      sorter: (a: TableData, b: TableData) => a.rollNo.length - b.rollNo.length,
-    },
-    {
-      title: "Name",
-      dataIndex: "name",
-      render: (text: string, record: any) => (
-        <div className="d-flex align-items-center">
-          <Link to="#" className="avatar avatar-md">
-            <ImageWithBasePath
-              src={record.img}
-              className="img-fluid rounded-circle"
-              alt="img"
-            />
-          </Link>
-          <div className="ms-2">
-            <p className="text-dark mb-0">
-              <Link to="#">{text}</Link>
-            </p>
-          </div>
-        </div>
-      ),
-      sorter: (a: TableData, b: TableData) => a.name.length - b.name.length,
-    },
-    {
-      title: "Class",
-      dataIndex: "class",
-      sorter: (a: TableData, b: TableData) => a.class.length - b.class.length,
-    },
-    {
-      title: "Section",
-      dataIndex: "section",
-      sorter: (a: TableData, b: TableData) =>
-        a.section.length - b.section.length,
-    },
-    {
-      title: "Attendance",
-      dataIndex: "attendance",
-      render: ( record: any ) => (
-        <div className="d-flex align-items-center check-radio-group flex-nowrap">
-          <label className="custom-radio">
-            <input 
-              type="radio" 
-              name={`student${record.key}`} 
-              defaultChecked={record.present === "true"} 
-            />
-            <span className="checkmark" />
-            Present
-          </label>
-          <label className="custom-radio">
-            <input 
-              type="radio" 
-              name={`student${record.key}`} 
-              defaultChecked={record.Late === "true"} 
-            />
-            <span className="checkmark" />
-            Late
-          </label>
-          <label className="custom-radio">
-            <input 
-              type="radio" 
-              name={`student${record.key}`} 
-              defaultChecked={record.Absent === "true"} 
-            />
-            <span className="checkmark" />
-            Absent
-          </label>
-          <label className="custom-radio">
-            <input 
-              type="radio" 
-              name={`student${record.key}`} 
-              defaultChecked={record.Holiday === "true"} 
-            />
-            <span className="checkmark" />
-            Holiday
-          </label>
-          <label className="custom-radio">
-            <input 
-              type="radio" 
-              name={`student${record.key}`} 
-              defaultChecked={record.Halfday === "true"} 
-            />
-            <span className="checkmark" />
-            Halfday
-          </label>
-        </div>
-      ),
-      sorter: (a: TableData, b: TableData) => a.attendance.length - b.attendance.length,
-    },
-    {
-      title: "Notes",
-      dataIndex: "notes",
-      render: () => (
-        <div>
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Enter Name"
-          />
-        </div>
-      ),
-      sorter: (a: TableData, b: TableData) => a.notes.length - b.notes.length,
-    },
-  ];
+  // Handle class change
+  const handleClassChange = (value: string) => {
+    setSelectedClass(value);
+    setSelectedSection(''); // Clear section when class changes
+  };
+
+  // Handle attendance status change
+  const handleAttendanceChange = (studentId: string, status: AttendanceStatus) => {
+    setAttendanceData((prev) => ({
+      ...prev,
+      [studentId]: {
+        ...prev[studentId],
+        student_id: studentId,
+        status,
+      },
+    }));
+  };
+
+  // Handle remarks change
+  const handleRemarksChange = (studentId: string, remarks: string) => {
+    setAttendanceData((prev) => ({
+      ...prev,
+      [studentId]: {
+        ...prev[studentId],
+        remarks,
+      },
+    }));
+  };
+
+  // Handle save attendance
+  const handleSaveAttendance = async () => {
+    if (!students || students.length === 0) {
+      toast.error('No students to save attendance for', {
+        position: 'top-right',
+      });
+      return;
+    }
+
+    const payload = {
+      class_id: selectedClass,
+      section_id: selectedSection,
+      attendance_date: selectedDate,
+      students: Object.values(attendanceData).map((record) => ({
+        student_id: record.student_id,
+        status: record.status,
+        ...(record.remarks && { remarks: record.remarks }),
+      })),
+    };
+
+    try {
+      await bulkMarkAttendance(payload).unwrap();
+      // Success handled by isMarkSuccess effect above
+    } catch (error) {
+      console.error('Failed to save attendance:', error);
+      toast.error('Failed to save attendance. Please try again.', {
+        position: 'top-right',
+      });
+    }
+  };
+
+  // Handle quick mark all
+  const handleMarkAll = (status: AttendanceStatus) => {
+    if (!students || students.length === 0) return;
+
+    const updatedData: Record<string, AttendanceRecord> = {};
+    students.forEach((student: Student) => {
+      updatedData[student.id] = {
+        student_id: student.id,
+        status,
+        remarks: attendanceData[student.id]?.remarks || '',
+      };
+    });
+    setAttendanceData(updatedData);
+
+    // Show toast notification
+    const statusText = status === 'present' ? 'Present' : 'Absent';
+    toast.info(`All students marked as ${statusText}`, {
+      position: 'top-right',
+      autoClose: 2000,
+    });
+  };
+
+  // Get initials for avatar
+  const getInitials = (firstName: string, lastName: string) => {
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  // Get color for avatar based on status
+  const getAvatarColor = (status: AttendanceStatus) => {
+    switch (status) {
+      case 'present':
+        return 'bg-success';
+      case 'absent':
+        return 'bg-danger';
+      case 'half_day':
+        return 'bg-warning';
+      case 'late':
+        return 'bg-info';
+      case 'holiday':
+        return 'bg-secondary';
+      default:
+        return 'bg-primary';
+    }
+  };
+
+  // Check if save button should be enabled
+  const isSaveEnabled = useMemo(() => {
+    return students && students.length > 0 && !isMarking;
+  }, [students, isMarking]);
+
+  // Count attendance stats
+  const attendanceStats = useMemo(() => {
+    if (!students || students.length === 0) {
+      return { present: 0, absent: 0, halfDay: 0, late: 0, holiday: 0, total: 0 };
+    }
+
+    const stats = {
+      present: 0,
+      absent: 0,
+      halfDay: 0,
+      late: 0,
+      holiday: 0,
+      total: students.length,
+    };
+
+    students.forEach((student: Student) => {
+      const status = attendanceData[student.id]?.status || 'present';
+      switch (status) {
+        case 'present':
+          stats.present++;
+          break;
+        case 'absent':
+          stats.absent++;
+          break;
+        case 'half_day':
+          stats.halfDay++;
+          break;
+        case 'late':
+          stats.late++;
+          break;
+        case 'holiday':
+          stats.holiday++;
+          break;
+      }
+    });
+
+    return stats;
+  }, [students, attendanceData]);
+
+  // Determine if we should show students
+  const shouldShowStudents = students && students.length > 0;
+  const showLoading = isLoading || isFetching;
+
   return (
     <div>
       <div className="page-wrapper">
@@ -178,138 +392,358 @@ const StudentAttendance = () => {
             </div>
           </div>
           {/* /Page Header */}
-          {/* Student List */}
-          <div className="card">
-            <div className="card-header d-flex align-items-center justify-content-between flex-wrap pb-0">
-              <h4 className="mb-3">Student Attendance List</h4>
-              <div className="d-flex align-items-center flex-wrap">
-                <div className="input-icon-start mb-3 me-2 position-relative">
-                  <PredefinedDateRanges />
-                </div>
-                <div className="dropdown mb-3 me-2">
-                  <Link
-                    to="#"
-                    className="btn btn-outline-light bg-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                    data-bs-auto-close="outside"
-                  >
-                    <i className="ti ti-filter me-2" />
-                    Filter
-                  </Link>
-                  <div
-                    className="dropdown-menu drop-width"
-                    ref={dropdownMenuRef}
-                  >
-                    <form>
-                      <div className="d-flex align-items-center border-bottom p-3">
-                        <h4>Filter</h4>
-                      </div>
-                      <div className="p-3 border-bottom">
-                        <div className="row">
-                          <div className="col-md-6">
-                            <div className="mb-3">
-                              <label className="form-label">Admission No</label>
-                              <CommonSelect
-                                className="select"
-                                options={AdmissionNumber}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="mb-3">
-                              <label className="form-label">Roll No</label>
-                              <CommonSelect
-                                className="select"
-                                options={RollNumber}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-md-12">
-                            <div className="mb-3">
-                              <label className="form-label">Name</label>
-                              <CommonSelect
-                                className="select"
-                                options={studentName}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="mb-0">
-                              <label className="form-label">Class</label>
-                              <CommonSelect
-                                className="select"
-                                options={studentclass}
-                              />
-                            </div>
-                          </div>
-                          <div className="col-md-6">
-                            <div className="mb-0">
-                              <label className="form-label">Section</label>
 
-                              <CommonSelect
-                                className="select"
-                                options={classSection}
+          {/* Filter Card */}
+          <div className="card">
+            <div className="card-body">
+              <div className="row g-3 align-items-end">
+                {/* Date */}
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label mb-2">
+                    <i className="ti ti-calendar me-1" />
+                    Date
+                  </label>
+                  <input
+                    type="date"
+                    className="form-control"
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                    onClick={(e) => {
+                      const input = e.currentTarget;
+                      if (input.showPicker) {
+                        input.showPicker();
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Class */}
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label mb-2">Class</label>
+                  <CommonSelect
+                    className="select"
+                    options={classOptions}
+                    value={selectedClass}
+                    onChange={handleClassChange}
+                    placeholder="All Classes"
+                  />
+                </div>
+
+                {/* Section */}
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label mb-2">Section</label>
+                  <CommonSelect
+                    key={selectedClass}
+                    className="select"
+                    options={sectionOptions}
+                    value={selectedSection}
+                    onChange={(value) => setSelectedSection(value)}
+                    disabled={!selectedClass}
+                    placeholder="All Sections"
+                  />
+                </div>
+
+                {/* Search */}
+                <div className="col-lg-3 col-md-6">
+                  <label className="form-label mb-2">Search</label>
+                  <div className="input-icon-start position-relative">
+                    <i className="ti ti-search position-absolute top-50 start-0 translate-middle-y ms-3" />
+                    <input
+                      type="text"
+                      className="form-control ps-5"
+                      placeholder="Name or Roll No..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* /Filter Card */}
+
+          {/* Keyboard Shortcuts Info */}
+          {shouldShowStudents && (
+            <div className="card bg-light border-0">
+              <div className="card-body py-2">
+                <div className="d-flex align-items-center gap-3 flex-wrap">
+                  <span className="text-muted small">
+                    <i className="ti ti-keyboard me-1" />
+                    <strong>Keyboard Shortcuts:</strong>
+                  </span>
+                  <span className="badge bg-success-transparent text-success">
+                    <kbd>P</kbd> Present
+                  </span>
+                  <span className="badge bg-danger-transparent text-danger">
+                    <kbd>A</kbd> Absent
+                  </span>
+                  <span className="badge bg-info-transparent text-info">
+                    <kbd>L</kbd> Late
+                  </span>
+                  <span className="badge bg-warning-transparent text-warning">
+                    <kbd>H</kbd> Half Day
+                  </span>
+                  <span className="text-muted small ms-auto">
+                    <i className="ti ti-info-circle me-1" />
+                    Auto-scrolls to next student
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* /Keyboard Shortcuts Info */}
+
+          {/* Stats Card - Show when students are loaded */}
+          {shouldShowStudents && (
+            <div className="card">
+              <div className="card-body py-3">
+                <div className="d-flex align-items-center gap-4 flex-wrap">
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="fw-medium">Total:</span>
+                    <span className="badge bg-primary">{attendanceStats.total}</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="fw-medium">Present:</span>
+                    <span className="badge bg-success">{attendanceStats.present}</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="fw-medium">Absent:</span>
+                    <span className="badge bg-danger">{attendanceStats.absent}</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="fw-medium">Half Day:</span>
+                    <span className="badge bg-warning">{attendanceStats.halfDay}</span>
+                  </div>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className="fw-medium">Late:</span>
+                    <span className="badge bg-info">{attendanceStats.late}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* /Stats Card */}
+
+          {/* Quick Actions Bar - Only show if there are students */}
+          {shouldShowStudents && (
+            <div className="card">
+              <div className="card-body py-3">
+                <div className="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div className="d-flex align-items-center gap-2 flex-wrap">
+                    <span className="fw-medium">Quick Mark All:</span>
+                    <button
+                      className="btn btn-sm btn-outline-success d-flex align-items-center"
+                      onClick={() => handleMarkAll('present')}
+                    >
+                      <i className="ti ti-check me-1" />
+                      All Present
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger d-flex align-items-center"
+                      onClick={() => handleMarkAll('absent')}
+                    >
+                      <i className="ti ti-x me-1" />
+                      All Absent
+                    </button>
+                  </div>
+
+                  <div className="d-flex align-items-center gap-2 flex-wrap">
+                    <button className="btn btn-sm btn-outline-light bg-white">
+                      <i className="ti ti-grid-dots" />
+                    </button>
+                    <button className="btn btn-sm btn-dark">
+                      <i className="ti ti-list" />
+                    </button>
+                    <button className="btn btn-sm btn-outline-light bg-white">
+                      <i className="ti ti-download me-1" />
+                      Export
+                    </button>
+                    <button
+                      className={`btn btn-sm ${isSaveEnabled ? 'btn-primary' : 'btn-secondary'}`}
+                      onClick={handleSaveAttendance}
+                      disabled={!isSaveEnabled}
+                      title={
+                        !isSaveEnabled
+                          ? 'Please select class, section, and date to save'
+                          : 'Save attendance'
+                      }
+                    >
+                      <i className="ti ti-device-floppy me-1" />
+                      {isMarking ? 'Saving...' : 'Save Attendance'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          {/* /Quick Actions Bar */}
+
+          {/* Student Cards */}
+          {showLoading ? (
+            <div className="card">
+              <div className="card-body text-center py-5">
+                <div className="spinner-border text-primary" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+                <p className="text-muted mt-3 mb-0">Loading students...</p>
+              </div>
+            </div>
+          ) : shouldShowStudents ? (
+            filteredStudents.length > 0 ? (
+              <div className="row">
+                {filteredStudents.map((student: Student, index: number) => {
+                  const currentStatus = attendanceData[student.id]?.status || 'present';
+                  const currentRemarks = attendanceData[student.id]?.remarks || '';
+                  const initials = getInitials(student.first_name, student.last_name);
+                  const avatarColor = getAvatarColor(currentStatus);
+                  const isCurrentStudent = index === currentStudentIndex;
+
+                  return (
+                    <div
+                      key={student.id}
+                      className="col-12 mb-3"
+                      ref={(el) => (studentCardRefs.current[student.id] = el)}
+                    >
+                      <div
+                        className={`card shadow-sm ${
+                          isCurrentStudent ? 'border-primary border-2' : ''
+                        }`}
+                      >
+                        <div className="card-body">
+                          <div className="row g-3">
+                            {/* Student Info & Attendance Buttons */}
+                            <div className="col-12">
+                              <div className="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                {/* Student Info */}
+                                <div className="d-flex align-items-center gap-3">
+                                  <div
+                                    className={`avatar avatar-lg rounded-circle d-flex align-items-center justify-content-center text-white ${avatarColor}`}
+                                    style={{
+                                      width: '50px',
+                                      height: '50px',
+                                      minWidth: '50px',
+                                      flexShrink: 0,
+                                    }}
+                                  >
+                                    {student.profile_image ? (
+                                      <ImageWithBasePath
+                                        src={student.profile_image}
+                                        className="img-fluid rounded-circle"
+                                        alt={`${student.first_name} ${student.last_name}`}
+                                        style={{
+                                          width: '100%',
+                                          height: '100%',
+                                          objectFit: 'cover',
+                                        }}
+                                      />
+                                    ) : (
+                                      <span className="fw-bold">{initials}</span>
+                                    )}
+                                  </div>
+                                  <div>
+                                    <h6 className="mb-1 fw-semibold">
+                                      {student.first_name} {student.last_name}
+                                      {isCurrentStudent && (
+                                        <span className="badge bg-primary ms-2 small">Current</span>
+                                      )}
+                                    </h6>
+                                    <p className="text-muted mb-0 small">
+                                      Roll: {student.roll_number || 'N/A'} • Class{' '}
+                                      {student.class_name} {student.section_name}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Attendance Buttons */}
+                                <div className="d-flex align-items-center gap-2 flex-wrap">
+                                  <button
+                                    className={`btn btn-sm d-flex align-items-center ${
+                                      currentStatus === 'present'
+                                        ? 'btn-success'
+                                        : 'btn-outline-success'
+                                    }`}
+                                    onClick={() => handleAttendanceChange(student.id, 'present')}
+                                  >
+                                    <i className="ti ti-check me-1" />
+                                    Present
+                                  </button>
+                                  <button
+                                    className={`btn btn-sm d-flex align-items-center ${
+                                      currentStatus === 'absent'
+                                        ? 'btn-danger'
+                                        : 'btn-outline-danger'
+                                    }`}
+                                    onClick={() => handleAttendanceChange(student.id, 'absent')}
+                                  >
+                                    <i className="ti ti-circle-x me-1" />
+                                    Absent
+                                  </button>
+                                  <button
+                                    className={`btn btn-sm d-flex align-items-center ${
+                                      currentStatus === 'half_day'
+                                        ? 'btn-warning text-white'
+                                        : 'btn-outline-warning'
+                                    }`}
+                                    onClick={() => handleAttendanceChange(student.id, 'half_day')}
+                                  >
+                                    <i className="ti ti-clock me-1" />
+                                    Half Day
+                                  </button>
+                                  <button
+                                    className={`btn btn-sm d-flex align-items-center ${
+                                      currentStatus === 'late'
+                                        ? 'btn-info text-white'
+                                        : 'btn-outline-info'
+                                    }`}
+                                    onClick={() => handleAttendanceChange(student.id, 'late')}
+                                  >
+                                    <i className="ti ti-clock-pause me-1" />
+                                    Late
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Remarks Field */}
+                            <div className="col-12">
+                              <label className="form-label small mb-1">
+                                <i className="ti ti-note me-1" />
+                                Remarks (Optional)
+                              </label>
+                              <input
+                                type="text"
+                                className="form-control form-control-sm"
+                                placeholder="Add remarks (e.g., Sick, Family emergency, etc.)"
+                                value={currentRemarks}
+                                onChange={(e) => handleRemarksChange(student.id, e.target.value)}
                               />
                             </div>
                           </div>
                         </div>
                       </div>
-                      <div className="p-3 d-flex align-items-center justify-content-end">
-                        <Link to="#" className="btn btn-light me-3">
-                          Reset
-                        </Link>
-                        <Link
-                          to="#"
-                          className="btn btn-primary"
-                          onClick={handleApplyClick}
-                        >
-                          Apply
-                        </Link>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-                <div className="dropdown mb-3">
-                  <Link
-                    to="#"
-                    className="btn btn-outline-light bg-white dropdown-toggle"
-                    data-bs-toggle="dropdown"
-                  >
-                    <i className="ti ti-sort-ascending-2 me-2" />
-                    Sort by A-Z
-                  </Link>
-                  <ul className="dropdown-menu p-3">
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1 active">
-                        Ascending
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Descending
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Recently Viewed
-                      </Link>
-                    </li>
-                    <li>
-                      <Link to="#" className="dropdown-item rounded-1">
-                        Recently Added
-                      </Link>
-                    </li>
-                  </ul>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="card">
+                <div className="card-body text-center py-5">
+                  <i className="ti ti-user-off" style={{ fontSize: '48px', color: '#ddd' }} />
+                  <p className="text-muted mt-3 mb-0">No students found matching your search.</p>
                 </div>
               </div>
+            )
+          ) : (
+            <div className="card">
+              <div className="card-body text-center py-5">
+                <i className="ti ti-users" style={{ fontSize: '48px', color: '#ddd' }} />
+                <p className="text-muted mt-3 mb-0">
+                  Please select a class and section to view students
+                </p>
+              </div>
             </div>
-            <div className="card-body p-0 py-3">
-              {/* Student List */}
-              <Table dataSource={data} columns={columns} Selection={true} />
-              {/* /Student List */}
-            </div>
-          </div>
-          {/* /Student List */}
+          )}
+          {/* /Student Cards */}
         </div>
       </div>
     </div>
