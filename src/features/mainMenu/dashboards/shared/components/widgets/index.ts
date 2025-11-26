@@ -25,4 +25,10 @@ export { default as StudentTodaysClassWidget } from "./StudentTodaysClassWidget"
 export { default as StudentQuickLinks } from "./StudentQuickLinks";
 export { default as StudentSchedulesWidget } from "./StudentSchedulesWidget";
 export { default as StudentFeesReminderWidget } from "./StudentFeesReminderWidget";
+export { default as TeacherSyllabusCard } from "./TeacherSyllabusCard";
+export { default as TeacherTodaysClassWidget } from "./TeacherTodaysClassWidget";
+export { default as TeacherAttendanceWidget } from "./TeacherAttendanceWidget";
+export { default as BestPerformersWidget } from "./BestPerformersWidget";
+export { default as StudentProgressWidget } from "./StudentProgressWidget";
+export { default as TeacherSyllabusSlider } from "./TeacherSyllabusSlider";
 
