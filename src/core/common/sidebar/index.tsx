@@ -1,31 +1,27 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-import { SidebarData } from "../../data/json/sidebarData";
-import ImageWithBasePath from "../imageWithBasePath";
-import "../../../assets/style/icon/tabler-icons/webfont/tabler-icons.css";
-import { setExpandMenu } from "../../store/slices/sidebarSlice";
-import { useDispatch } from "react-redux";
-import {
-  resetAllMode,
-  setDataLayout,
-} from "../../store/slices/themeSettingSlice";
-import usePreviousRoute from "./usePreviousRoute";
+import { useDispatch } from 'react-redux';
+import '../../../assets/style/icon/tabler-icons/webfont/tabler-icons.css';
+import { SidebarData } from '../../data/json/sidebarData';
+import { setExpandMenu } from '../../store/slices/sidebarSlice';
+import { resetAllMode, setDataLayout } from '../../store/slices/themeSettingSlice';
+import ImageWithBasePath from '../imageWithBasePath';
+import usePreviousRoute from './usePreviousRoute';
 
-import "../../../../node_modules/react-perfect-scrollbar/dist/css/styles.css";
-import PerfectScrollbar from "react-perfect-scrollbar";
-import "../../../../node_modules/react-perfect-scrollbar/dist/css/styles.css";
+import PerfectScrollbar from 'react-perfect-scrollbar';
+import '../../../../node_modules/react-perfect-scrollbar/dist/css/styles.css';
 
 const Sidebar = () => {
   const Location = useLocation();
 
-  const [subOpen, setSubopen] = useState<any>("");
-  const [subsidebar, setSubsidebar] = useState("");
+  const [subOpen, setSubopen] = useState<any>('');
+  const [subsidebar, setSubsidebar] = useState('');
 
   const toggleSidebar = (title: any) => {
-    localStorage.setItem("menuOpened", title);
+    localStorage.setItem('menuOpened', title);
     if (title === subOpen) {
-      setSubopen("");
+      setSubopen('');
     } else {
       setSubopen(title);
     }
@@ -33,7 +29,7 @@ const Sidebar = () => {
 
   const toggleSubsidebar = (subitem: any) => {
     if (subitem === subsidebar) {
-      setSubsidebar("");
+      setSubsidebar('');
     } else {
       setSubsidebar(subitem);
     }
@@ -52,18 +48,18 @@ const Sidebar = () => {
 
   const getLayoutClass = (label: any) => {
     switch (label) {
-      case "Default":
-        return "default_layout";
-      case "Mini":
-        return "mini_layout";
-      case "Box":
-        return "boxed_layout";
-      case "Dark":
-        return "dark_data_theme";
-      case "RTL":
-        return "rtl";
+      case 'Default':
+        return 'default_layout';
+      case 'Mini':
+        return 'mini_layout';
+      case 'Box':
+        return 'boxed_layout';
+      case 'Dark':
+        return 'dark_data_theme';
+      case 'RTL':
+        return 'rtl';
       default:
-        return "";
+        return '';
     }
   };
   const location = useLocation();
@@ -72,19 +68,16 @@ const Sidebar = () => {
 
   useEffect(() => {
     const layoutPages = [
-      "/layout-dark",
-      "/layout-rtl",
-      "/layout-mini",
-      "/layout-box",
-      "/layout-default",
+      '/layout-dark',
+      '/layout-rtl',
+      '/layout-mini',
+      '/layout-box',
+      '/layout-default',
     ];
 
-    const isCurrentLayoutPage = layoutPages.some((path) =>
-      location.pathname.includes(path)
-    );
+    const isCurrentLayoutPage = layoutPages.some((path) => location.pathname.includes(path));
     const isPreviousLayoutPage =
-      previousLocation &&
-      layoutPages.some((path) => previousLocation.pathname.includes(path));
+      previousLocation && layoutPages.some((path) => previousLocation.pathname.includes(path));
 
     if (isPreviousLayoutPage && !isCurrentLayoutPage) {
       dispatch(resetAllMode());
@@ -92,24 +85,24 @@ const Sidebar = () => {
   }, [location, previousLocation, dispatch]);
 
   useEffect(() => {
-    setSubopen(localStorage.getItem("menuOpened"));
+    setSubopen(localStorage.getItem('menuOpened'));
     // Select all 'submenu' elements
-    const submenus = document.querySelectorAll(".submenu");
+    const submenus = document.querySelectorAll('.submenu');
 
-    const mainWrapper = document.querySelector(".main-wrapper");
+    const mainWrapper = document.querySelector('.main-wrapper');
     if (mainWrapper) {
-      mainWrapper.classList.remove("slide-nav");
+      mainWrapper.classList.remove('slide-nav');
     }
     // Loop through each 'submenu'
     submenus.forEach((submenu) => {
       // Find all 'li' elements within the 'submenu'
-      const listItems = submenu.querySelectorAll("li");
-      submenu.classList.remove("active");
+      const listItems = submenu.querySelectorAll('li');
+      submenu.classList.remove('active');
       // Check if any 'li' has the 'active' class
       listItems.forEach((item) => {
-        if (item.classList.contains("active")) {
+        if (item.classList.contains('active')) {
           // Add 'active' class to the 'submenu'
-          submenu.classList.add("active");
+          submenu.classList.add('active');
           return;
         }
       });
@@ -124,12 +117,7 @@ const Sidebar = () => {
   };
   return (
     <>
-      <div
-        className="sidebar"
-        id="sidebar"
-        onMouseEnter={onMouseEnter}
-        onMouseLeave={onMouseLeave}
-      >
+      <div className="sidebar" id="sidebar" onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
         <PerfectScrollbar>
           <div className="sidebar-inner slimscroll">
             <div id="sidebar-menu" className="sidebar-menu">
@@ -145,7 +133,8 @@ const Sidebar = () => {
                       alt="Profile"
                     />
                     <span className="text-dark ms-2 fw-normal">
-                      Global International
+                      {/* Global International */}
+                      Pagla School
                     </span>
                   </Link>
                 </li>
@@ -172,9 +161,7 @@ const Sidebar = () => {
                           ...(title?.submenuItems?.flatMap((link: any) => {
                             return [
                               link?.link,
-                              ...(link?.submenuItems?.map(
-                                (item: any) => item?.link
-                              ) || []),
+                              ...(link?.submenuItems?.map((item: any) => item?.link) || []),
                             ];
                           }) || []),
                         ].filter(Boolean); // remove undefined/null
@@ -184,17 +171,17 @@ const Sidebar = () => {
                         return (
                           <li className="submenu" key={title.label}>
                             <Link
-                              to={title?.submenu ? "#" : title?.link}
+                              to={title?.submenu ? '#' : title?.link}
                               onClick={() =>
                                 handleClick(
                                   title?.label,
                                   title?.themeSetting,
-                                  getLayoutClass(title?.label)
+                                  getLayoutClass(title?.label),
                                 )
                               }
-                              className={`${
-                                subOpen === title?.label ? "subdrop" : ""
-                              } ${isActive ? "active" : ""}`}
+                              className={`${subOpen === title?.label ? 'subdrop' : ''} ${
+                                isActive ? 'active' : ''
+                              }`}
                             >
                               <i className={title.icon}></i>
                               <span>{title?.label}</span>
@@ -203,96 +190,69 @@ const Sidebar = () => {
                                   {title?.version}
                                 </span>
                               )}
-                              <span
-                                className={title?.submenu ? "menu-arrow" : ""}
-                              />
+                              <span className={title?.submenu ? 'menu-arrow' : ''} />
                             </Link>
 
                             {/* Submenu Level 1 */}
-                            {title?.submenu !== false &&
-                              subOpen === title?.label && (
-                                <ul style={{ display: "block" }}>
-                                  {title?.submenuItems?.map((item: any) => {
-                                    const subLinks: string[] = [
-                                      item?.link,
-                                      item?.subLink1,
-                                      item?.subLink2,
-                                      item?.subLink3,
-                                      item?.subLink4,
-                                      item?.subLink5,
-                                      item?.subLink6,
-                                      ...(item?.submenuItems?.map(
-                                        (sub: any) => sub?.link
-                                      ) || []),
-                                    ].filter(Boolean);
+                            {title?.submenu !== false && subOpen === title?.label && (
+                              <ul style={{ display: 'block' }}>
+                                {title?.submenuItems?.map((item: any) => {
+                                  const subLinks: string[] = [
+                                    item?.link,
+                                    item?.subLink1,
+                                    item?.subLink2,
+                                    item?.subLink3,
+                                    item?.subLink4,
+                                    item?.subLink5,
+                                    item?.subLink6,
+                                    ...(item?.submenuItems?.map((sub: any) => sub?.link) || []),
+                                  ].filter(Boolean);
 
-                                    const isSubActive = subLinks.includes(
-                                      Location.pathname
-                                    );
+                                  const isSubActive = subLinks.includes(Location.pathname);
 
-                                    return (
-                                      <li
-                                        key={item.label}
-                                        className={
-                                          item?.submenuItems
-                                            ? "submenu submenu-two"
-                                            : ""
-                                        }
+                                  return (
+                                    <li
+                                      key={item.label}
+                                      className={item?.submenuItems ? 'submenu submenu-two' : ''}
+                                    >
+                                      <Link
+                                        to={item?.link}
+                                        className={`${isSubActive ? 'active' : ''} ${
+                                          subsidebar === item?.label ? 'subdrop' : ''
+                                        }`}
+                                        onClick={() => toggleSubsidebar(item?.label)}
                                       >
-                                        <Link
-                                          to={item?.link}
-                                          className={`${
-                                            isSubActive ? "active" : ""
-                                          } ${
-                                            subsidebar === item?.label
-                                              ? "subdrop"
-                                              : ""
-                                          }`}
-                                          onClick={() =>
-                                            toggleSubsidebar(item?.label)
-                                          }
-                                        >
-                                          {item?.label}
-                                          <span
-                                            className={
-                                              item?.submenu ? "menu-arrow" : ""
-                                            }
-                                          />
-                                        </Link>
+                                        {item?.label}
+                                        <span className={item?.submenu ? 'menu-arrow' : ''} />
+                                      </Link>
 
-                                        {/* Submenu Level 2 */}
-                                        {item?.submenuItems &&
-                                          subsidebar === item?.label && (
-                                            <ul style={{ display: "block" }}>
-                                              {item?.submenuItems?.map(
-                                                (subItem: any) => {
-                                                  const isDeepActive =
-                                                    subItem?.link ===
-                                                    Location.pathname;
+                                      {/* Submenu Level 2 */}
+                                      {item?.submenuItems && subsidebar === item?.label && (
+                                        <ul style={{ display: 'block' }}>
+                                          {item?.submenuItems?.map((subItem: any) => {
+                                            const isDeepActive =
+                                              subItem?.link === Location.pathname;
 
-                                                  return (
-                                                    <li key={subItem.label}>
-                                                      <Link
-                                                        to={subItem?.link}
-                                                        className={`submenu-two ${
-                                                          isDeepActive
-                                                            ? "active"
-                                                            : ""
-                                                        }`}
-                                                      >
-                                                        {subItem?.label}
-                                                      </Link>
-                                                    </li>
-                                                  );
-                                                }
-                                              )}
-                                            </ul>
-                                          )}
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              )}
+                                            return (
+                                              <li key={subItem.label}>
+                                                <Link
+                                                  to={subItem?.link}
+                                                  className={`submenu-two ${
+                                                    isDeepActive ? 'active' : ''
+                                                  }`}
+                                                >
+                                                  {subItem?.label}
+                                                </Link>
+                                              </li>
+                                            );
+                                          })}
+                                        </ul>
+                                      )}
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
                           </li>
                         );
                       })}

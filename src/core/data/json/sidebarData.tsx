@@ -148,26 +148,26 @@ export const SidebarData = [
           },
         ],
       },
-      {
-        label: 'Parents',
-        icon: 'ti ti-user-bolt',
-        showSubRoute: false,
-        submenu: true,
-        submenuItems: [
-          { label: 'All Parents', link: routes.parentGrid },
-          { label: 'Parents List', link: routes.parentList },
-        ],
-      },
-      {
-        label: 'Guardians',
-        icon: 'ti ti-user-shield',
-        showSubRoute: false,
-        submenu: true,
-        submenuItems: [
-          { label: 'All Guardians', link: routes.guardiansGrid },
-          { label: 'Guardians List', link: routes.guardiansList },
-        ],
-      },
+      // {
+      //   label: 'Parents',
+      //   icon: 'ti ti-user-bolt',
+      //   showSubRoute: false,
+      //   submenu: true,
+      //   submenuItems: [
+      //     { label: 'All Parents', link: routes.parentGrid },
+      //     { label: 'Parents List', link: routes.parentList },
+      //   ],
+      // },
+      // {
+      //   label: 'Guardians',
+      //   icon: 'ti ti-user-shield',
+      //   showSubRoute: false,
+      //   submenu: true,
+      //   submenuItems: [
+      //     { label: 'All Guardians', link: routes.guardiansGrid },
+      //     { label: 'Guardians List', link: routes.guardiansList },
+      //   ],
+      // },
       {
         label: 'Teachers',
         icon: 'ti ti-users',
@@ -212,13 +212,13 @@ export const SidebarData = [
           { label: 'Schedule', link: routes.sheduleClasses },
         ],
       },
-      {
-        label: 'Class Room',
-        link: routes.classRoom,
-        icon: 'ti ti-building',
-        showSubRoute: false,
-        submenu: false,
-      },
+      // {
+      //   label: 'Class Room',
+      //   link: routes.classRoom,
+      //   icon: 'ti ti-building',
+      //   showSubRoute: false,
+      //   submenu: false,
+      // },
       {
         label: 'Class Routine',
         link: routes.classRoutine,
@@ -261,13 +261,13 @@ export const SidebarData = [
         showSubRoute: false,
         submenu: false,
       },
-      {
-        label: 'Home Work',
-        link: routes.classHomeWork,
-        icon: 'ti ti-license',
-        showSubRoute: false,
-        submenu: false,
-      },
+      // {
+      //   label: 'Home Work',
+      //   link: routes.classHomeWork,
+      //   icon: 'ti ti-license',
+      //   showSubRoute: false,
+      //   submenu: false,
+      // },
       {
         label: 'Examinations',
         icon: 'ti ti-hexagonal-prism-plus',
@@ -385,99 +385,99 @@ export const SidebarData = [
       // },
     ],
   },
-  {
-    label: 'HRM',
-    submenuOpen: true,
-    submenuHdr: 'HRM',
-    submenu: false,
-    showSubRoute: false,
-    submenuItems: [
-      {
-        label: 'Staffs',
-        link: routes.staff,
-        subLink1: routes.addStaff,
-        subLink2: routes.editStaff,
-        icon: 'ti ti-users-group',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Departments',
-        link: routes.departments,
-        icon: 'ti ti-layout-distribute-horizontal',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Designation',
-        link: routes.designation,
-        icon: 'ti ti-user-exclamation',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Attendance',
-        icon: 'ti ti-calendar-share',
-        submenu: true,
-        showSubRoute: false,
+  // {
+  //   label: 'HRM',
+  //   submenuOpen: true,
+  //   submenuHdr: 'HRM',
+  //   submenu: false,
+  //   showSubRoute: false,
+  //   submenuItems: [
+  //     {
+  //       label: 'Staffs',
+  //       link: routes.staff,
+  //       subLink1: routes.addStaff,
+  //       subLink2: routes.editStaff,
+  //       icon: 'ti ti-users-group',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Departments',
+  //       link: routes.departments,
+  //       icon: 'ti ti-layout-distribute-horizontal',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Designation',
+  //       link: routes.designation,
+  //       icon: 'ti ti-user-exclamation',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Attendance',
+  //       icon: 'ti ti-calendar-share',
+  //       submenu: true,
+  //       showSubRoute: false,
 
-        submenuItems: [{ label: 'Student Attendance', link: routes.studentAttendance }],
-      },
-      {
-        label: 'Leaves',
-        icon: 'ti ti-calendar-stats',
-        submenu: true,
-        showSubRoute: false,
+  //       submenuItems: [{ label: 'Student Attendance', link: routes.studentAttendance }],
+  //     },
+  //     {
+  //       label: 'Leaves',
+  //       icon: 'ti ti-calendar-stats',
+  //       submenu: true,
+  //       showSubRoute: false,
 
-        submenuItems: [
-          { label: 'List of leaves', link: routes.listLeaves },
-          { label: 'Approve Request', link: routes.approveRequest },
-        ],
-      },
-      {
-        label: 'Holidays',
-        link: routes.holidays,
-        icon: 'ti ti-briefcase',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Payroll',
-        link: routes.payroll,
-        icon: 'ti ti-moneybag',
-        showSubRoute: false,
-        submenu: false,
-      },
-    ],
-  },
-  {
-    label: 'Finance & Accounts',
-    submenuOpen: true,
-    submenuHdr: 'Finance & Accounts',
-    submenu: false,
-    showSubRoute: false,
-    submenuItems: [
-      {
-        label: 'Accounts',
-        icon: 'ti ti-swipe',
-        submenu: true,
-        showSubRoute: false,
-        submenuItems: [
-          { label: 'Expenses', link: routes.expense },
-          { label: 'Expense Category', link: routes.expenseCategory },
-          { label: 'Income', link: routes.accountsIncome },
-          {
-            label: 'Invoices',
-            link: routes.accountsInvoices,
-            subLink1: routes.addInvoice,
-            subLink2: routes.editInvoice,
-          },
-          { label: 'Invoice View', link: routes.invoice },
-          { label: 'Transactions', link: routes.accountsTransactions },
-        ],
-      },
-    ],
-  },
+  //       submenuItems: [
+  //         { label: 'List of leaves', link: routes.listLeaves },
+  //         { label: 'Approve Request', link: routes.approveRequest },
+  //       ],
+  //     },
+  //     {
+  //       label: 'Holidays',
+  //       link: routes.holidays,
+  //       icon: 'ti ti-briefcase',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Payroll',
+  //       link: routes.payroll,
+  //       icon: 'ti ti-moneybag',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //   ],
+  // },
+  // {
+  //   label: 'Finance & Accounts',
+  //   submenuOpen: true,
+  //   submenuHdr: 'Finance & Accounts',
+  //   submenu: false,
+  //   showSubRoute: false,
+  //   submenuItems: [
+  //     {
+  //       label: 'Accounts',
+  //       icon: 'ti ti-swipe',
+  //       submenu: true,
+  //       showSubRoute: false,
+  //       submenuItems: [
+  //         { label: 'Expenses', link: routes.expense },
+  //         { label: 'Expense Category', link: routes.expenseCategory },
+  //         { label: 'Income', link: routes.accountsIncome },
+  //         {
+  //           label: 'Invoices',
+  //           link: routes.accountsInvoices,
+  //           subLink1: routes.addInvoice,
+  //           subLink2: routes.editInvoice,
+  //         },
+  //         { label: 'Invoice View', link: routes.invoice },
+  //         { label: 'Transactions', link: routes.accountsTransactions },
+  //       ],
+  //     },
+  //   ],
+  // },
   {
     label: 'Announcements',
     submenuOpen: true,
@@ -559,36 +559,36 @@ export const SidebarData = [
       },
     ],
   },
-  {
-    label: 'USER MANAGEMENT',
-    submenuOpen: true,
-    submenuHdr: 'Sales',
-    submenu: false,
-    showSubRoute: false,
-    submenuItems: [
-      {
-        label: 'Users',
-        link: routes.manageusers,
-        icon: 'ti ti-users-minus',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Roles & Permission',
-        link: routes.rolesPermissions,
-        icon: 'ti ti-shield-plus',
-        showSubRoute: false,
-        submenu: false,
-      },
-      {
-        label: 'Delete Account Request',
-        link: routes.deleteRequest,
-        icon: 'ti ti-user-question',
-        showSubRoute: false,
-        submenu: false,
-      },
-    ],
-  },
+  // {
+  //   label: 'USER MANAGEMENT',
+  //   submenuOpen: true,
+  //   submenuHdr: 'Sales',
+  //   submenu: false,
+  //   showSubRoute: false,
+  //   submenuItems: [
+  //     {
+  //       label: 'Users',
+  //       link: routes.manageusers,
+  //       icon: 'ti ti-users-minus',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Roles & Permission',
+  //       link: routes.rolesPermissions,
+  //       icon: 'ti ti-shield-plus',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //     {
+  //       label: 'Delete Account Request',
+  //       link: routes.deleteRequest,
+  //       icon: 'ti ti-user-question',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //   ],
+  // },
 
   // membership components are not available in the features
   // {
@@ -685,21 +685,21 @@ export const SidebarData = [
   //     },
   //   ],
   // },
-  {
-    label: 'Support',
-    submenuOpen: true,
-    showSubRoute: false,
-    submenuHdr: 'Finance & Accounts',
-    submenuItems: [
-      {
-        label: 'Contact Messages',
-        link: routes.contactMessages,
-        icon: 'ti ti-message',
-        showSubRoute: false,
-        submenu: false,
-      },
-    ],
-  },
+  // {
+  //   label: 'Support',
+  //   submenuOpen: true,
+  //   showSubRoute: false,
+  //   submenuHdr: 'Finance & Accounts',
+  //   submenuItems: [
+  //     {
+  //       label: 'Contact Messages',
+  //       link: routes.contactMessages,
+  //       icon: 'ti ti-message',
+  //       showSubRoute: false,
+  //       submenu: false,
+  //     },
+  //   ],
+  // },
 
   // pages routes are available in the features
   // {
@@ -842,101 +842,101 @@ export const SidebarData = [
           { label: 'Connected Apps', link: routes.connectedApps },
         ],
       },
-      {
-        label: 'Website Settings',
-        submenu: true,
-        showSubRoute: false,
-        icon: 'ti ti-device-laptop',
-        submenuItems: [
-          {
-            label: 'Company Settings',
-            link: routes.companySettings,
-            showSubRoute: false,
-          },
-          {
-            label: 'Localization',
-            link: routes.localization,
-            showSubRoute: false,
-          },
-          { label: 'Prefixes', link: routes.prefixes, showSubRoute: false },
-          { label: 'Preference', link: routes.preference, showSubRoute: false },
-          {
-            label: 'Social Authentication',
-            link: routes.socialAuthentication,
-            showSubRoute: false,
-          },
-          {
-            label: 'Language',
-            link: routes.language,
-            showSubRoute: false,
-          },
-        ],
-      },
-      {
-        label: 'App Settings',
-        submenu: true,
-        showSubRoute: false,
-        icon: 'ti ti-apps',
-        submenuItems: [
-          {
-            label: 'Invoice Settings',
-            link: routes.invoiceSettings,
-            showSubRoute: false,
-          },
-          {
-            label: 'Custom Fields',
-            link: routes.customFields,
-            showSubRoute: false,
-          },
-        ],
-      },
-      {
-        label: 'System Settings',
-        submenu: true,
-        showSubRoute: false,
-        icon: 'ti ti-file-symlink',
-        submenuItems: [
-          {
-            label: 'Email Settings',
-            link: routes.emailSettings,
-            showSubRoute: false,
-          },
-          {
-            label: 'Email Templates',
-            link: routes.emailTemplates,
-            showSubRoute: false,
-          },
-          {
-            label: 'SMS Settings',
-            link: routes.smsSettings,
-            showSubRoute: false,
-          },
-          {
-            label: 'OTP',
-            link: routes.optSettings,
-            showSubRoute: false,
-          },
-          {
-            label: 'GDPR Cookies',
-            link: routes.gdprCookies,
-            showSubRoute: false,
-          },
-        ],
-      },
-      {
-        label: 'Financial Settings',
-        submenu: true,
-        showSubRoute: false,
-        icon: 'ti ti-zoom-money',
-        submenuItems: [
-          {
-            label: 'Payment Gateway',
-            link: routes.paymentGateways,
-            showSubRoute: false,
-          },
-          { label: 'Tax Rates', link: routes.taxRates, showSubRoute: false },
-        ],
-      },
+      // {
+      //   label: 'Website Settings',
+      //   submenu: true,
+      //   showSubRoute: false,
+      //   icon: 'ti ti-device-laptop',
+      //   submenuItems: [
+      //     {
+      //       label: 'Company Settings',
+      //       link: routes.companySettings,
+      //       showSubRoute: false,
+      //     },
+      //     {
+      //       label: 'Localization',
+      //       link: routes.localization,
+      //       showSubRoute: false,
+      //     },
+      //     { label: 'Prefixes', link: routes.prefixes, showSubRoute: false },
+      //     { label: 'Preference', link: routes.preference, showSubRoute: false },
+      //     {
+      //       label: 'Social Authentication',
+      //       link: routes.socialAuthentication,
+      //       showSubRoute: false,
+      //     },
+      //     {
+      //       label: 'Language',
+      //       link: routes.language,
+      //       showSubRoute: false,
+      //     },
+      //   ],
+      // },
+      // {
+      //   label: 'App Settings',
+      //   submenu: true,
+      //   showSubRoute: false,
+      //   icon: 'ti ti-apps',
+      //   submenuItems: [
+      //     {
+      //       label: 'Invoice Settings',
+      //       link: routes.invoiceSettings,
+      //       showSubRoute: false,
+      //     },
+      //     {
+      //       label: 'Custom Fields',
+      //       link: routes.customFields,
+      //       showSubRoute: false,
+      //     },
+      //   ],
+      // },
+      // {
+      //   label: 'System Settings',
+      //   submenu: true,
+      //   showSubRoute: false,
+      //   icon: 'ti ti-file-symlink',
+      //   submenuItems: [
+      //     {
+      //       label: 'Email Settings',
+      //       link: routes.emailSettings,
+      //       showSubRoute: false,
+      //     },
+      //     {
+      //       label: 'Email Templates',
+      //       link: routes.emailTemplates,
+      //       showSubRoute: false,
+      //     },
+      //     {
+      //       label: 'SMS Settings',
+      //       link: routes.smsSettings,
+      //       showSubRoute: false,
+      //     },
+      //     {
+      //       label: 'OTP',
+      //       link: routes.optSettings,
+      //       showSubRoute: false,
+      //     },
+      //     {
+      //       label: 'GDPR Cookies',
+      //       link: routes.gdprCookies,
+      //       showSubRoute: false,
+      //     },
+      //   ],
+      // },
+      // {
+      //   label: 'Financial Settings',
+      //   submenu: true,
+      //   showSubRoute: false,
+      //   icon: 'ti ti-zoom-money',
+      //   submenuItems: [
+      //     {
+      //       label: 'Payment Gateway',
+      //       link: routes.paymentGateways,
+      //       showSubRoute: false,
+      //     },
+      //     { label: 'Tax Rates', link: routes.taxRates, showSubRoute: false },
+      //   ],
+      // },
       {
         label: 'Academic Settings',
         submenu: true,
@@ -951,20 +951,20 @@ export const SidebarData = [
           { label: 'Religion', link: routes.religion, showSubRoute: false },
         ],
       },
-      {
-        label: 'Other Settings',
-        submenu: true,
-        showSubRoute: false,
-        icon: 'ti ti-flag-cog',
-        submenuItems: [
-          { label: 'Storage', link: routes.storage, showSubRoute: false },
-          {
-            label: 'Ban IP Address',
-            link: routes.banIpAddress,
-            showSubRoute: false,
-          },
-        ],
-      },
+      // {
+      //   label: 'Other Settings',
+      //   submenu: true,
+      //   showSubRoute: false,
+      //   icon: 'ti ti-flag-cog',
+      //   submenuItems: [
+      //     { label: 'Storage', link: routes.storage, showSubRoute: false },
+      //     {
+      //       label: 'Ban IP Address',
+      //       link: routes.banIpAddress,
+      //       showSubRoute: false,
+      //     },
+      //   ],
+      // },
     ],
   },
 
